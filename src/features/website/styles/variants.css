@@ -1,0 +1,106 @@
+/* Restaurant: warm editorial typography, an illustrated table and menu-like cards. */
+.template-restaurant h1, .template-restaurant h2, .template-restaurant h3, .template-restaurant .logo {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -.04em;
+}
+.template-restaurant .logo { font-size: 43px; font-style: italic; }
+.template-restaurant .logo-dot { font-size: 20px; }
+.template-restaurant .hero { grid-template-columns: 1.1fr 1fr; gap: 55px; padding-top: 65px; }
+.template-restaurant h1 { font-size: clamp(55px, 6.3vw, 88px); line-height: 1.06; }
+.template-restaurant .hero-copy { padding-top: 45px; }
+.template-restaurant .button, .template-restaurant .nav-contact { border-radius: 3px; }
+.template-restaurant .service-grid { border: 0; gap: 22px; }
+.template-restaurant .service, .template-restaurant .service:first-child, .template-restaurant .service:last-child { padding: 28px; border: 1px solid var(--line); border-radius: 80px 80px 5px 5px; background: var(--surface); }
+.template-restaurant .service-top { margin-bottom: 25px; }
+.template-restaurant .service h3 { font-size: 28px; }
+.template-restaurant .project-art { border-radius: 120px 120px 8px 8px; height: 330px; }
+.template-restaurant .project-card:nth-child(3n) { grid-column: auto; }
+.template-restaurant .project-grid { grid-template-columns: repeat(3, 1fr); gap: 25px; }
+.template-restaurant .project-caption { flex-direction: column; align-items: flex-start; gap: 8px; }
+.template-restaurant .project-caption h3 { font-size: 28px; }
+.template-restaurant .art-word, .template-restaurant .peach .art-word, .template-restaurant .purple .art-word, .template-restaurant .lime .art-word { font: italic 48px Georgia, serif; letter-spacing: -.06em; padding: 0 15px; }
+.template-restaurant .art-caption { right: 20px; top: 40px; left: 20px; text-align: center; line-height: 1.6; }
+.template-restaurant .about-art { border-radius: 180px 180px 5px 5px; }
+.template-restaurant .about-sticker { font-family: Georgia, serif; padding: 25px; font-size: 29px; }
+.template-restaurant .about-sticker b { font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: .06em; }
+.template-restaurant .contact { border-radius: 80px 80px 6px 6px; padding-top: 65px; }
+.template-restaurant .contact h2 { font-size: clamp(45px, 6.5vw, 85px); }
+.restaurant-illustration { position: relative; min-height: 450px; background: var(--surface); border-radius: 220px 220px 8px 8px; overflow: hidden; }
+.restaurant-linen { position: absolute; width: 145px; height: 520px; top: 0; right: 35px; transform: rotate(12deg); background-color: color-mix(in srgb, var(--accent) 18%, var(--paper)); background-image: repeating-linear-gradient(0deg, transparent 0 14px, color-mix(in srgb, var(--accent) 15%, transparent) 14px 16px); }
+.restaurant-plate { position: absolute; width: 290px; height: 290px; left: calc(50% - 145px); top: 85px; border: 18px solid color-mix(in srgb, var(--paper) 80%, white); border-radius: 50%; background: color-mix(in srgb, var(--paper) 92%, var(--ink)); box-shadow: 6px 16px 25px #39261722, inset 0 0 0 2px #84664720; transform: rotate(-15deg); }
+.dish-leaf { position: absolute; border-radius: 90% 10% 90% 10%; width: 110px; height: 53px; background: #758653; box-shadow: inset 0 -7px 0 #435b3620; }
+.leaf-one { left: 33px; top: 80px; transform: rotate(-35deg); }
+.leaf-two { left: 108px; top: 123px; transform: rotate(65deg); background: #8b9b66; }
+.leaf-three { left: 74px; top: 150px; transform: rotate(155deg); }
+.dish-tomato { position: absolute; background: #b9553d; border-radius: 50%; width: 54px; height: 54px; box-shadow: inset 0 0 0 7px #d67b5730; }
+.tomato-one { left: 145px; top: 70px; }.tomato-two { left: 55px; top: 128px; }
+.dish-grain { position: absolute; border-radius: 50%; width: 65px; height: 45px; left: 110px; top: 108px; background: #ddb879; box-shadow: inset 0 0 0 4px #c29a65; }
+.restaurant-cutlery { position: absolute; left: 20px; top: 160px; display: flex; gap: 9px; transform: rotate(-10deg); }
+.restaurant-cutlery span { height: 145px; width: 7px; border-radius: 4px; background: #8c7964; }
+.restaurant-cutlery span:first-child { width: 12px; border-radius: 2px 2px 4px 4px; }
+.restaurant-seal { position: absolute; right: 20px; bottom: 25px; width: 95px; height: 95px; border: 1px solid var(--accent); border-radius: 50%; display: grid; place-items: center; text-align: center; color: var(--accent); font-size: 10px; letter-spacing: .13em; transform: rotate(12deg); background: var(--paper); line-height: 1.7; }
+
+/* Professional services: crisp dark layout, structured cards and a roadmap visual. */
+.template-consultant .logo { letter-spacing: -.05em; font-size: 34px; }
+.template-consultant .logo-dot { font-size: 20px; color: var(--accent); }
+.template-consultant h1, .template-consultant h2 { font-weight: 650; letter-spacing: -.055em; }
+.template-consultant h1 { font-size: clamp(46px, 5.5vw, 76px); line-height: 1.1; }
+.template-consultant .hero { gap: 45px; grid-template-columns: 1.2fr 1fr; }
+.template-consultant .button, .template-consultant .nav-contact { border-radius: 7px; }
+.template-consultant .hero-copy > .button { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.template-consultant .hero-bottom { padding-top: 25px; }
+.template-consultant .service-grid { gap: 18px; border: 0; }
+.template-consultant .service, .template-consultant .service:first-child, .template-consultant .service:last-child { border: 1px solid var(--line); padding: 25px; background: var(--surface); border-radius: 10px; }
+.template-consultant .service-symbol { font-size: 32px; color: var(--accent); }
+.template-consultant .about { margin-inline: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.template-consultant .about-art { border-radius: 12px; background: var(--paper); border: 1px solid var(--line); }
+.template-consultant .about-star { color: var(--accent); font-size: 320px; top: -35px; left: 20px; }
+.template-consultant .about-sticker { left: 38%; top: 150px; font-size: 32px; transform: rotate(-3deg) translateX(-25%); }
+.template-consultant .about-sticker b { font-size: 11px; letter-spacing: .1em; }
+.template-consultant .project-art { height: 310px; border-radius: 10px; }
+.template-consultant .project-caption span { line-height: 1.5; }
+.template-consultant .art-word, .template-consultant .purple .art-word, .template-consultant .lime .art-word { font-size: clamp(45px, 5vw, 70px); }
+.template-consultant .contact { border-radius: 12px; }
+.template-consultant .contact h2 { font-size: clamp(48px, 6.3vw, 82px); }
+.consultant-illustration { position: relative; min-height: 410px; display: grid; place-items: center; overflow: hidden; }
+.strategy-card { z-index: 1; width: calc(100% - 28px); background: var(--surface); padding: 28px; border: 1px solid var(--line); border-radius: 14px; transform: rotate(3deg); box-shadow: 0 20px 60px #00000022; }
+.strategy-heading { display: flex; justify-content: space-between; align-items: center; font-size: 8px; letter-spacing: .14em; color: var(--muted); }
+.strategy-heading span:last-child { font-size: 24px; color: var(--accent); }
+.strategy-card strong { font-size: 27px; font-weight: 500; letter-spacing: -.04em; line-height: 1.2; display: block; margin: 22px 0; }
+.strategy-chart { height: 115px; display: flex; gap: 12px; align-items: flex-end; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.strategy-chart i { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; height: 22%; opacity: .6; }
+.strategy-chart i:nth-child(2) { height: 40%; opacity: .7; }.strategy-chart i:nth-child(3) { height: 57%; opacity: .8; }.strategy-chart i:nth-child(4) { height: 76%; opacity: .9; }.strategy-chart i:nth-child(5) { height: 100%; opacity: 1; }
+.strategy-foot { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; padding-top: 15px; }
+.strategy-chip { z-index: 2; position: absolute; bottom: 9px; left: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; font-size: 10px; box-shadow: 0 10px 20px #00000012; }
+.strategy-chip span { color: var(--accent); padding-right: 8px; }
+.strategy-orbit { position: absolute; right: -70px; top: 10px; width: 320px; height: 320px; border: 1px solid var(--line); border-radius: 50%; }
+
+@media (max-width: 1050px) {
+  .template-restaurant .hero { gap: 30px; }
+  .template-restaurant .project-grid { gap: 15px; }
+  .template-restaurant .service, .template-restaurant .service:first-child, .template-restaurant .service:last-child { padding: 25px 20px; }
+  .template-consultant .hero { gap: 25px; }
+  .strategy-card { padding: 22px; }.strategy-card strong { font-size: 24px; }
+  .restaurant-plate { width: 250px; height: 250px; left: calc(50% - 125px); }
+}
+@media (max-width: 760px) {
+  .template-restaurant .hero, .template-consultant .hero { grid-template-columns: 1fr; gap: 20px; padding-top: 25px; }
+  .template-restaurant .hero-copy { padding-top: 20px; }
+  .template-restaurant h1 { font-size: clamp(49px, 10vw, 70px); }
+  .template-consultant h1 { font-size: clamp(40px, 9vw, 60px); }
+  .restaurant-illustration { min-height: 360px; max-width: 430px; width: 100%; justify-self: center; }
+  .restaurant-plate { top: 60px; }.restaurant-cutlery { top: 130px; }
+  .template-restaurant .service-grid, .template-consultant .service-grid { grid-template-columns: 1fr; }
+  .template-restaurant .service, .template-restaurant .service:first-child, .template-restaurant .service:last-child { border-radius: 10px; padding: 25px; }
+  .template-restaurant .project-grid { grid-template-columns: 1fr; gap: 28px; }
+  .template-restaurant .project-art { height: 330px; }
+  .template-restaurant .contact { border-radius: 40px 40px 6px 6px; padding-top: 45px; }
+  .template-restaurant .contact h2 { font-size: 42px; }
+  .consultant-illustration { min-height: 365px; max-width: 460px; width: 100%; justify-self: center; }
+  .strategy-chip { bottom: 0; left: 0; padding: 13px 15px; }
+  .template-consultant .project-art { height: 290px; }
+  .template-consultant .about-star { font-size: 270px; }
+  .template-consultant .about-sticker { top: 115px; }
+  .template-consultant .contact h2 { font-size: 40px; }
+}
