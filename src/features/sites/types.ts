@@ -1,5 +1,11 @@
-import type { Section, Settings } from '@/features/website/types'
-export type SiteDocument = { settings: Settings; sections: Section[] }
+import type { FamilyId, Section, Settings, TemplateId } from '@/features/website/types'
+export type SiteDocument = {
+  schemaVersion: 1
+  familyId: FamilyId
+  templateId: TemplateId
+  settings: Settings
+  sections: Section[]
+}
 export type Site = {
   id: string
   owner_id: string

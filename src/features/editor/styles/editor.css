@@ -94,6 +94,12 @@
 .upload-label { display: block; padding: 11px; text-align: center; border: 1px dashed #c9d6b4; border-radius: 5px; color: #789359; font-size: 10px; cursor: pointer; margin-bottom: 12px; }
 .upload-label input { display: block; font-size: 9px; width: 100%; margin-top: 10px; }
 .upload-preview { border-radius: 4px; margin-bottom: 12px; }
+.link-field { margin-bottom: 22px; }
+.link-field .editor-field { margin-bottom: 10px; }
+.field-warning { font-size: 11px; color: #9b5426; margin-block: 8px; }
+.editor-checkbox { display: flex; align-items: center; gap: 10px; font-size: 12px; margin-block: 18px; }
+.editor-checkbox input { width: 18px; height: 18px; }
+.upload-preview { max-height: 180px; object-fit: contain; background: #f0f3eb; }
 
 @media (max-width: 1100px) {
   .editor-body { grid-template-columns: 205px minmax(0, 1fr) 250px; }
@@ -125,7 +131,8 @@
   .editor-inspector { border-left: 0; }
   .section-select small { max-width: 240px; }
   .editor-field { font-size: 12px; }
-  .editor-field input:not([type=color]), .editor-field textarea, .editor-field select { font-size: 14px; }
+  .editor-field input:not([type=color]), .editor-field textarea, .editor-field select { font-size: 16px; }
+  .section-order button { min-width: 44px; min-height: 44px; }
   .inspector-title h2 { font-size: 28px; }
   .block-library { grid-template-columns: repeat(3, 1fr); }
   .editor-canvas { padding: 12px 8px 0; }

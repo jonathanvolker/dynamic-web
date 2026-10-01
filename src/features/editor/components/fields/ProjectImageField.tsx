@@ -1,5 +1,6 @@
 import type { Media } from '@/features/website/types'
-import { imageData } from '../../lib/image'
+import { useEffect, useRef, useState } from 'react'
+import { uploadImage } from '../../lib/image'
 import { Field } from './Field'
 
 type Props = {
@@ -7,32 +8,48 @@ type Props = {
   image?: Media
   onChange: (image: Media | undefined) => void
   onError: (message: string) => void
+  label?: string
+  removeLabel?: string
 }
 
-export function ProjectImageField({ title, image, onChange, onError }: Props) {
+export function ProjectImageField({ title, image, onChange, onError, label = 'Imagen del proyecto', removeLabel = 'Usar composición original' }: Props) {
+  const [uploading, setUploading] = useState(false)
+  const controller = useRef<AbortController | null>(null)
+  const latest = useRef({ onChange, onError, title })
+  latest.current = { onChange, onError, title }
+  useEffect(() => () => controller.current?.abort(), [])
   return (
     <>
       <label className="upload-label">
-        ↑ Subir imagen
+        {uploading ? 'Cargando…' : `↑ ${label}`}
         <input
           type="file"
+          aria-label={label}
+          disabled={uploading}
           accept="image/jpeg,image/png,image/webp"
           onChange={async event => {
             const file = event.target.files?.[0]
+            event.target.value = ''
             if (!file) return
+            const upload = new AbortController()
+            controller.current = upload
+            setUploading(true)
             try {
-              onChange({ url: await imageData(file), alt: title || 'Proyecto' })
+              const media = await uploadImage(file, upload.signal)
+              if (!upload.signal.aborted) latest.current.onChange({ ...media, alt: latest.current.title || label })
             } catch (error) {
-              onError(error instanceof Error ? error.message : 'No pudimos cargar la imagen.')
+              if (!upload.signal.aborted) latest.current.onError(error instanceof Error ? error.message : 'No pudimos cargar la imagen.')
+            } finally {
+              if (!upload.signal.aborted) setUploading(false)
             }
           }}
         />
       </label>
       {image && (
         <>
-          <img className="upload-preview" src={image.url} alt="Imagen del proyecto" />
+          <img className="upload-preview" src={image.url} alt={image.alt || label} />
           <Field label="Texto alternativo" value={image.alt || ''} onChange={alt => onChange({ ...image, alt })} />
-          <button className="remove-row" onClick={() => onChange(undefined)}>Usar composición original</button>
+          <button className="remove-row" disabled={uploading} onClick={() => onChange(undefined)}>{removeLabel}</button>
         </>
       )}
     </>

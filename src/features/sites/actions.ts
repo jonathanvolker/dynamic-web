@@ -6,6 +6,7 @@ import { currentUser, requireUser } from '@/features/auth/server/session'
 import { createSite, findSite, saveDocument, removePublication } from './server/repository'
 import { validateSite } from './validation'
 import { getTemplate } from '@/features/templates/registry'
+import { assertMediaOwnership } from './server/media'
 export async function newSite(_state: { error: string }, form: FormData): Promise<{ error: string }> {
   const user = await requireUser()
   const name = String(form.get('name') || '').trim()
@@ -20,7 +21,10 @@ export async function saveSite(id: string, input: unknown, publish: boolean) {
   if (!user) return { error: 'Tu sesión venció. Iniciá sesión para continuar.' }
   const site = findSite(id, user.id)
   if (!site) return { error: 'No tenés acceso a este sitio.' }
-  try { validateSite(input) } catch (error) { return { error: error instanceof Error ? error.message : 'Datos no válidos.' } }
+  try {
+    validateSite(input)
+    assertMediaOwnership(input, user.id)
+  } catch (error) { return { error: error instanceof Error ? error.message : 'Datos no válidos.' } }
   const now = saveDocument(id, user.id, input, publish)
   revalidatePath(`/s/${site.slug}`)
   revalidatePath('/dashboard')

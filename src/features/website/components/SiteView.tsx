@@ -1,15 +1,20 @@
 import type { CSSProperties } from 'react'
-import type { Section, Settings } from '../types'
+import type { FamilyId, Section, Settings } from '../types'
 import { Header } from './Header'
 import { SectionRenderer } from './SectionRenderer'
 import { foregroundFor, resolveColors } from '../theme/palettes'
+import { fontFamilies } from '../theme/design'
+import { resolveHref, sectionAnchors } from '../links'
+import { Footer } from './Footer'
 
-type Props = { settings: Settings; sections: Section[]; demo?: boolean }
+type Props = { settings: Settings; sections: Section[]; familyId?: FamilyId; demo?: boolean }
 
-export default function SiteView({ settings, sections, demo = false }: Props) {
-  const occurrences: Record<string, number> = {}
+export default function SiteView({ settings, sections, familyId = 'editorial', demo = false }: Props) {
+  const anchors = sectionAnchors(sections)
   const colors = resolveColors(settings)
   const theme = {
+    ...(settings.design?.headingFont ? { '--heading-font': fontFamilies[settings.design.headingFont] } : {}),
+    ...(settings.design?.bodyFont ? { '--body-font': fontFamilies[settings.design.bodyFont] } : {}),
     '--accent': settings.accent,
     '--on-accent': foregroundFor(settings.accent),
     '--paper': colors.background,
@@ -27,27 +32,20 @@ export default function SiteView({ settings, sections, demo = false }: Props) {
   } as CSSProperties
 
   return (
-    <div className={`website-root template-${settings.template || 'studio'}`} style={theme}>
+    <div className={`website-root family-${familyId} template-${settings.template || 'studio'}`} style={theme}
+      data-overlay-header={familyId === 'immersive' && sections[0]?.blockType === 'hero' && sections[0]?.heroLayout === 'cover' || undefined}
+      data-heading-font={settings.design?.headingFont} data-body-font={settings.design?.bodyFont}
+      data-width={settings.design?.width} data-spacing={settings.design?.spacing}>
       <a className="skip-link" href="#main">Ir al contenido</a>
-      <Header settings={settings} />
+      <Header settings={settings} anchors={anchors} />
       <main id="main">
         {sections.map((section, index) => {
-          const count = occurrences[section.blockType] || 0
-          occurrences[section.blockType] = count + 1
-          const anchor = `${section.blockType}${count ? `-${count + 1}` : ''}`
-          return <SectionRenderer key={section.id || index} section={section} settings={settings} anchor={anchor} />
+          const defaultHref = section.blockType === 'contact' ? `mailto:${settings.email}` : '#contact'
+          return <SectionRenderer key={section.id || index} section={section} settings={settings} anchor={anchors[index]}
+            anchors={anchors} buttonHref={resolveHref(section.buttonHref ?? defaultHref, anchors)} discoveryHref={resolveHref(familyId === 'immersive' ? '#gallery' : familyId === 'modular' ? '#services' : '#projects', anchors)} />
         })}
       </main>
-      <footer className="footer wrap">
-        <div>
-          <a className="logo" href="#main">{settings.brand}<span className="logo-dot">✳</span></a>
-          <p>{settings.tagline}</p>
-        </div>
-        <div className="footer-right">
-          <a href={`mailto:${settings.email}`}>{settings.email} ↗</a>
-          <span>© {new Date().getFullYear()} {settings.brand} · {demo ? 'Propuesta visual · contenido de ejemplo' : 'Todos los derechos reservados'}</span>
-        </div>
-      </footer>
+      <Footer settings={settings} familyId={familyId} anchors={anchors} demo={demo} />
     </div>
   )
 }

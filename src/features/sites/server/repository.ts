@@ -3,13 +3,14 @@ import { randomUUID } from 'node:crypto'
 import { db } from '@/server/db/sqlite'
 import { getTemplate } from '@/features/templates/registry'
 import type { Site, SiteDocument } from '../types'
+import { migrateDocument } from '../document'
 
 function deserialize(row: Record<string, unknown> | undefined): Site | null {
   if (!row) return null
   return {
     ...row,
-    draft: JSON.parse(row.draft as string),
-    published: row.published ? JSON.parse(row.published as string) : null,
+    draft: migrateDocument(JSON.parse(row.draft as string)),
+    published: row.published ? migrateDocument(JSON.parse(row.published as string)) : null,
   } as Site
 }
 
@@ -37,10 +38,12 @@ export function createSite(owner: string, name: string, template: string) {
   const sections = template === 'blank'
     ? selected.sections.filter(section => ['hero', 'contact'].includes(section.blockType))
     : selected.sections
-  const document: SiteDocument = {
+  const document = migrateDocument({
+    familyId: selected.familyId,
+    templateId: selected.id,
     settings: { ...structuredClone(selected.settings), brand: name, seoTitle: name },
     sections: structuredClone(sections).map(section => ({ ...section, id: randomUUID() })),
-  }
+  })
   db().prepare('INSERT INTO sites (id, owner_id, name, slug, draft, updated_at) VALUES (?, ?, ?, ?, ?, ?)')
     .run(id, owner, name, slug, JSON.stringify(document), new Date().toISOString())
   return id

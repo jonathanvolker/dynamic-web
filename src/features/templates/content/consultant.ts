@@ -1,7 +1,7 @@
 import type { TemplateDefinition } from '../types'
 
 export const consultantTemplate: TemplateDefinition = {
-  id: 'consultant', name: 'Nexo', category: 'Consultoría & servicios', icon: '↗',
+  id: 'consultant', familyId: 'editorial', name: 'Nexo', category: 'Consultoría & servicios', icon: '↗',
   description: 'Una presencia clara y profesional, con fondo oscuro, datos destacados y servicios bien organizados.',
   settings: {
     template: 'consultant', brand: 'nexo', tagline: 'Claridad para decidir. Estrategia para avanzar.',

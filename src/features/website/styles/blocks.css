@@ -1,0 +1,35 @@
+/* New blocks share semantic markup and adapt to each visual family. */
+.website-root .gallery-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.website-root .gallery-item { margin: 0; min-width: 0; }
+.website-root .gallery-item > img, .website-root .gallery-placeholder { height: 340px; object-fit: cover; border-radius: 8px; }
+.website-root .gallery-placeholder { background: var(--surface); border: 1px dashed var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: var(--muted); font-size: 12px; }
+.website-root .gallery-placeholder > span:first-child { font-size: 50px; }
+.website-root .gallery-item figcaption { padding-top: 20px; }
+.website-root .gallery-item h3 { font-size: 23px; letter-spacing: -.04em; }
+.website-root .gallery-item p { color: var(--muted); font-size: 13px; margin-top: 7px; }
+.website-root .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 22px; }
+.website-root .testimonial-card { margin: 0; padding: 30px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; display: flex; flex-direction: column; }
+.website-root .quote-mark { font: 65px/1 Georgia, serif; color: var(--muted); }
+.website-root .testimonial-card blockquote { font-size: 21px; line-height: 1.55; letter-spacing: -.025em; margin: 0 0 30px; flex: 1; }
+.website-root .testimonial-card figcaption { display: flex; align-items: center; gap: 12px; }
+.website-root .person-initial { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex-shrink: 0; }
+.website-root .testimonial-card strong { font-size: 12px; display: block; }
+.website-root .testimonial-card small { color: var(--muted); font-size: 10px; display: block; margin-top: 6px; }
+.website-root .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 20px; }
+.website-root .pricing-card { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 32px; display: flex; flex-direction: column; min-width: 0; }
+.website-root .pricing-card.featured { border: 2px solid var(--accent); box-shadow: 0 16px 48px color-mix(in srgb, var(--accent) 12%, transparent); }
+.website-root .plan-heading { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.website-root .plan-heading h3 { font-size: 23px; }
+.website-root .plan-badge { font-size: 9px; background: var(--accent); color: var(--on-accent); border-radius: 20px; padding: 6px 9px; }
+.website-root .plan-description { color: var(--muted); font-size: 13px; margin: 16px 0 28px; }
+.website-root .plan-price { font-size: 42px; line-height: 1.1; font-weight: 650; letter-spacing: -.06em; }
+.website-root .plan-period { font-size: 11px; color: var(--muted); margin: 12px 0 26px; }
+.website-root .pricing-card ul { list-style: none; padding: 24px 0 12px; margin: 0 0 24px; border-top: 1px solid var(--line); flex: 1; }
+.website-root .pricing-card li { display: flex; gap: 10px; font-size: 12px; line-height: 1.6; margin-bottom: 12px; }
+.website-root .pricing-card li > span { color: var(--accent); }
+.website-root .pricing-card.featured .button { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+@media (max-width: 760px) {
+  .website-root .gallery-grid { grid-template-columns: 1fr; gap: 30px; }
+  .website-root .gallery-item > img, .website-root .gallery-placeholder { height: 320px; }
+  .website-root .testimonial-card, .website-root .pricing-card { padding: 26px; }
+}

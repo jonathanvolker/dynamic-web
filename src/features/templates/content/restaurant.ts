@@ -1,7 +1,7 @@
 import type { TemplateDefinition } from '../types'
 
 export const restaurantTemplate: TemplateDefinition = {
-  id: 'restaurant', name: 'Brasa', category: 'Restaurante & gastronomía', icon: '◒',
+  id: 'restaurant', familyId: 'editorial', name: 'Brasa', category: 'Restaurante & gastronomía', icon: '◒',
   description: 'Sabores de estación, tonos tierra y una composición editorial para invitar a sentarse a la mesa.',
   settings: {
     template: 'restaurant', brand: 'brasa', tagline: 'Cocina de estación. Encuentros que se quedan.',

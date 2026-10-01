@@ -1,5 +1,4 @@
-import { defaultSections } from '@/features/website/content/defaults'
-import { blockLabels, blockSymbols } from '../config/blocks'
+import { blockLabels, blockSymbols, blockTypes } from '../config/blocks'
 import type { EditorController } from '../hooks/use-site-editor'
 
 export function EditorSidebar({ editor }: { editor: EditorController }) {
@@ -42,9 +41,9 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
       ) : (
         <div className="block-library">
           <p className="sidebar-hint">Bloques diseñados para combinar bien.</p>
-          {defaultSections.map(item => (
-            <button key={item.blockType} onClick={() => editor.add(item.blockType)}>
-              <span>{blockSymbols[item.blockType]}</span><strong>{blockLabels[item.blockType]}</strong><small>+ Agregar al sitio</small>
+          {blockTypes.map(type => (
+            <button key={type} onClick={() => editor.add(type)}>
+              <span>{blockSymbols[type]}</span><strong>{blockLabels[type]}</strong><small>+ Agregar al sitio</small>
             </button>
           ))}
         </div>
