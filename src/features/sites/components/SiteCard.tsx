@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Site } from '../types'
 import { unpublishSite } from '../actions'
+import { DeleteSiteButton } from './DeleteSiteButton'
 
 export function SiteCard({ site }: { site: Site }) {
   return (
@@ -15,7 +16,10 @@ export function SiteCard({ site }: { site: Site }) {
           <Link href={`/editor/${site.id}`}>Editar sitio ↗</Link>
           {site.published && <a href={`/s/${site.slug}`} target="_blank" rel="noreferrer">Ver web ↗</a>}
         </div>
-        {site.published && <form action={unpublishSite.bind(null, site.id)}><button className="unpublish">Retirar publicación</button></form>}
+        <div className="site-danger-actions">
+          {site.published && <form action={unpublishSite.bind(null, site.id)}><button className="unpublish">Retirar publicación</button></form>}
+          <DeleteSiteButton siteId={site.id} siteName={site.name} />
+        </div>
       </div>
     </article>
   )

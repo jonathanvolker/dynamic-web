@@ -1,0 +1,106 @@
+/* New blocks share semantic markup and adapt to each visual family. */
+.website-root .gallery-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.website-root .gallery-item { margin: 0; min-width: 0; }
+.website-root .gallery-item > img, .website-root .gallery-placeholder { height: 340px; object-fit: cover; border-radius: 8px; }
+.website-root .gallery-placeholder { background: var(--surface); border: 1px dashed var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: var(--muted); font-size: 12px; }
+.website-root .gallery-placeholder > span:first-child { font-size: 50px; }
+.website-root .gallery-item figcaption { padding-top: 20px; }
+.website-root .gallery-item h3 { font-size: 23px; letter-spacing: -.04em; }
+.website-root .gallery-item p { color: var(--muted); font-size: 13px; margin-top: 7px; }
+.website-root .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 22px; }
+.website-root .testimonial-card { margin: 0; padding: 30px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; display: flex; flex-direction: column; }
+.website-root .quote-mark { font: 65px/1 Georgia, serif; color: var(--muted); }
+.website-root .testimonial-card blockquote { font-size: 21px; line-height: 1.55; letter-spacing: -.025em; margin: 0 0 30px; flex: 1; }
+.website-root .testimonial-card figcaption { display: flex; align-items: center; gap: 12px; }
+.website-root .person-initial { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex-shrink: 0; }
+.website-root .testimonial-card strong { font-size: 12px; display: block; }
+.website-root .testimonial-card small { color: var(--muted); font-size: 10px; display: block; margin-top: 6px; }
+.website-root .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 20px; }
+.website-root .pricing-card { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 32px; display: flex; flex-direction: column; min-width: 0; }
+.website-root .pricing-card.featured { border: 2px solid var(--accent); box-shadow: 0 16px 48px color-mix(in srgb, var(--accent) 12%, transparent); }
+.website-root .plan-heading { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.website-root .plan-heading h3 { font-size: 23px; }
+.website-root .plan-badge { font-size: 9px; background: var(--accent); color: var(--on-accent); border-radius: 20px; padding: 6px 9px; }
+.website-root .plan-description { color: var(--muted); font-size: 13px; margin: 16px 0 28px; }
+.website-root .plan-price { font-size: 42px; line-height: 1.1; font-weight: 650; letter-spacing: -.06em; }
+.website-root .plan-period { font-size: 11px; color: var(--muted); margin: 12px 0 26px; }
+.website-root .pricing-card ul { list-style: none; padding: 24px 0 12px; margin: 0 0 24px; border-top: 1px solid var(--line); flex: 1; }
+.website-root .pricing-card li { display: flex; gap: 10px; font-size: 12px; line-height: 1.6; margin-bottom: 12px; }
+.website-root .pricing-card li > span { color: var(--accent); }
+.website-root .pricing-card.featured .button { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.website-root .utility-cta, .website-root .newsletter-block { display: flex; align-items: center; justify-content: space-between; gap: 36px; padding: 56px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }
+.website-root .utility-cta h2, .website-root .newsletter-block h2 { max-width: 650px; }
+.website-root .utility-cta p:not(.eyebrow), .website-root .newsletter-block p:not(.eyebrow) { max-width: 620px; color: var(--muted); margin-top: 14px; }
+.website-root .utility-actions { display: flex; flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
+.website-root .text-image { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; align-items: center; }
+.website-root .text-image-image-left .text-image-copy { order: 2; }
+.website-root .text-image-image-left .text-image-media { order: 1; }
+.website-root .text-image-media img, .website-root .utility-image-placeholder { width: 100%; min-height: 360px; height: 100%; object-fit: cover; border-radius: 14px; }
+.website-root .utility-image-placeholder, .website-root .team-placeholder { display: grid; place-items: center; background: var(--surface); border: 1px dashed var(--line); color: var(--muted); padding: 24px; text-align: center; }
+.website-root .video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #111; border-radius: 14px; }
+.website-root .video-frame iframe { width: 100%; height: 100%; border: 0; }
+.website-root .logos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: center; }
+.website-root .logos-grid > * { min-height: 90px; display: grid; place-items: center; padding: 20px; border: 1px solid var(--line); color: var(--muted); text-align: center; }
+.website-root .logos-grid img { max-width: 150px; max-height: 50px; object-fit: contain; }
+.website-root .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 20px; }
+.website-root .team-card { min-width: 0; }
+.website-root .team-card img, .website-root .team-placeholder { width: 100%; height: 260px; object-fit: cover; border-radius: 12px; }
+.website-root .team-placeholder { font-size: 64px; }
+.website-root .team-card h3 { margin-top: 18px; font-size: 20px; }
+.website-root .team-card p { color: var(--muted); font-size: 13px; margin-top: 8px; }
+.website-root .team-card .team-role { color: var(--site-text); }
+.website-root .team-card a { display: inline-block; margin-top: 14px; font-size: 12px; }
+.website-root .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.website-root .stat { background: var(--paper); padding: 30px; }
+.website-root .stat strong { display: block; font-size: clamp(36px, 5vw, 64px); letter-spacing: -.07em; }
+.website-root .stat span { display: block; color: var(--muted); margin-top: 8px; font-size: 13px; }
+.website-root .process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; list-style: none; padding: 0; counter-reset: process; }
+.website-root .process-grid li { border-top: 1px solid var(--line); padding-top: 20px; }
+.website-root .process-number { color: var(--accent); font-size: 12px; }
+.website-root .process-grid h3 { margin-top: 42px; font-size: 22px; }
+.website-root .process-grid p, .website-root .process-grid small { color: var(--muted); font-size: 13px; margin-top: 10px; display: block; }
+.website-root .comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 20px; }
+.website-root .comparison-card { border: 1px solid var(--line); border-radius: 12px; padding: 28px; display: flex; flex-direction: column; min-width: 0; }
+.website-root .comparison-card.featured { border: 2px solid var(--accent); }
+.website-root .comparison-card h3 { font-size: 22px; }
+.website-root .comparison-card > p:not(.plan-price):not(.plan-period) { color: var(--muted); font-size: 13px; }
+.website-root .comparison-card ul { list-style: none; padding: 20px 0; margin: 20px 0; border-top: 1px solid var(--line); flex: 1; }
+.website-root .comparison-card li { font-size: 13px; margin-top: 9px; }
+.website-root .menu-list { display: grid; gap: 0; }
+.website-root .menu-item { display: flex; justify-content: space-between; gap: 24px; padding: 22px 0; border-top: 1px solid var(--line); }
+.website-root .menu-item small, .website-root .menu-item span { color: var(--muted); font-size: 11px; }
+.website-root .menu-item h3 { margin-top: 7px; font-size: 21px; }
+.website-root .menu-item p { color: var(--muted); max-width: 600px; font-size: 13px; margin-top: 5px; }
+.website-root .menu-item strong { white-space: nowrap; }
+.website-root .hours-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+.website-root .hours-layout address { font-style: normal; font-size: 22px; max-width: 320px; }
+.website-root .hours-layout > div > a { display: block; margin-top: 14px; }
+.website-root .hours-layout .button { display: inline-block; margin-top: 26px; }
+.website-root .hours-layout dl { margin: 0; }
+.website-root .hours-layout dl > div { display: flex; justify-content: space-between; gap: 20px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.website-root .hours-layout dd { color: var(--muted); }
+.website-root .lead-form, .website-root .newsletter-block form { display: grid; gap: 14px; max-width: 620px; }
+.website-root .lead-form { margin-top: 30px; }
+.website-root .lead-form label, .website-root .newsletter-block label { display: grid; gap: 7px; font-size: 12px; }
+.website-root .lead-form input, .website-root .lead-form textarea, .website-root .newsletter-block input { width: 100%; border: 1px solid var(--line); background: var(--paper); color: var(--site-text); border-radius: 6px; padding: 12px; font: inherit; }
+.website-root .lead-form textarea { resize: vertical; }
+.website-root .lead-form button, .website-root .newsletter-block button { justify-self: start; cursor: pointer; }
+.website-root .lead-form [role='status'], .website-root .newsletter-block [role='status'] { color: var(--accent); font-size: 13px; }
+.website-root .lead-form [role='alert'], .website-root .newsletter-block [role='alert'] { color: #b42318; font-size: 13px; }
+.website-root .consent { grid-template-columns: auto 1fr !important; align-items: start; }
+.website-root .consent input { width: auto; margin-top: 3px; }
+.website-root .honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 760px) {
+  .website-root .gallery-grid { grid-template-columns: 1fr; gap: 30px; }
+  .website-root .gallery-item > img, .website-root .gallery-placeholder { height: 320px; }
+  .website-root .testimonial-card, .website-root .pricing-card { padding: 26px; }
+  .website-root .utility-cta, .website-root .newsletter-block { display: block; padding: 30px; }
+  .website-root .utility-actions { margin-top: 24px; }
+  .website-root .text-image, .website-root .hours-layout { grid-template-columns: 1fr; gap: 26px; }
+  .website-root .text-image-image-left .text-image-copy, .website-root .text-image-image-left .text-image-media { order: initial; }
+  .website-root .text-image-media img, .website-root .utility-image-placeholder { min-height: 280px; }
+  .website-root .logos-grid, .website-root .stats-grid, .website-root .process-grid { grid-template-columns: 1fr; }
+  .website-root .stat { padding: 24px; }
+  .website-root .process-grid h3 { margin-top: 20px; }
+  .website-root .newsletter-block form { margin-top: 24px; }
+}

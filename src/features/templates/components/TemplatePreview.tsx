@@ -10,7 +10,7 @@ export function TemplatePreview({ template }: { template: TemplateDefinition }) 
         <span><strong>{template.name}</strong><small>VISTA PREVIA · CONTENIDO DE EJEMPLO</small></span>
         <Link className="p-button primary" href={`/register?template=${template.id}`}>Usar plantilla ↗</Link>
       </div>
-      <SiteView settings={template.settings} sections={template.sections} demo />
+      <SiteView settings={template.settings} sections={template.sections} familyId={template.familyId} demo />
     </>
   )
 }

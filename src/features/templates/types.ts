@@ -1,8 +1,9 @@
-import type { Section, Settings } from '@/features/website/types'
+import type { FamilyId, Section, Settings } from '@/features/website/types'
 
 export type TemplateId = NonNullable<Settings['template']>
 export type TemplateDefinition = {
   id: TemplateId
+  familyId: FamilyId
   name: string
   category: string
   description: string

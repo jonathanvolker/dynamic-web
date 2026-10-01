@@ -18,6 +18,7 @@ src/
 │   │   ├── server/repository.ts # Consultas y persistencia de sitios
 │   │   ├── actions.ts           # Crear, guardar, publicar y despublicar
 │   │   ├── validation.ts        # Validación del documento recibido
+│   │   ├── document.ts          # Versión y migración de documentos antiguos
 │   │   └── types.ts
 │   ├── editor/
 │   │   ├── components/
@@ -59,7 +60,33 @@ src/
 
 `Editor → acción saveSite → validación → repositorio → borrador/publicación`
 
-Guardar modifica solo `draft`. Publicar copia el documento a `published`. La ruta `/s/[slug]` lee exclusivamente `published`.
+Guardar modifica solo `draft`. Publicar copia el documento a `published`. La ruta `/s/[slug]` renderiza exclusivamente `published`.
+
+Los documentos nuevos incluyen `schemaVersion: 1`, `familyId` y `templateId`. `migrateDocument` normaliza documentos anteriores al leerlos, asignando IDs y anclas estables, sin escribir en la base. Cada snapshot se migra de forma independiente: abrir un editor no publica el borrador. La versión normalizada se persiste al guardar; la publicación anterior se conserva hasta publicar explícitamente. Versiones futuras desconocidas se rechazan.
+
+`settings.template` permanece como compatibilidad para los componentes de la demo; la validación exige que coincida con `templateId`. Las familias implementadas son `editorial`, `immersive` y `modular`. El modelo aún es de una página; páginas y elementos anidados son etapas pendientes.
+
+## Medios
+
+`POST /api/platform/media` verifica origen y sesión, recibe JPG/PNG/WebP de hasta 8 MB y normaliza la imagen con Sharp, conservando transparencia. `features/sites/server/media.ts` almacena el WebP en `PLATFORM_DATA_DIR/media/` y registra su propietario en SQLite. `GET /api/platform/media/[id]` sirve el recurso público por un ID opaco.
+
+`saveSite` valida el documento y la pertenencia de todas las referencias de imágenes nuevas antes de persistir. El frontend guarda URLs, no base64. Las imágenes embebidas de sitios anteriores se siguen aceptando. Los recursos son inmutables; reemplazar genera otro ID. La eliminación y recolección de archivos sin referencias todavía no están implementadas para evitar borrar recursos usados por un snapshot publicado.
+
+## Personalización compartida
+
+`settings.design` contiene selecciones tipográficas, ancho y espaciado. `customization.css` aplica overrides bajo `.website-root`, después de los estilos de las plantillas. Los campos no configurados mantienen el aspecto original. El resto del CSS histórico global se aislará en una etapa posterior.
+
+Portada admite `split`, `centered` y `cover`, imagen propia y encuadre. `buttonHref` y el botón de cabecera son configurables. `website/links.ts` comparte validación de protocolos y resolución de anclas; no se muestran enlaces internos a secciones eliminadas. Editor y publicación utilizan el mismo renderizador.
+
+## Catálogo de bloques
+
+`features/website/blocks.ts` es el registro compartido de los 21 bloques actuales. Cada definición aporta etiqueta, símbolo, defaults y, si corresponde, la clave de su lista editable. La biblioteca del editor, los inspectores y la validación consumen ese registro; no hay una lista separada por template. La primera ola agrega CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación.
+
+Los renderizadores de `GallerySection`, `TestimonialsSection`, `PricingSection`, `UtilitySections` y `LeadSections` consumen esos contratos. Las familias pueden darles composiciones propias mediante CSS sin duplicar el modelo. Los planes, CTAs, logos, perfiles y comparativas validan sus destinos; los bloques con imágenes validan sus referencias de medios. Formularios y newsletter envían datos al endpoint público y los persisten por sitio en SQLite. Las listas usan campos por fila; la composición libre con elementos anidados queda pendiente.
+
+## Recuperación del editor
+
+Cada sitio mantiene un snapshot local opcional bajo `localStorage` (`forma:draft:<siteId>`). Al modificar el documento, el editor guarda una copia local y programa un autoguardado del borrador a los dos segundos de inactividad. Si encuentra una copia local válida al volver a abrir el editor, la recupera y muestra el estado para que el usuario la guarde explícitamente. Publicar o guardar manualmente elimina la copia local. El autoguardado nunca modifica `published`; si falla, el documento sigue disponible en memoria y el usuario puede guardar manualmente.
 
 ## Agregar un bloque
 
@@ -77,6 +104,6 @@ Los dominios reales, DNS y HTTPS de cada sitio todavía no están implementados.
 
 ## Plantillas
 
-`features/templates/registry.ts` es la fuente compartida del catálogo público y del formulario de creación. Cada plantilla define sus ajustes, colores, variante visual y contenido en archivos independientes. El repositorio clona esa definición al crear el sitio; el editor y la publicación conservan la variante en `settings.template`.
+`features/templates/registry.ts` es la fuente compartida de familias y plantillas para el catálogo público y el formulario de creación. Forma, Brasa y Nexo pertenecen a la familia Editorial creativo; Alba, Marea y Línea a Inmersivo fotográfico; Vector, Nimbus y Escala a Modular producto. El catálogo mantiene tres familias con tres plantillas cada una. Cada plantilla define sus ajustes, colores, variante visual y contenido en archivos independientes. El repositorio clona esa definición al crear el sitio y genera el documento versionado.
 
 Las rutas `/templates` y `/templates/[template]` no requieren autenticación. `/template` conserva el acceso a la primera demo. Las variantes visuales están en `features/website/styles/variants.css`, y las ilustraciones de portada en `features/website/components/artwork`.

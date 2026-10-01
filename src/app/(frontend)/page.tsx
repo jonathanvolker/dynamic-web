@@ -25,7 +25,7 @@ export default async function PlatformHome() {
         </div>
         <div className="landing-features"><span><b>01</b> Diseñá en vivo</span><span><b>02</b> Guardá tus cambios</span><span><b>03</b> Publicá tu sitio</span></div>
       </main>
-      <footer className="landing-footer">Forma · Tu lugar en internet.<Link href="/templates">Ver las tres plantillas ↗</Link></footer>
+      <footer className="landing-footer">Forma · Tu lugar en internet.<Link href="/templates">Explorar estilos y plantillas ↗</Link></footer>
     </div>
   )
 }

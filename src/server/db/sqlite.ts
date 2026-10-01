@@ -5,11 +5,15 @@ import path from 'node:path'
 
 let database: DatabaseSync | undefined
 
+export function dataDirectory() {
+  return process.env.PLATFORM_DATA_DIR || path.join(process.cwd(), 'data')
+}
+
 /** Shared local connection. Repositories own queries; routes never access SQL. */
 export function db() {
   if (database) return database
 
-  const directory = process.env.PLATFORM_DATA_DIR || path.join(process.cwd(), 'data')
+  const directory = dataDirectory()
   mkdirSync(directory, { recursive: true })
   database = new DatabaseSync(path.join(directory, 'platform.sqlite'))
   database.exec(`
@@ -27,6 +31,16 @@ export function db() {
       updated_at TEXT NOT NULL, published_at TEXT
     );
     CREATE INDEX IF NOT EXISTS sites_owner ON sites(owner_id);
+    CREATE TABLE IF NOT EXISTS media (
+      id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id), created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS media_owner ON media(owner_id);
+    CREATE TABLE IF NOT EXISTS leads (
+      id TEXT PRIMARY KEY, site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL, form_id TEXT NOT NULL, values_json TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS leads_site ON leads(site_id, created_at);
   `)
   return database
 }

@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 type Props = {
   label: string
   value: string
@@ -6,14 +8,15 @@ type Props = {
 }
 
 export function Field({ label, value, onChange, multiline = false }: Props) {
+  const id = useId()
   return (
-    <label className="editor-field">
-      {label}
+    <div className="editor-field">
+      <label htmlFor={id}>{label}</label>
       {multiline ? (
-        <textarea value={value} onChange={event => onChange(event.target.value)} rows={3} />
+        <textarea id={id} value={value} onChange={event => onChange(event.target.value)} rows={3} />
       ) : (
-        <input value={value} onChange={event => onChange(event.target.value)} />
+        <input id={id} value={value} onChange={event => onChange(event.target.value)} />
       )}
-    </label>
+    </div>
   )
 }

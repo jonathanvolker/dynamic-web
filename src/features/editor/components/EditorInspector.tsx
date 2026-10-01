@@ -12,7 +12,7 @@ export function EditorInspector({ editor }: { editor: EditorController }) {
       <div className="inspector-title"><span className="p-kicker">PERSONALIZAR</span><h2>{title}</h2></div>
       {editor.active === 'settings'
         ? <SettingsInspector editor={editor} />
-        : <SectionInspector editor={editor} />}
+        : <SectionInspector key={editor.section?.id} editor={editor} />}
     </aside>
   )
 }

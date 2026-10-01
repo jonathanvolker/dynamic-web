@@ -1,11 +1,12 @@
 import type { TemplateDefinition } from '../types'
 
 export const restaurantTemplate: TemplateDefinition = {
-  id: 'restaurant', name: 'Brasa', category: 'Restaurante & gastronomía', icon: '◒',
+  id: 'restaurant', familyId: 'editorial', name: 'Brasa', category: 'Restaurante & gastronomía', icon: '◒',
   description: 'Sabores de estación, tonos tierra y una composición editorial para invitar a sentarse a la mesa.',
   settings: {
     template: 'restaurant', brand: 'brasa', tagline: 'Cocina de estación. Encuentros que se quedan.',
     email: 'reservas@brasa.example', accent: '#ad462e',
+    design: { headingFont: 'serif', bodyFont: 'dm-sans', width: 'standard', spacing: 'airy' },
     colors: {
       background: '#faf3e9', text: '#3e3025', muted: '#806957', surface: '#eee2d1', border: '#dccbb7',
       projectPeach: '#d5a171', projectPurple: '#a9b18b', projectLime: '#e6c890',

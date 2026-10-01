@@ -4,11 +4,11 @@ export function AboutSection({ section, settings, anchor }: SectionProps) {
   return (
     <section id={anchor} className="about">
       <div className="wrap about-grid">
-        <div className="about-art" aria-hidden="true">
+        {section.image?.url ? <div className="about-media"><img src={section.image.url} alt={section.image.alt || ''} style={{ objectPosition: section.imagePosition || 'center' }} loading="lazy" /></div> : <div className="about-art" aria-hidden="true">
           <span className="about-star">{settings.template === 'restaurant' ? '◒' : settings.template === 'consultant' ? '↗' : '✳'}</span>
           <span className="about-sticker">{settings.brand}<br /><b>{section.eyebrow}</b> ↗</span>
           <span className="about-coordinate">{settings.tagline}</span>
-        </div>
+        </div>}
         <div className="about-copy">
           <p className="eyebrow">{section.eyebrow}</p><h2>{section.title}</h2><p>{section.description}</p>
           <div className="stats">
