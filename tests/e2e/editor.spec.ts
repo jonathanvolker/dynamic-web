@@ -52,7 +52,7 @@ test('edit, upload, preview, save, publish, isolate accounts and unpublish', asy
   await page.getByLabel('Espaciado entre secciones').selectOption('compact')
   await expect(preview.locator('.website-root')).toHaveAttribute('data-heading-font', 'serif')
   await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByRole('status')).toContainText('Borrador guardado')
+  await expect(page.locator('.editor-status')).toContainText('Borrador guardado')
   await page.reload()
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Una portada propia')
   await expect(preview.locator('.hero-media img')).toHaveAttribute('src', imageUrl!)
@@ -122,7 +122,7 @@ test('legacy draft/publication remain distinct and reading never rewrites stored
   expect(stored?.draft).toBe(draft)
   expect(stored?.published).toBe(published)
   await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByRole('status')).toContainText('Borrador guardado')
+  await expect(page.locator('.editor-status')).toContainText('Borrador guardado')
   const saved = db.prepare('SELECT draft, published FROM sites WHERE id = ?').get(id)
   expect(JSON.parse(saved?.draft as string).schemaVersion).toBe(1)
   expect(saved?.published).toBe(published)
@@ -150,6 +150,27 @@ test('catalog groups templates and mobile editor saves a restaurant site', async
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
+test('all public templates expose their intended composition blocks', async ({ page }) => {
+  const compositions = {
+    studio: ['.text-image', '.team-block', '.process-block', '.lead-block', '.newsletter-block'],
+    restaurant: ['.menu-block', '.hours-block', '.lead-block', '.newsletter-block'],
+    consultant: ['.process-block', '.logos-block', '.comparison-block', '.utility-cta', '.lead-block'],
+    retreat: ['.text-image', '.process-block', '.hours-block', '.lead-block'],
+    coast: ['.text-image', '.hours-block', '.lead-block'],
+    atelier: ['.text-image', '.process-block', '.lead-block'],
+    product: ['.video-block', '.stats-block', '.logos-block', '.comparison-block', '.newsletter-block', '.lead-block'],
+    launch: ['.video-block', '.stats-block', '.logos-block', '.comparison-block', '.newsletter-block'],
+    scale: ['.text-image', '.process-block', '.stats-block', '.comparison-block', '.lead-block'],
+  } as const
+
+  for (const [template, blocks] of Object.entries(compositions)) {
+    await page.goto(`/templates/${template}`)
+    for (const block of blocks) await expect(page.locator(block), `${template} should render ${block}`).toHaveCount(1)
+    await page.setViewportSize({ width: 390, height: 844 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), template).toBe(true)
+  }
+})
+
 test('draft autosaves after inactivity and can recover a local change', async ({ page }) => {
   await register(page)
   await createSite(page)
@@ -165,6 +186,54 @@ test('draft autosaves after inactivity and can recover a local change', async ({
   await page.reload()
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Cambio local recuperable')
   await expect(page.getByRole('status')).toContainText('Recuperamos cambios locales')
+})
+
+test('published contact form and newsletter persist leads', async ({ page }) => {
+  await register(page)
+  await createSite(page)
+
+  await page.getByRole('button', { name: 'Publicar' }).click()
+  await expect(page.getByRole('status')).toContainText('Tu web está publicada')
+  const publicUrl = await page.getByRole('link', { name: 'Ver sitio' }).getAttribute('href')
+  expect(publicUrl).toBeTruthy()
+
+  const publicPage = await page.context().newPage()
+  await publicPage.goto(publicUrl!)
+  const contactForm = publicPage.locator('.lead-form')
+  await contactForm.getByLabel('Nombre').fill('Ana Prueba')
+  await contactForm.getByLabel('Email').fill('ana@example.com')
+  await contactForm.getByLabel('Proyecto').fill('Quiero conocer la propuesta.')
+  await contactForm.getByRole('button', { name: 'Enviar proyecto' }).click()
+  await expect(contactForm.getByRole('status')).toHaveText('Gracias. Te escribimos para seguir la conversación.')
+
+  const newsletter = publicPage.locator('.newsletter-block form')
+  await newsletter.getByLabel('Tu email').fill('suscripta@example.com')
+  await newsletter.getByLabel(/Acepto recibir notas/).check()
+  await newsletter.getByRole('button', { name: 'Recibir notas' }).click()
+  await expect(newsletter.getByRole('status')).toHaveText('Listo. La próxima nota llega pronto.')
+
+  const siteId = page.url().match(/\/editor\/([^/?]+)/)?.[1]
+  expect(siteId).toBeTruthy()
+  const db = new DatabaseSync(path.join(process.env.PLATFORM_DATA_DIR!, 'platform.sqlite'))
+  const leads = db.prepare('SELECT kind, values_json FROM leads WHERE site_id = ? ORDER BY created_at').all(siteId!) as { kind: string; values_json: string }[]
+  expect(leads).toHaveLength(2)
+  expect(leads.map(lead => lead.kind)).toEqual(['contact', 'newsletter'])
+  expect(JSON.parse(leads[0].values_json)).toMatchObject({ name: 'Ana Prueba', email: 'ana@example.com', message: 'Quiero conocer la propuesta.' })
+  expect(JSON.parse(leads[1].values_json)).toMatchObject({ email: 'suscripta@example.com', consent: 'on' })
+
+  const invalidNewsletter = await publicPage.request.post('/api/public/leads', {
+    data: { siteSlug: new URL(publicUrl!, publicPage.url()).pathname.split('/').pop(), kind: 'newsletter', formId: 'newsletter', values: { email: 'invalido' } },
+  })
+  expect(invalidNewsletter.status()).toBe(400)
+
+  const honeypot = await publicPage.request.post('/api/public/leads', {
+    data: { siteSlug: new URL(publicUrl!, publicPage.url()).pathname.split('/').pop(), kind: 'contact', formId: 'form', values: { website: 'bot', email: 'bot@example.com', message: 'spam' } },
+  })
+  expect(honeypot.status()).toBe(200)
+  expect((await honeypot.json()).success).toBe(true)
+  expect((db.prepare('SELECT COUNT(*) AS count FROM leads WHERE site_id = ?').get(siteId!) as { count: number }).count).toBe(2)
+  db.close()
+  await publicPage.close()
 })
 
 for (const variant of [

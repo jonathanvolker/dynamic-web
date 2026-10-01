@@ -79,7 +79,7 @@ Objetivo de catálogo alcanzado: **tres familias y nueve plantillas**, conservan
 
 La comparación con Wix Studio, Webflow, Framer, Squarespace y Shopify confirmó que nueve secciones cerradas no alcanzan para competir en variedad. La primera ola ya amplió el lenguaje de composición a 21 bloques; el siguiente objetivo es usarlos en combinaciones reales y completar sus flujos operativos.
 
-La propuesta concreta, las referencias y la separación entre secciones listas y elementos combinables están consolidadas en el handoff de `PLAN.md`. Las nueve plantillas deben rehacerse usando combinaciones y variantes diferentes; no se debe seguir maquillando el catálogo actual.
+La propuesta concreta, las referencias y la separación entre secciones listas y elementos combinables están consolidadas en el handoff de `PLAN.md`. Las nueve plantillas ya fueron rehechas usando combinaciones diferentes; no se debe volver a resolver variedad maquillando el catálogo.
 
 ## 4. Límites concretos del editor actual
 
@@ -156,7 +156,7 @@ Cada bloque debe incluir esquema, defaults, validación, inspector, renderizado,
 
 ### Fase 4 — Dos familias nuevas y catálogo agrupado
 
-Estado: implementada en catálogo y renderizado; quedan pendientes la revisión visual completa y rehacer las plantillas con combinaciones de los 21 bloques.
+Estado: implementada en catálogo y renderizado; las nueve plantillas ya usan combinaciones diferenciadas de los 21 bloques. Queda pendiente la revisión visual manual completa.
 
 1. Diseñar y revisar comparativas de las tres familias en escritorio y móvil.
 2. Implementar layouts específicos usando las capacidades de las fases anteriores.

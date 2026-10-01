@@ -47,7 +47,7 @@ export const coastTemplate = variant(retreatTemplate, {
   tagline: 'El horizonte también puede ser una forma de volver.', seoTitle: 'Marea — Días que empiezan frente al mar', seoDescription: 'Plantilla inmersiva para hoteles, posadas y experiencias junto al mar.',
   hero: 'El mar enfrente.\nEl tiempo a favor.', heroDescription: 'Una casa abierta al horizonte para descansar, descubrir y dejar que cada día encuentre su propio ritmo.', contact: 'Nos vemos\ndel otro lado.', about: 'Todo lo que necesitás\nestá cerca.', galleryTitle: 'El paisaje\ncomo anfitrión.', servicesTitle: 'Elegí cómo\nvivir el día.',
   design: { headingFont: 'serif', bodyFont: 'dm-sans', width: 'wide', spacing: 'airy' },
-  heroLayout: 'split', order: ['hero', 'gallery', 'services', 'about', 'testimonials', 'contact'],
+  heroLayout: 'split', order: ['hero', 'gallery', 'textImage', 'services', 'hours', 'about', 'testimonials', 'form', 'contact'],
   navigation: [{ label: 'La casa', href: '#about' }, { label: 'El paisaje', href: '#gallery' }, { label: 'Experiencias', href: '#services' }],
 })
 coastTemplate.settings.colors = { ...retreatTemplate.settings.colors, background: '#f1f5f1', text: '#183c40', muted: '#638083', surface: '#e1ece8', border: '#c9ddda', projectPeach: '#d1e1d8', projectPurple: '#a9c9c6', projectLime: '#e2d8bd' }
@@ -58,7 +58,7 @@ export const atelierTemplate = variant(retreatTemplate, {
   tagline: 'Espacios pensados para vivir mejor.', seoTitle: 'Línea — Arquitectura que encuentra su lugar', seoDescription: 'Plantilla inmersiva para estudios de arquitectura, interiorismo y espacios con identidad.',
   hero: 'La forma de\nhabitar el mundo.', heroDescription: 'Proyectos serenos, materiales honestos y una mirada atenta a cómo cada espacio puede acompañar tu vida.', contact: 'Hablemos del\npróximo espacio.', about: 'Diseñar también es\nescuchar.', galleryTitle: 'Materia, luz\ny proporción.', servicesTitle: 'Cada proyecto\nempieza distinto.',
   design: { headingFont: 'serif', bodyFont: 'system', width: 'standard', spacing: 'standard' },
-  heroLayout: 'centered', order: ['hero', 'services', 'about', 'gallery', 'testimonials', 'contact'],
+  heroLayout: 'centered', order: ['hero', 'textImage', 'services', 'process', 'about', 'gallery', 'testimonials', 'form', 'contact'],
   navigation: [{ label: 'El estudio', href: '#about' }, { label: 'Obras', href: '#gallery' }, { label: 'Proceso', href: '#services' }],
 })
 atelierTemplate.settings.colors = { ...retreatTemplate.settings.colors, background: '#f3f0ea', text: '#302b27', muted: '#7e736a', surface: '#e6e0d5', border: '#d6cfc2', projectPeach: '#d9bda7', projectPurple: '#bfc8bd', projectLime: '#ded4be' }
@@ -69,7 +69,7 @@ export const launchTemplate = variant(productTemplate, {
   tagline: 'La señal que ordena lo que viene.', seoTitle: 'Nimbus — Lanzá mejor, juntos', seoDescription: 'Plantilla modular para productos SaaS, lanzamientos y herramientas digitales.',
   hero: 'Convertí la idea\nen movimiento.', heroDescription: 'Una plataforma de ejemplo para ordenar el lanzamiento, alinear equipos y llegar más lejos con menos ruido.', contact: 'Hagamos que\npase.', about: undefined, galleryTitle: undefined, servicesTitle: 'Todo lo que necesitás\npara despegar.',
   design: { headingFont: 'dm-sans', bodyFont: 'dm-sans', width: 'wide', spacing: 'compact' },
-  heroLayout: 'split', order: ['hero', 'testimonials', 'services', 'pricing', 'faq', 'contact'],
+  heroLayout: 'split', order: ['hero', 'video', 'stats', 'services', 'logos', 'testimonials', 'comparison', 'pricing', 'newsletter', 'contact'],
   navigation: [{ label: 'Cómo funciona', href: '#services' }, { label: 'Historias', href: '#testimonials' }, { label: 'Planes', href: '#pricing' }],
 })
 launchTemplate.settings.colors = { ...productTemplate.settings.colors, background: '#fffaf7', text: '#2e2027', muted: '#806f78', surface: '#ffffff', border: '#eadedb', projectPeach: '#f8c7b9', projectPurple: '#d9c8f0', projectLime: '#d4eadb' }
@@ -79,7 +79,7 @@ export const scaleTemplate = variant(productTemplate, {
   tagline: 'Decisiones claras para crecer con intención.', seoTitle: 'Escala — Crecer también se diseña', seoDescription: 'Plantilla modular para consultoría, crecimiento y servicios profesionales.',
   hero: 'Más claridad.\nMejores decisiones.', heroDescription: 'Un sistema de acompañamiento para convertir objetivos ambiciosos en un camino concreto y compartido.', contact: 'El siguiente paso\nempieza hoy.', about: undefined, galleryTitle: undefined, servicesTitle: 'Ordená el presente.\nPrepará lo que sigue.',
   design: { headingFont: 'system', bodyFont: 'system', width: 'narrow', spacing: 'standard' },
-  heroLayout: 'centered', order: ['hero', 'services', 'testimonials', 'faq', 'pricing', 'contact'],
+  heroLayout: 'centered', order: ['hero', 'textImage', 'services', 'process', 'stats', 'testimonials', 'comparison', 'faq', 'form', 'contact'],
   navigation: [{ label: 'Método', href: '#services' }, { label: 'Resultados', href: '#testimonials' }, { label: 'Propuestas', href: '#pricing' }],
 })
 scaleTemplate.settings.colors = { ...productTemplate.settings.colors, background: '#f3faf8', text: '#153534', muted: '#5b7774', surface: '#ffffff', border: '#d2e5e0', projectPeach: '#cbe4de', projectPurple: '#d7d9f1', projectLime: '#e1ecc8' }

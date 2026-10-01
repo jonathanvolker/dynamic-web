@@ -66,12 +66,14 @@ Para usar WSL, ubicá el proyecto dentro del filesystem Linux y ejecutá allí t
 
 ```bash
 mkdir -p ~/proyectos
-cp -R /mnt/c/Users/Joni/Desktop/web-dinamica ~/proyectos/web-dinamica
+rsync -a --exclude=node_modules --exclude=.next --exclude=.next-dev /mnt/c/Users/Joni/Desktop/web-dinamica/ ~/proyectos/web-dinamica/
 cd ~/proyectos/web-dinamica
 npm ci
 cp .env.example .env.local
 npm run dev
 ```
+
+Si WSL no tiene `rsync`, instalalo una vez con `sudo apt update && sudo apt install -y rsync`.
 
 En ese caso abrí **http://localhost:3000** desde el navegador de Windows.
 
