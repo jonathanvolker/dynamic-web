@@ -102,6 +102,8 @@ SQLite es la implementación local actual. El archivo se guarda en `data/platfor
 
 Los dominios reales, DNS y HTTPS de cada sitio todavía no están implementados. `/s/[slug]` permite probar la publicación local sin depender del despliegue.
 
+La primera capa de suscripciones usa planes manuales (`free`, `starter`, `pro`) y suscripciones persistidas en SQLite. El panel interno está en `/admin/platform` y se habilita para emails definidos en `PLATFORM_ADMIN_EMAILS` o usuarios con `role = admin`. Todavía no procesa pagos: el proveedor y sus webhooks serán la siguiente integración.
+
 ## Plantillas
 
 `features/templates/registry.ts` es la fuente compartida de familias y plantillas para el catálogo público y el formulario de creación. Forma, Brasa y Nexo pertenecen a la familia Editorial creativo; Alba, Marea y Línea a Inmersivo fotográfico; Vector, Nimbus y Escala a Modular producto. El catálogo mantiene tres familias con tres plantillas cada una. Cada plantilla define sus ajustes, colores, variante visual y contenido en archivos independientes. El repositorio clona esa definición al crear el sitio y genera el documento versionado.

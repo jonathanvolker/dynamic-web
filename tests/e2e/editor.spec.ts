@@ -171,6 +171,29 @@ test('all public templates expose their intended composition blocks', async ({ p
   }
 })
 
+test('all public template actions have a valid destination or documented interaction', async ({ page }) => {
+  for (const template of ['studio', 'restaurant', 'consultant', 'retreat', 'coast', 'atelier', 'product', 'launch', 'scale']) {
+    await page.goto(`/templates/${template}`)
+    const links = await page.locator('a[href]').evaluateAll(elements => elements.map(element => ({ href: (element as HTMLAnchorElement).getAttribute('href'), text: element.textContent?.trim() })))
+    expect(links.length, `${template} should expose actions`).toBeGreaterThan(3)
+    for (const link of links) {
+      expect(link.href, `${template} has an empty action: ${link.text}`).toBeTruthy()
+      if (link.href?.startsWith('#')) {
+        await expect(page.locator(link.href)).toHaveCount(1)
+      } else {
+        expect(link.href).toMatch(/^(https:\/\/|mailto:|tel:|\/) */)
+      }
+    }
+    const project = page.locator('.project-card').first()
+    if (await project.count()) {
+      await project.click()
+      await expect(page.locator('.project-dialog[open]')).toBeVisible()
+      await page.getByRole('button', { name: 'Cerrar proyecto' }).click()
+      await expect(page.locator('.project-dialog[open]')).toHaveCount(0)
+    }
+  }
+})
+
 test('draft autosaves after inactivity and can recover a local change', async ({ page }) => {
   await register(page)
   await createSite(page)

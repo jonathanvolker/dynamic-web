@@ -1,5 +1,9 @@
 # Plan de acción — plataforma multisitio
 
+## Handoff actual — 1 de octubre de 2026
+
+El estado completo para continuar en otro chat está documentado en [`docs/next-chat.md`](docs/next-chat.md). Incluye el estado del producto, el despliegue en el VPS, el CI/CD de GitHub y la auditoría pendiente de botones, destinos y navegación.
+
 ## Objetivo
 
 El usuario crea y personaliza una web desde la plataforma, la guarda, la publica y finalmente la conecta a su dominio. La plataforma aloja los sitios; no se trata de entregar una web estática al cliente.

@@ -3,8 +3,12 @@ import type { User } from '@/features/auth/types'
 import { logout } from '@/features/auth/actions'
 import type { Site } from '../types'
 import { SiteCard } from './SiteCard'
+import { unreadLeadCount } from '../server/leads'
 
 export function DashboardView({ user, sites }: { user: User; sites: Site[] }) {
+  const unread = unreadLeadCount(user.id)
+  const admins = (process.env.PLATFORM_ADMIN_EMAILS || '').split(',').map(email => email.trim().toLowerCase()).filter(Boolean)
+  const isAdmin = user.role === 'admin' || admins.includes(user.email.toLowerCase())
   return (
     <div className="platform dashboard">
       <header className="p-header">
@@ -18,7 +22,7 @@ export function DashboardView({ user, sites }: { user: User; sites: Site[] }) {
             <h1>Mis sitios<span className="site-count">{sites.length}</span></h1>
             <p>Ideas que ya tienen un lugar. Y las que están por venir.</p>
           </div>
-          <Link className="p-button primary" href="/dashboard/new">+ Crear un sitio</Link>
+          <div className="dashboard-actions"><Link className="p-button secondary" href="/dashboard/leads">Leads{unread ? ` · ${unread}` : ''}</Link>{isAdmin && <Link className="p-button secondary" href="/admin/platform">Administración</Link>}<Link className="p-button primary" href="/dashboard/new">+ Crear un sitio</Link></div>
         </div>
         {sites.length ? (
           <div className="site-grid">{sites.map(site => <SiteCard key={site.id} site={site} />)}</div>

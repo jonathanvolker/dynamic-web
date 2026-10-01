@@ -73,6 +73,15 @@ test('link protocols are restricted, including malformed protocol-relative desti
   for (const href of ['javascript:alert(1)', '//evil.example', '/\\evil.example', 'data:text/html,evil', 'https://', 'https://user:password@example.com', ' https://example.com']) assert.equal(isSafeHref(href), false, href)
 })
 
+test('internal and supported action destinations resolve only to existing sections', () => {
+  assert.equal(resolveHref('#contact', ['hero', 'contact']), '#contact')
+  assert.equal(resolveHref('#removed', ['hero', 'contact']), undefined)
+  assert.equal(resolveHref('https://example.com', []), 'https://example.com')
+  assert.equal(resolveHref('mailto:hola@example.com', []), 'mailto:hola@example.com')
+  assert.equal(resolveHref('tel:+5491112345678', []), 'tel:+5491112345678')
+  assert.equal(resolveHref('https://wa.me/5491112345678', []), 'https://wa.me/5491112345678')
+})
+
 test('every registered block can be added to every template and saved', () => {
   for (const template of templates) {
     const document = migrateDocument({ settings: template.settings, sections: blockTypes.map(type => blockDefinitions[type].defaults) })
