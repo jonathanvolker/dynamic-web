@@ -15,9 +15,9 @@ export default function Editor({ site }: { site: Site }) {
     <div className="platform editor-shell">
       <EditorToolbar editor={editor} />
       <div className="editor-mobile-tabs">
-        <button onClick={() => editor.setPanel('sections')}>Secciones</button>
-        <button onClick={() => editor.setPanel('preview')}>Vista previa</button>
-        <button onClick={() => editor.setPanel('properties')}>Propiedades</button>
+        <button type="button" onClick={() => editor.setPanel('sections')}>Secciones</button>
+        <button type="button" onClick={() => editor.setPanel('preview')}>Vista previa</button>
+        <button type="button" onClick={() => editor.setPanel('properties')}>Propiedades</button>
       </div>
       <div className="editor-body">
         <EditorSidebar editor={editor} />
