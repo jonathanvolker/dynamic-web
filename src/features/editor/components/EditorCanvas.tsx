@@ -12,7 +12,7 @@ export function EditorCanvas({ editor }: { editor: EditorController }) {
       <div className={`preview-frame ${editor.device}`}>
         <iframe ref={iframe} src="/preview" title="Vista previa de tu web" onLoad={sendPreview} />
       </div>
-      <div className={`editor-status ${editor.error ? 'error' : ''}`} role={editor.error ? 'alert' : 'status'}>
+       <div className={`editor-status ${editor.error ? 'error' : ''}`} role={editor.error ? 'alert' : 'status'} aria-live="polite">
         {editor.error || editor.message}
       </div>
     </section>

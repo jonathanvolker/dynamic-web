@@ -1,4 +1,5 @@
 /* Editor layout */
+.publish-pill { color: #5a762e; background: #edf6dc; border-radius: 15px; padding: 5px 8px; font-size: 10px; white-space: nowrap; }
 .editor-shell { height: 100dvh; background: #f3f5ef; display: flex; flex-direction: column; overflow: hidden; }
 .editor-toolbar { height: 78px; flex-shrink: 0; background: #fff; border-bottom: 1px solid #e5e9de; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 12px 24px; }
 .editor-identity { display: flex; align-items: center; gap: 22px; }

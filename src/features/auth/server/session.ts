@@ -25,7 +25,7 @@ export async function currentUser(): Promise<User | null> {
   const token = (await cookies()).get('forma_session')?.value
   if (!token) return null
   const user = db().prepare(`
-    SELECT users.id, users.name, users.email FROM users
+    SELECT users.id, users.name, users.email, users.role FROM users
     JOIN sessions ON sessions.user_id = users.id
     WHERE sessions.token = ? AND sessions.expires > ?
   `).get(digest(token), Date.now())
@@ -34,6 +34,13 @@ export async function currentUser(): Promise<User | null> {
 export async function requireUser() {
   const user = await currentUser()
   if (!user) redirect('/login')
+  return user
+}
+
+export async function requireAdmin() {
+  const user = await requireUser()
+  const configured = (process.env.PLATFORM_ADMIN_EMAILS || '').split(',').map(email => email.trim().toLowerCase()).filter(Boolean)
+  if (user.role !== 'admin' && !configured.includes(user.email.toLowerCase())) redirect('/dashboard')
   return user
 }
 

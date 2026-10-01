@@ -157,6 +157,10 @@ npm run test:e2e
 
 Desarrollo usa `.next-dev` y producción usa `.next`, para que una compilación no sobrescriba los archivos del servidor local. Si quedan archivos generados inconsistentes, detené el servidor, eliminá `.next-dev` y volvé a ejecutar `npm run dev`.
 
+## Despliegue
+
+El flujo de VPS y GitHub Actions está documentado en [`docs/next-chat.md`](docs/next-chat.md) y [`deploy/README.md`](deploy/README.md). El Pull Request ejecuta verificaciones; el merge a `main` construye la imagen Docker, la publica en GHCR y actualiza el VPS mediante SSH.
+
 Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.next`. Las pruebas de navegador requieren el build previo y levantan producción en el puerto 3100. Usan una base independiente en el directorio temporal del sistema (`/tmp/opencode/forma-e2e-<id>` en Linux), incluso si tenés `PLATFORM_DATA_DIR` configurado; el servidor de desarrollo puede seguir en el puerto 3000. Los tests cubren edición/publicación, compatibilidad de documentos anteriores, aislamiento entre cuentas y uso del editor a 390 px.
 
 ## Estado del proyecto

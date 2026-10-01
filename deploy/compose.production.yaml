@@ -10,6 +10,7 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Definí PAYLOAD_SECRET en el .env}
       NEXT_PUBLIC_SERVER_URL: ${PUBLIC_URL:?Definí PUBLIC_URL en el .env}
+      PLATFORM_ADMIN_EMAILS: ${PLATFORM_ADMIN_EMAILS:-}
     volumes:
       - forma_data:/app/data
     healthcheck:

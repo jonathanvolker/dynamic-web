@@ -26,9 +26,12 @@ DOMAIN=:80
 PUBLIC_URL=http://201.32.129.6
 PAYLOAD_SECRET=una-cadena-aleatoria-de-al-menos-32-caracteres
 COOKIE_SECURE=false
+PLATFORM_ADMIN_EMAILS=tu-email@dominio.com
 ```
 
 Mientras el dominio está en validación, `DOMAIN=:80` permite probar por HTTP usando la IP. Cuando el dominio esté activo, cambiar ambos valores a `DOMAIN=tu-dominio.com` y `PUBLIC_URL=https://tu-dominio.com`, y cambiar `COOKIE_SECURE=true`.
+
+`PLATFORM_ADMIN_EMAILS` contiene los emails de los dueños de la plataforma, separados por coma. Esos usuarios pueden acceder a `/admin/platform` para ver cuentas y administrar manualmente suscripciones.
 
 El workflow autentica el VPS contra GHCR, por lo que el paquete puede permanecer privado. El token solo necesita permiso de lectura de paquetes.
 

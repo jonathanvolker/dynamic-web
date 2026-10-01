@@ -139,3 +139,75 @@
   .template-art { padding: 15px; font-size: 25px; height: 120px; }
   .template-art b { font-size: 40px; }
 }
+.dashboard-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.subscription-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
+.subscription-plans article { display: grid; gap: 8px; padding: 20px; background: #fff; border: 1px solid #dde2d4; border-radius: 10px; }
+.subscription-plans b { font-size: 24px; }
+.subscription-plans small, .subscription-plans span { color: var(--p-muted); font-size: 11px; font-weight: 400; }
+.admin-table-wrap { overflow-x: auto; background: #fff; border: 1px solid #dde2d4; border-radius: 10px; }
+.admin-table { width: 100%; border-collapse: collapse; min-width: 780px; font-size: 12px; }
+.admin-table th, .admin-table td { padding: 16px; text-align: left; border-bottom: 1px solid #edf0e5; vertical-align: middle; }
+.admin-table th { color: var(--p-muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.admin-table td strong, .admin-table td small { display: block; }
+.admin-table td small { color: var(--p-muted); margin-top: 4px; }
+.admin-subscription-form { display: flex; align-items: center; gap: 8px; }
+.admin-subscription-form select { border: 1px solid #dce1d4; border-radius: 6px; padding: 8px; background: #fff; }
+.admin-subscription-form .p-button { padding: 8px 12px; font-size: 11px; }
+
+.lead-inbox {
+  display: grid;
+  gap: 16px;
+}
+
+.lead-card {
+  background: var(--platform-surface, #fff);
+  border: 1px solid var(--platform-line, #dedbd5);
+  padding: 24px;
+}
+
+.lead-card > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--platform-line, #dedbd5);
+  padding-bottom: 16px;
+}
+
+.lead-card > header div,
+.lead-card dl div {
+  display: grid;
+  gap: 4px;
+}
+
+.lead-card > header span,
+.lead-card time,
+.lead-card dt {
+  color: var(--platform-muted, #756f68);
+  font-size: 0.85rem;
+}
+
+.lead-card dl {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.lead-card dd {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.lead-card > a {
+  color: inherit;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .lead-card > header { display: grid; gap: 10px; }
+}
