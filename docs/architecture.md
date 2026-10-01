@@ -80,9 +80,9 @@ Portada admite `split`, `centered` y `cover`, imagen propia y encuadre. `buttonH
 
 ## Catálogo de bloques
 
-`features/website/blocks.ts` es el registro compartido de nueve bloques. Cada definición aporta etiqueta, símbolo, defaults y, si corresponde, la clave de su lista editable. La biblioteca del editor, los inspectores y la validación consumen ese registro; no hay una lista separada por template. Los bloques nuevos son `gallery`, `testimonials` y `pricing`.
+`features/website/blocks.ts` es el registro compartido de los 21 bloques actuales. Cada definición aporta etiqueta, símbolo, defaults y, si corresponde, la clave de su lista editable. La biblioteca del editor, los inspectores y la validación consumen ese registro; no hay una lista separada por template. La primera ola agrega CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación.
 
-`GallerySection`, `TestimonialsSection` y `PricingSection` renderizan esos contratos. Las familias pueden darles composiciones propias mediante CSS sin duplicar el modelo. Planes validan sus destinos y la galería valida sus referencias de medios. Las listas usan campos por fila; la composición libre con elementos anidados queda pendiente.
+Los renderizadores de `GallerySection`, `TestimonialsSection`, `PricingSection`, `UtilitySections` y `LeadSections` consumen esos contratos. Las familias pueden darles composiciones propias mediante CSS sin duplicar el modelo. Los planes, CTAs, logos, perfiles y comparativas validan sus destinos; los bloques con imágenes validan sus referencias de medios. Formularios y newsletter envían datos al endpoint público y los persisten por sitio en SQLite. Las listas usan campos por fila; la composición libre con elementos anidados queda pendiente.
 
 ## Recuperación del editor
 

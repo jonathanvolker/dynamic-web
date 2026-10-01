@@ -12,14 +12,14 @@ El diagnóstico de las secciones 1 a 4 describe la situación inicial. La primer
 - Tres composiciones de portada, imágenes de portada/nosotros, logo, encuadre y destinos de botones/menú editables.
 - Fuentes de títulos y cuerpo, ancho y espaciado global configurables.
 - Carga autenticada y almacenamiento de imágenes WebP fuera del documento; validación de propiedad y compatibilidad con base64 anterior.
-- Ocho pruebas unitarias y seis recorridos de navegador, incluida edición móvil, aislamiento de cuentas/medios, recuperación local y separación entre borrador/publicación.
-- Registro compartido de nueve bloques: portada, servicios, proyectos, nosotros, FAQ, contacto, galería, testimonios y planes.
+- Nueve pruebas unitarias y seis recorridos de navegador, incluida edición móvil, aislamiento de cuentas/medios, recuperación local y separación entre borrador/publicación.
+- Registro compartido ampliado a 21 bloques: los nueve originales más CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación.
 - Familia Inmersivo fotográfico con Alba, Marea y Línea, y familia Modular producto con Vector, Nimbus y Escala; ambas con layouts propios, footers propios y adaptación móvil. El catálogo queda balanceado: tres familias y nueve plantillas.
 - Autoguardado de borrador a los dos segundos de inactividad y recuperación local confirmada antes de reemplazar el documento abierto.
 
 Verificaciones ejecutadas: `npm run typecheck`, `npm run build`, `npm test` y `npm run test:e2e` correctos. Las dependencias actuales siguen enlazadas a un destino temporal WSL: una instalación duradera debe usar el lockfile en un filesystem adecuado.
 
-Estado de fases: fase 0 verificada en Chromium para los recorridos cubiertos; fases 1, 2, 3 y 4 parcialmente implementadas. Fases 5 a 7 pendientes. Restan páginas y elementos anidados, aislamiento completo de CSS, biblioteca/limpieza de medios, controles responsive por propiedad, formularios reales, PostgreSQL, dominios y PWA/tiendas. Las dos familias nuevas ya no son solo propuestas: están implementadas con tres plantillas cada una.
+Estado de fases: fase 0 verificada en Chromium para los recorridos cubiertos; fases 1, 2, 3 y 4 parcialmente implementadas. La primera ola de bloques y persistencia básica de leads ya está implementada. Fases 5 a 7 pendientes. Restan páginas y elementos anidados, aislamiento completo de CSS, biblioteca/limpieza de medios, controles responsive por propiedad, notificaciones de formularios, PostgreSQL, dominios y PWA/tiendas. Las dos familias nuevas ya no son solo propuestas: están implementadas con tres plantillas cada una.
 
 ## 1. Etapa actual
 
@@ -31,7 +31,7 @@ El proyecto es un MVP local de constructor multisitio: supera una maqueta visual
 - Registro, login, logout, contraseñas con scrypt y sesiones con token almacenado como hash.
 - Sitios asociados a un propietario; las acciones de edición verifican pertenencia.
 - Galería pública, previews y creación desde Forma, Brasa, Nexo, Alba, Vector o base simple.
-- Editor con nueve tipos de sección, listas, colores, imágenes, reordenamiento, duplicación y eliminación.
+- Editor con 21 tipos de sección, listas, colores, imágenes, reordenamiento, duplicación y eliminación. La composición libre con elementos anidados y los controles responsive por propiedad siguen pendientes.
 - Deshacer/rehacer en memoria y aviso de cambios sin guardar.
 - Preview en iframe con selección de secciones y tamaños escritorio/móvil.
 - Borrador y publicación separados; publicación y despublicación en `/s/[slug]`.
@@ -48,7 +48,7 @@ Las dependencias fueron recuperadas en WSL y las comprobaciones actuales pasan. 
 `features/templates/registry.ts` registra nueve plantillas en tres familias. `settings.template` selecciona la clase CSS y algunas ilustraciones, pero todas pasan por `SiteView` y un registro compartido de componentes de sección.
 
 - Misma estructura general de cabecera, portada dividida, contenido por secciones y pie.
-- Mismos seis bloques: portada, servicios, proyectos, nosotros, FAQ y contacto.
+- Mismos nueve bloques: portada, servicios, proyectos, nosotros, FAQ, contacto, galería, testimonios y planes.
 - Brasa cambia tipografía, formas y grilla; Nexo cambia colores, tarjetas e ilustración. Son diferencias reales, pero dentro de la misma familia compositiva.
 - El menú gastronómico de Brasa reutiliza proyectos; no tiene modelo específico de carta, precios o categorías.
 - El editor solo cambia contenido y colores: no expone variantes de composición, fuentes, espaciados, columnas o estilos por dispositivo.
@@ -65,7 +65,7 @@ Separar cuatro conceptos: **familia visual → plantilla inicial → variantes d
 | Inmersivo / fotográfico, nueva | Alba, Marea y Línea | Portada fotográfica de ancho completo, texto superpuesto, cabecera sobre la imagen, galerías y narrativa visual con menor densidad de tarjetas. |
 | Modular / producto, nueva | Vector, Nimbus y Escala | Portada centrada, demostración de producto debajo, grilla modular, beneficios, comparativas, planes, testimonios y llamados a la acción compactos. |
 
-Primer objetivo de catálogo: **tres familias y nueve plantillas**, conservando las tres existentes y sumando dos variantes adicionales por cada familia nueva. Ampliar rubros después de validar estas bases.
+Objetivo de catálogo alcanzado: **tres familias y nueve plantillas**, conservando las tres existentes y sumando dos variantes adicionales por cada familia nueva. La ampliación de rubros queda después de validar los flujos operativos.
 
 ### Criterios para aceptar una familia nueva
 
@@ -74,6 +74,12 @@ Primer objetivo de catálogo: **tres familias y nueve plantillas**, conservando 
 - Debe tener composición móvil propia y usable.
 - Debe admitir edición, guardado y publicación con el mismo motor.
 - Las miniaturas y previews deben representar la plantilla real.
+
+## 3.1 Revisión de alcance: la biblioteca es el producto
+
+La comparación con Wix Studio, Webflow, Framer, Squarespace y Shopify confirmó que nueve secciones cerradas no alcanzan para competir en variedad. La primera ola ya amplió el lenguaje de composición a 21 bloques; el siguiente objetivo es usarlos en combinaciones reales y completar sus flujos operativos.
+
+La propuesta concreta, las referencias y la separación entre secciones listas y elementos combinables están consolidadas en el handoff de `PLAN.md`. Las nueve plantillas deben rehacerse usando combinaciones y variantes diferentes; no se debe seguir maquillando el catálogo actual.
 
 ## 4. Límites concretos del editor actual
 
@@ -149,6 +155,8 @@ Cada bloque debe incluir esquema, defaults, validación, inspector, renderizado,
 **Cierre:** se puede construir una página diferente desde una base vacía y mezclar bloques sin conservar obligatoriamente la estructura de Forma.
 
 ### Fase 4 — Dos familias nuevas y catálogo agrupado
+
+Estado: implementada en catálogo y renderizado; quedan pendientes la revisión visual completa y rehacer las plantillas con combinaciones de los 21 bloques.
 
 1. Diseñar y revisar comparativas de las tres familias en escritorio y móvil.
 2. Implementar layouts específicos usando las capacidades de las fases anteriores.

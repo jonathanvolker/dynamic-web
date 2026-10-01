@@ -7,9 +7,9 @@ import { fontFamilies } from '../theme/design'
 import { resolveHref, sectionAnchors } from '../links'
 import { Footer } from './Footer'
 
-type Props = { settings: Settings; sections: Section[]; familyId?: FamilyId; demo?: boolean }
+type Props = { settings: Settings; sections: Section[]; familyId?: FamilyId; demo?: boolean; siteSlug?: string }
 
-export default function SiteView({ settings, sections, familyId = 'editorial', demo = false }: Props) {
+export default function SiteView({ settings, sections, familyId = 'editorial', demo = false, siteSlug }: Props) {
   const anchors = sectionAnchors(sections)
   const colors = resolveColors(settings)
   const theme = {
@@ -42,7 +42,7 @@ export default function SiteView({ settings, sections, familyId = 'editorial', d
         {sections.map((section, index) => {
           const defaultHref = section.blockType === 'contact' ? `mailto:${settings.email}` : '#contact'
           return <SectionRenderer key={section.id || index} section={section} settings={settings} anchor={anchors[index]}
-            anchors={anchors} buttonHref={resolveHref(section.buttonHref ?? defaultHref, anchors)} discoveryHref={resolveHref(familyId === 'immersive' ? '#gallery' : familyId === 'modular' ? '#services' : '#projects', anchors)} />
+            anchors={anchors} siteSlug={siteSlug} buttonHref={resolveHref(section.buttonHref ?? defaultHref, anchors)} discoveryHref={resolveHref(familyId === 'immersive' ? '#gallery' : familyId === 'modular' ? '#services' : '#projects', anchors)} />
         })}
       </main>
       <Footer settings={settings} familyId={familyId} anchors={anchors} demo={demo} />

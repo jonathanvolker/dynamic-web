@@ -49,6 +49,12 @@ export function ArrayField({ name, editor }: { name: RowKey; editor: EditorContr
                 </label>
               </>
             )}
+            {name === 'formFields' && <>
+              <label className="editor-field">Tipo de campo
+                <select value={String(row.type || 'text')} onChange={event => updateRow(index, 'type', event.target.value)}><option value="text">Texto</option><option value="email">Email</option><option value="tel">Teléfono</option><option value="textarea">Texto largo</option></select>
+              </label>
+              <label className="editor-checkbox"><input type="checkbox" checked={Boolean(row.required)} onChange={event => updateRow(index, 'required', event.target.checked)} />Campo obligatorio</label>
+            </>}
             {['projects', 'gallery'].includes(name) && <ProjectImageField
               label={name === 'gallery' ? 'Imagen de la galería' : 'Imagen del proyecto'} title={String(row.title || '')}
               image={row.image as Media | undefined} onChange={image => updateRow(index, 'image', image)} onError={editor.setError}

@@ -4,18 +4,96 @@ Aplicación **React / Next.js + Node** con registro, panel de sitios, editor por
 
 ## Levantar local
 
-Requiere **Node 22.23 o posterior** (persistencia local con `node:sqlite`).
+Requiere **Node 22.23 o posterior** (persistencia local con `node:sqlite`) y npm incluido con Node. No necesitás PostgreSQL ni Docker para probar la plataforma. La base local se crea automáticamente en `data/platform.sqlite`.
+
+### Windows PowerShell
+
+Abrí PowerShell en la carpeta del proyecto:
+
+```powershell
+cd C:\Users\Joni\Desktop\web-dinamica
+node --version
+npm --version
+npm ci
+Copy-Item .env.example .env.local
+npm run dev
+```
+
+Abrí **http://localhost:3000**. Si `node --version` es menor que `22.23.0`, instalá Node.js 22 LTS y abrí una terminal nueva.
+
+### macOS
+
+Desde Terminal, en la carpeta del proyecto:
 
 ```bash
+cd ~/Desktop/web-dinamica
+node --version
+npm --version
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+Si no tenés Node instalado, la opción recomendada es `nvm`:
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+nvm install 22
+nvm use 22
+node --version
+```
+
+También podés instalar Node.js 22 LTS desde [nodejs.org](https://nodejs.org/).
+
+### Linux
+
+Desde una terminal Bash, en la carpeta del proyecto:
+
+```bash
+cd ~/proyectos/web-dinamica
+node --version
+npm --version
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+### WSL
+
+Si el proyecto está en `C:\Users\...` o `/mnt/c/...`, ejecutá `npm ci` y `npm run dev` desde **PowerShell**, no desde WSL. `node_modules` instalado desde WSL sobre un disco Windows puede quedar incompleto.
+
+Para usar WSL, ubicá el proyecto dentro del filesystem Linux y ejecutá allí todos los comandos:
+
+```bash
+mkdir -p ~/proyectos
+cp -R /mnt/c/Users/Joni/Desktop/web-dinamica ~/proyectos/web-dinamica
+cd ~/proyectos/web-dinamica
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+En ese caso abrí **http://localhost:3000** desde el navegador de Windows.
+
+### Reinstalación limpia
+
+Usá esto si aparece `next no se reconoce`, `next: not found` o un error `MODULE_NOT_FOUND` dentro de `node_modules`.
+
+PowerShell:
+
+```powershell
+Remove-Item -Recurse -Force node_modules, .next, .next-dev -ErrorAction SilentlyContinue
 npm ci
 npm run dev
 ```
 
-Abrí **http://localhost:3000**, creá tu cuenta y elegí **Crear un sitio**. No necesitás PostgreSQL ni Docker para probar la plataforma. La base local se crea automáticamente en `data/platform.sqlite`.
+macOS, Linux o WSL dentro del filesystem Linux:
 
-### Entorno WSL actual
-
-Las dependencias están enlazadas a `/tmp/opencode/forma/node_modules` por un problema de permisos en la unidad de Windows. Ese destino fue recuperado durante esta entrega, pero sigue siendo temporal: si se limpia `/tmp`, el enlace deja de funcionar. Para una instalación duradera y reproducible, ubicá el proyecto en el filesystem de Linux o reinstalalo directamente desde Windows con `npm ci`, usando el `package-lock.json` del repositorio.
+```bash
+rm -rf node_modules .next .next-dev
+npm ci
+npm run dev
+```
 
 ## Recorrido
 
@@ -85,11 +163,11 @@ Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.nex
 - Historial deshacer/rehacer, duplicación y eliminación de secciones.
 - Guardado explícito con separación entre borrador y publicación.
 - Autoguardado del borrador y recuperación opcional de cambios locales tras una suspensión o cierre de pestaña.
-- Nueve bloques registrados en un catálogo compartido: portada, servicios, proyectos, nosotros, FAQ, contacto, galería, testimonios y planes.
+- 21 bloques registrados en un catálogo compartido: los nueve originales más CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación. La composición libre con elementos anidados sigue pendiente.
 - Documentos versionados (`schemaVersion: 1`), con familia, plantilla y anclas estables; lectura compatible de documentos anteriores sin sobrescribir su publicación.
 - Imágenes nuevas optimizadas en el servidor como WebP y guardadas en `data/media/`, con referencias en SQLite y verificación de propietario al guardar. Conservan transparencia y ya no aumentan el JSON del sitio. Las imágenes base64 anteriores siguen funcionando.
 - Dirección local por sitio; conexión de dominios reales y HTTPS pendiente para la VPS.
 - Docker está pospuesto: los archivos existentes son la base de la demo inicial y requieren adaptación a la plataforma multisitio.
-- Contenido inicial ficticio; formularios de contacto aún usan email.
+- Contenido inicial ficticio. El bloque `contact` histórico abre email; los bloques `form` y `newsletter` nuevos persisten leads en SQLite.
 
 Los archivos subidos tienen URLs públicas con identificadores aleatorios, necesarias para mostrarlos en los sitios. Quitar una imagen del editor elimina la referencia, no el archivo: la biblioteca, cuotas y limpieza de recursos sin uso quedan para la siguiente etapa. El backup local debe incluir la base SQLite y `data/media/`.

@@ -15,10 +15,19 @@ export type Project = {
   tone: 'peach' | 'purple' | 'lime'
   image?: Media
 }
+export type Action = { label: string; href: string; style?: 'primary' | 'secondary' }
+export type Logo = { name: string; image?: Media; href?: string }
+export type TeamMember = { name: string; role: string; bio: string; image?: Media; href?: string }
+export type ProcessStep = { title: string; description: string; duration?: string }
+export type MenuItem = { category: string; name: string; description: string; price: string; dietary?: string }
+export type OpeningHour = { day: string; hours: string }
+export type FormField = { label: string; name: string; type: 'text' | 'email' | 'tel' | 'textarea'; required?: boolean }
+export type ComparisonPlan = { title: string; price: string; period: string; description: string; features: string; buttonLabel: string; buttonHref: string; featured?: boolean }
 export type Section = {
   id?: string
   anchor?: string
   blockType: 'hero' | 'services' | 'projects' | 'about' | 'faq' | 'contact' | 'gallery' | 'testimonials' | 'pricing'
+    | 'cta' | 'textImage' | 'video' | 'logos' | 'team' | 'stats' | 'process' | 'comparison' | 'form' | 'newsletter' | 'menu' | 'hours'
   eyebrow: string
   title: string
   description?: string
@@ -34,6 +43,25 @@ export type Section = {
   gallery?: { title: string; description: string; image?: Media }[]
   testimonials?: { quote: string; name: string; role: string }[]
   plans?: { title: string; price: string; period: string; description: string; features: string; buttonLabel: string; buttonHref: string; featured?: boolean }[]
+  actions?: Action[]
+  textImageLayout?: 'image-left' | 'image-right'
+  videoProvider?: 'youtube' | 'vimeo'
+  videoId?: string
+  videoTitle?: string
+  logos?: Logo[]
+  team?: TeamMember[]
+  process?: ProcessStep[]
+  comparison?: ComparisonPlan[]
+  formFields?: FormField[]
+  formSubmitLabel?: string
+  formSuccessMessage?: string
+  newsletterLabel?: string
+  newsletterConsent?: string
+  menu?: MenuItem[]
+  hours?: OpeningHour[]
+  address?: string
+  phone?: string
+  mapHref?: string
 }
 export type SiteColors = {
   background: string

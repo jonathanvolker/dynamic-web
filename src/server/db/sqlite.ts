@@ -35,6 +35,12 @@ export function db() {
       id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id), created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS media_owner ON media(owner_id);
+    CREATE TABLE IF NOT EXISTS leads (
+      id TEXT PRIMARY KEY, site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL, form_id TEXT NOT NULL, values_json TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS leads_site ON leads(site_id, created_at);
   `)
   return database
 }

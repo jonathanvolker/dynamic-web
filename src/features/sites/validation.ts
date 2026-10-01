@@ -47,7 +47,7 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
     for (const [key, fields] of Object.entries(keys)) {
       const rows = (section as unknown as Record<string, unknown>)[key]
       if (rows === undefined) continue
-      if (!Array.isArray(rows) || rows.length > 20 || rows.some(row => !row || fields.some(field => !text(row[field])))) throw new Error('Revisá el contenido de las listas.')
+      if (!Array.isArray(rows) || rows.length > 20 || rows.some(row => !row || fields.some(field => !row[field] && !rowFields[key as keyof typeof rowFields].find(item => item.name === field)?.optional))) throw new Error('Revisá el contenido de las listas.')
     }
     for (const project of section.projects || []) {
       if (!['peach', 'purple', 'lime'].includes(project.tone)) throw new Error('Estilo de proyecto no válido.')
@@ -59,6 +59,19 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
     for (const plan of section.plans || []) {
       if (!isSafeHref(plan.buttonHref) || (plan.featured !== undefined && typeof plan.featured !== 'boolean')) throw new Error('Revisá el destino y el destacado de los planes.')
     }
+    for (const action of section.actions || []) if (!text(action.label, 100) || !isSafeHref(action.href) || (action.style !== undefined && !['primary', 'secondary'].includes(action.style))) throw new Error('Revisá las acciones del bloque.')
+    for (const logo of section.logos || []) if (!text(logo.name, 120) || (logo.href !== undefined && !isSafeHref(logo.href)) || (logo.image !== undefined && !isValidMedia(logo.image))) throw new Error('Revisá los logos del bloque.')
+    for (const member of section.team || []) if (!text(member.name, 120) || !text(member.role, 120) || !text(member.bio) || (member.href !== undefined && !isSafeHref(member.href)) || (member.image !== undefined && !isValidMedia(member.image))) throw new Error('Revisá los datos del equipo.')
+    for (const step of section.process || []) if (!text(step.title, 120) || !text(step.description) || (step.duration !== undefined && !text(step.duration, 100))) throw new Error('Revisá los pasos del proceso.')
+    for (const plan of section.comparison || []) if (!text(plan.title, 120) || !text(plan.price, 100) || !text(plan.period, 100) || !text(plan.description) || !text(plan.features) || !text(plan.buttonLabel, 100) || !isSafeHref(plan.buttonHref) || (plan.featured !== undefined && typeof plan.featured !== 'boolean')) throw new Error('Revisá la comparativa de planes.')
+    for (const field of section.formFields || []) if (!text(field.label, 120) || !/^[a-zA-Z][\w-]{1,50}$/.test(field.name) || !['text', 'email', 'tel', 'textarea'].includes(field.type) || (field.required !== undefined && typeof field.required !== 'boolean')) throw new Error('Revisá los campos del formulario.')
+    for (const item of section.menu || []) if (!text(item.category, 100) || !text(item.name, 120) || !text(item.description) || !text(item.price, 100) || (item.dietary !== undefined && !text(item.dietary, 200))) throw new Error('Revisá la carta gastronómica.')
+    for (const item of section.hours || []) if (!text(item.day, 80) || !text(item.hours, 120)) throw new Error('Revisá los horarios.')
+    if (section.videoProvider !== undefined && !['youtube', 'vimeo'].includes(section.videoProvider)) throw new Error('Proveedor de video no válido.')
+    if (section.videoId !== undefined && !/^[a-zA-Z0-9_-]{3,120}$/.test(section.videoId)) throw new Error('ID de video no válido.')
+    if (section.address !== undefined && !text(section.address, 300)) throw new Error('Dirección no válida.')
+    if (section.phone !== undefined && !text(section.phone, 40)) throw new Error('Teléfono no válido.')
+    if (section.mapHref !== undefined && !/^https:\/\//.test(section.mapHref)) throw new Error('El mapa debe usar un enlace HTTPS.')
   }
   if (JSON.stringify(input).length > 5000000) throw new Error('El sitio supera el límite de 5 MB. Reducí la cantidad de imágenes.')
 }
