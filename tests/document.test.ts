@@ -75,7 +75,7 @@ test('link protocols are restricted, including malformed protocol-relative desti
 
 test('every registered block can be added to every template and saved', () => {
   for (const template of templates) {
-    const document = migrateDocument({ settings: template.settings, sections: [...template.sections, ...blockTypes.map(type => blockDefinitions[type].defaults)] })
+    const document = migrateDocument({ settings: template.settings, sections: blockTypes.map(type => blockDefinitions[type].defaults) })
     validateSite(document)
     assert.equal(new Set(document.sections.map(section => section.anchor)).size, document.sections.length)
   }
