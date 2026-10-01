@@ -57,6 +57,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: runner
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:main
