@@ -1,0 +1,41 @@
+services:
+  app:
+    image: ${IMAGE_NAME:?Definí IMAGE_NAME en el .env}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      PLATFORM_DATA_DIR: /app/data
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Definí PAYLOAD_SECRET en el .env}
+      NEXT_PUBLIC_SERVER_URL: ${PUBLIC_URL:?Definí PUBLIC_URL en el .env}
+    volumes:
+      - forma_data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?Definí DOMAIN en el .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  forma_data:
+  caddy_data:
+  caddy_config:
