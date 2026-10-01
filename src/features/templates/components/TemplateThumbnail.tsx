@@ -9,10 +9,11 @@ export function TemplateThumbnail({ template }: { template: TemplateDefinition }
     {template.id === 'coast' && <span className="thumbnail-sun" />}
     {template.id === 'atelier' && <span className="thumbnail-frame" />}
   </div>
-  if (template.familyId === 'modular') return <div className={`template-thumbnail thumbnail-modular thumbnail-${template.id}`} aria-hidden="true">
+  if (template.familyId === 'modular') return <div className={`template-thumbnail thumbnail-modular thumbnail-${template.id === 'product' ? 'product-template' : template.id}`} aria-hidden="true">
     <div className="thumbnail-nav"><strong>{template.settings.brand}<b>▰</b></strong><span>BENEFICIOS &nbsp; PLANES &nbsp; ↗</span></div>
     <div className="thumbnail-modular-copy"><span>{hero.eyebrow}</span><strong>{hero.title}</strong><i>{hero.buttonLabel} ↗</i></div>
-    <div className="thumbnail-product"><div /><div><span /><span /><span /></div></div>
+    {template.id === 'product' ? <div className="thumbnail-vector-product"><span /><span /><span /></div>
+      : <div className="thumbnail-product"><div /><div><span /><span /><span /></div></div>}
     {template.id === 'launch' && <span className="thumbnail-orbit">✦</span>}
     {template.id === 'scale' && <span className="thumbnail-axis">↗</span>}
   </div>

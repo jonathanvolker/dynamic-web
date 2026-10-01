@@ -65,3 +65,8 @@ export function saveDocument(id: string, owner: string, document: SiteDocument, 
 export function removePublication(id: string, owner: string) {
   db().prepare('UPDATE sites SET published = NULL, published_at = NULL WHERE id = ? AND owner_id = ?').run(id, owner)
 }
+
+export function deleteSite(id: string, owner: string) {
+  const result = db().prepare('DELETE FROM sites WHERE id = ? AND owner_id = ?').run(id, owner)
+  return result.changes > 0
+}

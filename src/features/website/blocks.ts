@@ -1,5 +1,5 @@
 import { defaultSections } from './content/defaults'
-import type { Section } from './types'
+import type { FamilyId, Section } from './types'
 
 export type RowKey = 'services' | 'projects' | 'stats' | 'questions' | 'gallery' | 'testimonials' | 'plans'
 export type RowField = { name: string; label: string; multiline?: boolean; link?: boolean }
@@ -51,3 +51,32 @@ export const blockDefinitions: Record<Section['blockType'], BlockDefinition> = {
 export const blockTypes = Object.keys(blockDefinitions) as Section['blockType'][]
 export const blockLabels = Object.fromEntries(blockTypes.map(type => [type, blockDefinitions[type].label])) as Record<Section['blockType'], string>
 export const blockSymbols = Object.fromEntries(blockTypes.map(type => [type, blockDefinitions[type].symbol])) as Record<Section['blockType'], string>
+
+const contextualLabels: Record<FamilyId, Partial<Record<Section['blockType'], string>>> = {
+  editorial: { about: 'Manifiesto', contact: 'Hablemos', projects: 'Trabajo seleccionado' },
+  immersive: { services: 'Experiencias', projects: 'Recorrido', about: 'El lugar', faq: 'Antes de llegar', contact: 'Reservas' },
+  modular: { services: 'Beneficios', projects: 'Casos', about: 'Resultados', faq: 'Dudas frecuentes', contact: 'Empezar' },
+}
+
+const contextualDescriptions: Record<FamilyId, Partial<Record<Section['blockType'], string>>> = {
+  editorial: { about: 'La idea detrás de tu marca', projects: 'Mostrá lo que hacés mejor' },
+  immersive: { services: 'Todo lo que se puede vivir', projects: 'Una secuencia visual para descubrir', about: 'La historia del espacio' },
+  modular: { services: 'Razones para elegirte', projects: 'Resultados y casos concretos', pricing: 'Una propuesta clara para decidir' },
+}
+
+export function labelForBlock(type: Section['blockType'], familyId: FamilyId) {
+  return contextualLabels[familyId][type] || blockLabels[type]
+}
+
+export function descriptionForBlock(type: Section['blockType'], familyId: FamilyId) {
+  return contextualDescriptions[familyId][type] || `+ Agregar ${blockLabels[type].toLowerCase()}`
+}
+
+export function blockTypesForFamily(familyId: FamilyId) {
+  const recommended: Record<FamilyId, Section['blockType'][]> = {
+    editorial: ['hero', 'services', 'projects', 'about', 'faq', 'contact', 'gallery', 'testimonials', 'pricing'],
+    immersive: ['hero', 'gallery', 'services', 'about', 'testimonials', 'contact', 'projects', 'faq', 'pricing'],
+    modular: ['hero', 'services', 'testimonials', 'pricing', 'faq', 'contact', 'projects', 'about', 'gallery'],
+  }
+  return recommended[familyId]
+}

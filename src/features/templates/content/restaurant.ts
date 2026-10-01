@@ -6,6 +6,7 @@ export const restaurantTemplate: TemplateDefinition = {
   settings: {
     template: 'restaurant', brand: 'brasa', tagline: 'Cocina de estación. Encuentros que se quedan.',
     email: 'reservas@brasa.example', accent: '#ad462e',
+    design: { headingFont: 'serif', bodyFont: 'dm-sans', width: 'standard', spacing: 'airy' },
     colors: {
       background: '#faf3e9', text: '#3e3025', muted: '#806957', surface: '#eee2d1', border: '#dccbb7',
       projectPeach: '#d5a171', projectPurple: '#a9b18b', projectLime: '#e6c890',

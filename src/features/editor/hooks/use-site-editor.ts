@@ -118,7 +118,6 @@ export function useSiteEditor(site: Site) {
 
   function remove() {
     if (typeof active !== 'number' || document.sections.length <= 1) return
-    if (!window.confirm('¿Eliminar esta sección? Podés deshacer la acción.')) return
     change(next => { next.sections.splice(active, 1) })
     setActive(0)
   }

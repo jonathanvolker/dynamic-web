@@ -1,4 +1,4 @@
-import { blockLabels, blockSymbols, blockTypes } from '../config/blocks'
+import { blockLabels, blockSymbols, blockTypesForFamily, descriptionForBlock, labelForBlock } from '../config/blocks'
 import type { EditorController } from '../hooks/use-site-editor'
 
 export function EditorSidebar({ editor }: { editor: EditorController }) {
@@ -41,9 +41,9 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
       ) : (
         <div className="block-library">
           <p className="sidebar-hint">Bloques diseñados para combinar bien.</p>
-          {blockTypes.map(type => (
+          {blockTypesForFamily(editor.document.familyId).map(type => (
             <button key={type} onClick={() => editor.add(type)}>
-              <span>{blockSymbols[type]}</span><strong>{blockLabels[type]}</strong><small>+ Agregar al sitio</small>
+              <span>{blockSymbols[type]}</span><strong>{labelForBlock(type, editor.document.familyId)}</strong><small>{descriptionForBlock(type, editor.document.familyId)}</small>
             </button>
           ))}
         </div>

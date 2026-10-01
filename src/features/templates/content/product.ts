@@ -5,6 +5,7 @@ export const productTemplate: TemplateDefinition = {
   description: 'Una portada centrada, demostración de producto, beneficios modulares y planes claros para convertir visitas en conversaciones.',
   settings: {
     template: 'product', brand: 'vector', tagline: 'Menos fricción. Más equipo.', email: 'hola@vector.example', accent: '#6554d9',
+    design: { headingFont: 'dm-sans', bodyFont: 'dm-sans', width: 'wide', spacing: 'compact' },
     colors: { background: '#f8f9fc', text: '#18213a', muted: '#68728a', surface: '#ffffff', border: '#dfe4ef', projectPeach: '#e7eaff', projectPurple: '#dcd7fa', projectLime: '#dcf0e9' },
     seoTitle: 'Vector — Un espacio para que las cosas pasen', seoDescription: 'Plantilla de producto digital ficticio. Presentá beneficios, testimonios y planes con una composición modular.',
     headerButton: { label: 'Hablemos de tu equipo', href: '#contact' },

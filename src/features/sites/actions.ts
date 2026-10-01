@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { currentUser, requireUser } from '@/features/auth/server/session'
-import { createSite, findSite, saveDocument, removePublication } from './server/repository'
+import { createSite, findSite, saveDocument, removePublication, deleteSite } from './server/repository'
 import { validateSite } from './validation'
 import { getTemplate } from '@/features/templates/registry'
 import { assertMediaOwnership } from './server/media'
@@ -36,4 +36,10 @@ export async function unpublishSite(id: string) {
   if (!site) return
   removePublication(id, user.id)
   revalidatePath(`/s/${site.slug}`); revalidatePath('/dashboard')
+}
+
+export async function removeSite(id: string) {
+  const user = await requireUser()
+  deleteSite(id, user.id)
+  revalidatePath('/dashboard')
 }

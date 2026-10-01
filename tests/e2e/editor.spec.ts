@@ -99,6 +99,10 @@ test('edit, upload, preview, save, publish, isolate accounts and unpublish', asy
   await page.getByRole('button', { name: 'Retirar publicación' }).click()
   await expect(page.getByText('○ Borrador')).toBeVisible()
   expect((await publicPage.goto(publicUrl!))?.status()).toBe(404)
+  await page.getByRole('button', { name: 'Eliminar sitio' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Eliminar sitio' }).click()
+  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page.getByText('Mi sitio de prueba')).toHaveCount(0)
   expect(errors).toEqual([])
 })
 

@@ -6,6 +6,7 @@ export const retreatTemplate: TemplateDefinition = {
   description: 'Fotografía a todo lo ancho, una navegación liviana y un recorrido visual que invita a bajar el ritmo.',
   settings: {
     template: 'retreat', brand: 'alba', tagline: 'Un lugar para volver a lo simple.', email: 'hola@alba.example', accent: '#bda17b',
+    design: { headingFont: 'serif', bodyFont: 'dm-sans', width: 'wide', spacing: 'airy' },
     colors: { background: '#f5f2eb', text: '#26372e', muted: '#69766b', surface: '#e8e6dc', border: '#d5d8cc', projectPeach: '#c7b298', projectPurple: '#bdc8b6', projectLime: '#ddd3b8' },
     seoTitle: 'Alba — Un refugio entre montañas', seoDescription: 'Plantilla fotográfica de un alojamiento ficticio. Naturaleza, descanso y experiencias cercanas.',
     headerButton: { label: 'Planear mi visita', href: '#contact' },

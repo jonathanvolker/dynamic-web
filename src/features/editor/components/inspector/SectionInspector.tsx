@@ -5,9 +5,12 @@ import { LinkField } from '../fields/LinkField'
 import { ProjectImageField } from '../fields/ProjectImageField'
 import type { Section } from '@/features/website/types'
 import { blockDefinitions } from '../../config/blocks'
+import { useState } from 'react'
+import { Modal } from '@/features/platform/components/Modal'
 
 export function SectionInspector({ editor }: { editor: EditorController }) {
   const { section } = editor
+  const [confirmRemove, setConfirmRemove] = useState(false)
   if (!section) return null
   const rows = blockDefinitions[section.blockType].rows
   return (
@@ -38,8 +41,9 @@ export function SectionInspector({ editor }: { editor: EditorController }) {
       <div className="section-controls">
         <p className="inspector-note">Dirección estable: #{section.anchor}</p>
         <button className="add-row" disabled={editor.document.sections.length >= 30} onClick={editor.duplicate}>Duplicar sección</button>
-        <button className="remove-row" disabled={editor.document.sections.length <= 1} onClick={editor.remove}>Eliminar sección</button>
+        <button className="remove-row" disabled={editor.document.sections.length <= 1} onClick={() => setConfirmRemove(true)}>Eliminar sección</button>
       </div>
+      <Modal open={confirmRemove} title="¿Eliminar esta sección?" description="La sección desaparecerá de tu borrador. Podés recuperarla inmediatamente con Deshacer." confirmLabel="Eliminar sección" tone="danger" onConfirm={() => { editor.remove(); setConfirmRemove(false) }} onCancel={() => setConfirmRemove(false)} />
     </>
   )
 }

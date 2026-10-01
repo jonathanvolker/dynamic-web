@@ -6,6 +6,7 @@ export const consultantTemplate: TemplateDefinition = {
   settings: {
     template: 'consultant', brand: 'nexo', tagline: 'Claridad para decidir. Estrategia para avanzar.',
     email: 'hola@nexo.example', accent: '#a4edc5',
+    design: { headingFont: 'system', bodyFont: 'system', width: 'narrow', spacing: 'compact' },
     colors: {
       background: '#101d2b', text: '#f0f5fa', muted: '#a1b2c6', surface: '#192a3c', border: '#304357',
       projectPeach: '#c0d4e7', projectPurple: '#b9c9ef', projectLime: '#acd9c6',

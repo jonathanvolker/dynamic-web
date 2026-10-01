@@ -2,6 +2,7 @@ import type { Section, Settings } from '../types'
 
 export const defaultSettings: Settings = {
   brand: 'forma', tagline: 'Ideas con intención. Diseño con carácter.', email: 'hola@forma.example', accent: '#d6f76b',
+  design: { headingFont: 'dm-sans', bodyFont: 'dm-sans', width: 'wide', spacing: 'airy' },
   seoTitle: 'Forma — Diseño que mueve tu marca', seoDescription: 'Estudio creativo de branding, diseño web y experiencias digitales. Marca y proyectos de demostración.',
   navigation: [{ label: 'Servicios', href: '#services' }, { label: 'Proyectos', href: '#projects' }, { label: 'El estudio', href: '#about' }],
 }
