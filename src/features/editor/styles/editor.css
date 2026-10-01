@@ -21,7 +21,7 @@
 
 /* Section navigation and block library */
 .editor-sidebar { background: #fff; border-right: 1px solid #e5e9de; display: flex; flex-direction: column; overflow-y: auto; }
-.sidebar-tabs { display: flex; padding: 18px 15px 0; border-bottom: 1px solid #e9ece3; }
+.sidebar-tabs { display: grid; grid-template-columns: repeat(3, 1fr); padding: 18px 15px 0; border-bottom: 1px solid #e9ece3; }
 .sidebar-tabs button { background: transparent; padding: 0 12px 15px; font-size: 11px; color: #8f957f; }
 .sidebar-tabs button.active { color: #283325; border-bottom: 2px solid #789942; }
 .sidebar-hint { color: #969d8a; font-size: 9px; padding: 18px 17px 14px; line-height: 1.5; }
@@ -34,9 +34,12 @@
 .section-select small { display: block; font-size: 8px; font-weight: 400; color: #929b86; margin-top: 5px; max-width: 133px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 .section-order { display: flex; flex-direction: column; }
 .section-order button { background: transparent; color: #849673; font-size: 12px; padding: 0 5px; }
+.section-order .section-delete { color: #fff; background: #c54c40 !important; border-radius: 4px; font-size: 12px; margin-left: 2px; min-width: 22px; min-height: 22px; }
+.section-order .section-delete:hover:not(:disabled) { color: #fff; background: #96352d !important; }
 .sidebar-add { margin: 12px 17px 20px; padding: 11px; background: #f6f8f2; border: 1px dashed #d1dac3 !important; border-radius: 5px; color: #6d8055; font-size: 10px; }
 .site-settings-button { margin: 12px 12px; padding: 15px 12px; background: transparent; border-top: 1px solid #e8ece1 !important; text-align: left; font-size: 11px; }
 .site-settings-button.selected { background: #f0f6e7; border-radius: 6px; }
+.styles-sidebar { padding: 0 15px; }
 .sidebar-domain { margin-top: auto; border-top: 1px solid #e9ece3; padding: 20px 17px; background: #fafbf7; }
 .sidebar-domain > span { font-size: 8px; letter-spacing: .09em; color: #89967c; }
 .sidebar-domain p { font-size: 10px; word-break: break-all; margin: 10px 0; color: #68765b; }

@@ -21,7 +21,7 @@ export function useSiteEditor(site: Site) {
   const [busy, setBusy] = useState(false)
   const [publishedAt, setPublishedAt] = useState(site.published_at)
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop')
-  const [tab, setTab] = useState<'sections' | 'add'>('sections')
+  const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
   const [panel, setPanel] = useState<Panel>('preview')
   const [recovered, setRecovered] = useState(false)
   const recoveryKey = `forma:draft:${site.id}`
@@ -103,8 +103,10 @@ export function useSiteEditor(site: Site) {
     }
     const sections = getTemplate(document.templateId)?.sections || []
     const template = sections.find(item => item.blockType === type) || blockDefinitions[type].defaults
+    const newIndex = document.sections.length
     change(next => next.sections.push({ ...structuredClone(template), id: crypto.randomUUID(), anchor: availableAnchor(type, next.sections) }))
-    select(document.sections.length)
+    setActive(newIndex)
+    setPanel('properties')
     setTab('sections')
   }
 
@@ -116,10 +118,11 @@ export function useSiteEditor(site: Site) {
     setActive(active + 1)
   }
 
-  function remove() {
-    if (typeof active !== 'number' || document.sections.length <= 1) return
-    change(next => { next.sections.splice(active, 1) })
-    setActive(0)
+  function remove(index?: number) {
+    const target = index ?? active
+    if (typeof target !== 'number' || document.sections.length <= 1) return
+    change(next => { next.sections.splice(target, 1) })
+    setActive(Math.max(0, Math.min(target, document.sections.length - 2)))
   }
 
   function undo() {
