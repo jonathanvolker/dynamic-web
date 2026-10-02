@@ -25,6 +25,7 @@
 .sidebar-tabs button { background: transparent; padding: 0 12px 15px; font-size: 11px; color: #8f957f; }
 .sidebar-tabs button.active { color: #283325; border-bottom: 2px solid #789942; }
 .sidebar-hint { color: #969d8a; font-size: 9px; padding: 18px 17px 14px; line-height: 1.5; }
+.sidebar-error { color: #b44535; background: #fff0ed; margin: 12px 15px 0; padding: 10px; border-radius: 5px; font-size: 10px; line-height: 1.4; }
 .section-list { padding: 0 10px; }
 .section-item { border-radius: 7px; display: flex; align-items: center; padding-right: 5px; margin-bottom: 5px; border: 1px solid transparent; }
 .section-item.selected { background: #f0f6e7; border-color: #d2e2b4; }

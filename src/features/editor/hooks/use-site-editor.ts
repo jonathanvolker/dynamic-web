@@ -10,6 +10,11 @@ import { availableAnchor } from '@/features/sites/document'
 
 type Panel = 'sections' | 'preview' | 'properties'
 
+function editorId() {
+  if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID()
+  return `section-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 export function useSiteEditor(site: Site) {
   const [document, setDocument] = useState<SiteDocument>(site.draft)
   const [active, setActive] = useState<number | 'settings'>(0)
@@ -21,7 +26,7 @@ export function useSiteEditor(site: Site) {
   const [busy, setBusy] = useState(false)
   const [publishedAt, setPublishedAt] = useState(site.published_at)
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop')
-  const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
+const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
   const [panel, setPanel] = useState<Panel>('preview')
   const [recovered, setRecovered] = useState(false)
   const recoveryKey = `forma:draft:${site.id}`
@@ -104,7 +109,12 @@ export function useSiteEditor(site: Site) {
     const sections = getTemplate(document.templateId)?.sections || []
     const template = sections.find(item => item.blockType === type) || blockDefinitions[type].defaults
     const newIndex = document.sections.length
-    change(next => next.sections.push({ ...structuredClone(template), id: crypto.randomUUID(), anchor: availableAnchor(type, next.sections) }))
+    try {
+      change(next => next.sections.push({ ...structuredClone(template), id: editorId(), anchor: availableAnchor(type, next.sections) }))
+    } catch {
+      setError('No pudimos agregar esta sección. Recargá el editor e intentá nuevamente.')
+      return
+    }
     setActive(newIndex)
     setPanel('properties')
     setTab('sections')
@@ -113,7 +123,7 @@ export function useSiteEditor(site: Site) {
   function duplicate() {
     if (!section || typeof active !== 'number' || document.sections.length >= 30) return
     change(next => {
-      next.sections.splice(active + 1, 0, { ...structuredClone(section), id: crypto.randomUUID(), anchor: availableAnchor(section.blockType, next.sections) })
+      next.sections.splice(active + 1, 0, { ...structuredClone(section), id: editorId(), anchor: availableAnchor(section.blockType, next.sections) })
     })
     setActive(active + 1)
   }
