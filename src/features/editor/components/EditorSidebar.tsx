@@ -15,6 +15,7 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
         <button type="button" className={editor.tab === 'add' ? 'active' : ''} onClick={() => editor.setTab('add')}>+ Agregar</button>
         <button type="button" className={editor.tab === 'styles' ? 'active' : ''} onClick={() => { editor.setTab('styles'); editor.select('settings') }}>Estilos</button>
       </div>
+      {editor.error && <p className="sidebar-error" role="alert">{editor.error}</p>}
       {editor.tab === 'sections' ? (
         <>
           <p className="sidebar-hint">Arrastrá para ordenar. Tocá para editar.</p>
