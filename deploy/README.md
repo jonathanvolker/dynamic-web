@@ -1,6 +1,6 @@
 # Despliegue en VPS
 
-El workflow de `.github/workflows/deploy.yml` construye la imagen en GitHub Actions, la publica en GHCR y actualiza el VPS al hacer push a `main`. El VPS no compila el proyecto.
+El workflow de `.github/workflows/deploy.yml` ejecuta typecheck, pruebas unitarias y build; luego construye la imagen en GitHub Actions, la publica en GHCR y actualiza el VPS al hacer push a `main`. El VPS no compila el proyecto. La primera ejecución debe verificarse con los secretos y el host reales.
 
 ## Preparar el VPS una vez
 
@@ -51,4 +51,4 @@ No subir `.env`, claves privadas ni tokens al repositorio.
 
 ## Primer despliegue
 
-Después de crear los secrets, el primer push a `main` ejecutará las verificaciones, publicará `ghcr.io/jonathanvolker/dynamic-web:main`, copiará el Compose y Caddyfile, y reiniciará la aplicación.
+Después de crear los secrets, el primer push a `main` ejecutará las verificaciones, publicará `ghcr.io/jonathanvolker/dynamic-web:main`, copiará el Compose y Caddyfile, y reiniciará la aplicación. Los datos de SQLite y medios persisten en el volumen `forma_data` montado en `/app/data`; todavía falta documentar y probar un procedimiento de backup/restauración.

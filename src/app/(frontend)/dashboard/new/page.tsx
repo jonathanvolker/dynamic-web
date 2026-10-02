@@ -5,14 +5,15 @@ import { getTemplate } from '@/features/templates/registry'
 
 export default async function NewSite({ searchParams }: { searchParams: Promise<{ template?: string }> }) {
   await requireUser()
-  const selected = getTemplate((await searchParams).template || 'studio')
+  const requestedTemplate = (await searchParams).template || 'studio'
+  const selected = getTemplate(requestedTemplate)
   return (
     <main className="platform new-site-page">
       <Link href="/dashboard" className="text-link">← Mis sitios</Link>
       <span className="p-kicker">DE IDEA A SITIO</span>
       <h1>Algo nuevo empieza.</h1>
       <p>Un nombre, una base y todo lo que quieras construir.</p>
-      <NewSiteForm key={selected?.id} selectedTemplate={selected?.id} />
+      <NewSiteForm key={requestedTemplate} selectedTemplate={requestedTemplate === 'blank' ? 'blank' : selected?.id} />
     </main>
   )
 }

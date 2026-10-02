@@ -1,186 +1,270 @@
-# Handoff completo — Forma
+# Handoff completo del proyecto Forma
 
-Fecha: 1 de octubre de 2026.
+Fecha de referencia: 2 de octubre de 2026.
 
-## Estado del Producto
+Este documento resume el estado general del proyecto para continuar en otro chat sin perder contexto.
 
-Forma es un MVP local multisitio construido con Next.js 15, React 19, TypeScript y Node 22.23+. El usuario puede registrarse, crear sitios, editar secciones, guardar borradores, publicar, despublicar y visitar el sitio público.
+## 1. Producto
 
-La persistencia actual del constructor usa SQLite en `data/platform.sqlite`. Las imágenes subidas se convierten a WebP y se guardan fuera del JSON en `data/media/`, con control de propietario.
+Forma es una plataforma multisitio para que una persona se registre, cree un sitio desde una plantilla, edite contenido, guarde un borrador, publique una versión independiente y reciba contactos.
 
-La aplicación tiene tres familias y nueve plantillas:
+El proyecto ya supera la etapa de maqueta visual. Es un MVP funcional local y desplegable, pero todavía está en estabilización antes de comercializar suscripciones automáticas y dominios propios.
 
-- Editorial creativo: Forma, Brasa y Nexo.
-- Inmersivo fotográfico: Alba, Marea y Línea.
-- Modular producto: Vector, Nimbus y Escala.
+## 2. Estado funcional actual
 
-El catálogo registra 21 tipos de bloque:
+### Implementado
 
-- Originales: portada, servicios, proyectos, nosotros, preguntas, contacto, galería, testimonios y planes.
-- Nuevos: CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación.
+- Next.js 15, React 19, TypeScript y Node 22.23+.
+- Registro, login, logout y sesiones con tokens hash.
+- Contraseñas con `scrypt`.
+- Dashboard privado y sitios aislados por propietario.
+- Creación desde plantilla o base simple.
+- Tres familias visuales y nueve plantillas públicas.
+- Editor visual por bloques y 21 tipos de bloque.
+- Preview en iframe, vista escritorio y móvil.
+- Agregar, duplicar, eliminar y reordenar secciones.
+- Papelera roja por sección con modal de confirmación.
+- Undo y redo.
+- Autoguardado y recuperación local.
+- Separación entre borrador y publicación.
+- Publicación mediante `/s/[slug]` y despublicación.
+- Imágenes WebP fuera del JSON con control de propietario.
+- Formularios de contacto y newsletter.
+- Persistencia de leads en SQLite.
+- Bandeja de leads en `/dashboard/leads`.
+- Notificaciones internas y rate limiting persistente.
+- Auditoría de CTA y enlaces en `docs/cta-audit.md`.
+- Planes iniciales y suscripciones manuales.
+- Panel administrativo en `/admin/platform`.
+- CI/CD hacia GHCR y VPS.
 
-Las nueve plantillas ya fueron rehechas con combinaciones diferentes. No seguir agregando variaciones cosméticas ni nuevas familias antes de cerrar los flujos operativos.
+### Verificado localmente
 
-## Verificaciones Completadas
+- En esta revisión pasaron `npm run typecheck`, `npm test` (11 pruebas), `npm run build` y `npm run test:e2e` (10 recorridos). Docker no está instalado en este entorno, por lo que Compose queda pendiente de validación con el binario correspondiente.
+- Los E2E fueron ampliados, pero la última versión debe ejecutarse contra un build de producción.
 
-Las siguientes comprobaciones pasaron después de la última ola de plantillas:
+## 3. Familias y plantillas
 
-- `npm run typecheck`.
-- `npm test`: 9 pruebas unitarias.
-- `npm run build`.
-- `npm run test:e2e`: 8 recorridos.
-- E2E de publicación, edición, guardado, aislamiento, recuperación local, formularios, newsletter, honeypot y persistencia de leads.
-- E2E público de las nueve plantillas, incluyendo bloques distintivos y ausencia de overflow a 390 px.
+### Editorial creativo
 
-## Problema Prioritario Nuevo
+- Forma: `studio`.
+- Brasa: `restaurant`.
+- Nexo: `consultant`.
 
-La captura del editor mostró que los botones de portada, navegación y CTA no tienen una explicación suficientemente visible ni un sistema unificado de edición. Antes de declarar las plantillas funcionales hay que auditar todos los destinos.
+### Inmersivo fotográfico
 
-### Modelo actual de destinos
+- Alba: `retreat`.
+- Marea: `coast`.
+- Línea: `atelier`.
 
-- `Section.buttonHref` contiene el destino del botón principal de portada, contacto o CTA.
-- `Settings.headerButton.href` contiene el destino del botón de cabecera.
-- `Settings.navigation[].href` contiene destinos de navegación.
-- `Action.href` contiene destinos de acciones del bloque CTA.
-- Los planes usan `buttonHref`.
-- La comparativa usa `buttonHref`.
-- Horarios usa `mapHref`.
-- Los logos, miembros del equipo y otros elementos pueden tener `href`, aunque no todos tienen una UI de edición suficientemente evidente.
+### Modular producto
 
-### Editor actual
+- Vector: `product`.
+- Nimbus: `launch`.
+- Escala: `scale`.
 
-`SectionInspector.tsx` permite editar el texto y destino del botón para `hero`, `contact` y `cta`. `SettingsInspector.tsx` permite editar el botón de cabecera y los enlaces de navegación. `ArrayField.tsx` usa `LinkField` para campos de filas que tienen `buttonHref` o `href`.
+Las plantillas se visitan sin autenticación en `/templates` y `/templates/[template]`.
 
-### Resolución actual
+## 4. Bloques disponibles
 
-`links.ts` valida protocolos y anclas. Los enlaces internos deben ser anclas como `#about` o `#form`; no existen páginas múltiples todavía. `resolveHref` elimina destinos a secciones que no existen. Por eso, si una plantilla apunta a una sección eliminada, el botón puede desaparecer del render público.
+- Portada.
+- Servicios.
+- Proyectos.
+- Nosotros.
+- Preguntas.
+- Contacto.
+- Galería.
+- Testimonios.
+- Planes y precios.
+- CTA destacado.
+- Texto + imagen.
+- Video o embed.
+- Logos de clientes.
+- Equipo.
+- Estadísticas.
+- Proceso.
+- Comparativa de planes.
+- Formulario de contacto.
+- Newsletter.
+- Carta gastronómica.
+- Horarios y ubicación.
 
-`SiteView` calcula las anclas estables y pasa `buttonHref` resuelto al renderizador. `HeroSection` renderiza el botón solo si existe un destino válido. `Header` valida la navegación, pero debe revisarse que siempre renderice el destino resuelto y no el valor original.
+La composición libre con elementos anidados todavía no existe.
 
-### Auditoría pendiente
+## 5. Editor
 
-1. Inventariar todos los `<a>` y botones de los renderizadores y registrar su destino por bloque.
-2. Confirmar que cada CTA de las nueve plantillas tenga un destino válido.
-3. Mostrar claramente en el inspector qué acción edita cada campo.
-4. Revisar que los destinos por defecto no apunten a anclas ausentes.
-5. Agregar soporte claro para email, teléfono, WhatsApp, URL externa y sección.
-6. Agregar E2E que haga clic en cada acción de cada familia y verifique el destino.
-7. Definir comportamiento de botones de formulario y newsletter: no son enlaces, envían datos y muestran estado.
-8. Separar navegación de una sola página de navegación multipágina futura.
-9. No implementar páginas múltiples hasta que todos los enlaces de la página única estén verificados.
+El panel lateral tiene tres pestañas: `Secciones`, `+ Agregar` y `Estilos`. `Estilos` reemplazó al nombre anterior `Identidad y ajustes`.
 
-El objetivo es que cada botón tenga una acción funcional, editable y verificable. No alcanza con que el texto aparezca visualmente.
+Correcciones recientes:
 
-## Estado Del Despliegue
+- Fallback para generar IDs cuando `crypto.randomUUID()` no está disponible.
+- Agregar bloque selecciona automáticamente la nueva sección.
+- El error al agregar queda visible en el panel lateral.
+- Undo/redo conserva la sección activa cuando es posible.
+- Reordenar conserva la selección salvo que se mueva la sección seleccionada.
+- Eliminar desde tarjeta usa modal.
+- No se puede eliminar la última sección.
+- Campos nuevos de formulario nacen con tipo `text`.
+- Logos y equipo admiten carga de imágenes.
+- Enlaces opcionales vacíos no muestran falsos errores.
+- Botones internos declaran `type="button"`.
+- Tabs móviles tienen estado activo y `aria-selected`.
+- Preview tiene un ancho máximo menor y controles más visibles.
+- El editor avisa antes de salir con cambios no guardados.
+- Hay prueba E2E para una web con solo portada.
 
-Se eligió un VPS DonWeb en lugar de Vercel para conservar SQLite y el filesystem persistente.
+Riesgos pendientes:
 
-### VPS
+- No hay control de concurrencia entre dos pestañas.
+- Autoguardado y guardado manual necesitan una prueba E2E de carrera.
+- El iframe no tiene sandbox completo.
+- El reordenamiento táctil no está resuelto.
+- Los errores aparecen principalmente al guardar y no junto a cada campo.
+- El historial no agrupa escritura carácter por carácter.
+- El toolbar móvil requiere revisión visual adicional.
 
-- Sistema: Ubuntu 24.04.5 LTS.
-- IP: `201.32.129.6`.
-- Hostname temporal: `vps-6459575-x.dattaweb.com`.
-- Docker: 29.8.2.
-- Docker Compose: v5.5.1.
-- Directorio de despliegue: `/opt/forma`.
-- El firewall de DonWeb necesitó una regla TCP 22 para permitir nuevas conexiones SSH.
-- Los puertos 80 y 443 están habilitados.
+## 6. Guardado y publicación
 
-### Entorno temporal del VPS
-
-`/opt/forma/.env` fue creado con una configuración temporal por IP:
-
-```dotenv
-IMAGE_NAME=ghcr.io/jonathanvolker/dynamic-web:main
-DOMAIN=:80
-PUBLIC_URL=http://201.32.129.6
-PAYLOAD_SECRET=<secreto existente, no versionar>
-COOKIE_SECURE=false
-```
-
-No copiar el secreto a documentación, commits o chats. Cuando el dominio comprado esté validado, cambiar:
-
-```dotenv
-DOMAIN=tu-dominio.com
-PUBLIC_URL=https://tu-dominio.com
-COOKIE_SECURE=true
-```
-
-Y crear un registro DNS `A` hacia `201.32.129.6`.
-
-### Archivos de despliegue agregados
-
-- `Dockerfile`: imagen standalone con etapa explícita `runner` y `/app/data` persistente.
-- `deploy/compose.production.yaml`: app Next.js, Caddy, volumen SQLite/medios y healthcheck.
-- `deploy/README.md`: bootstrap, variables y secrets.
-- `.github/workflows/deploy.yml`: validación en PR y build/publicación/despliegue después del merge a `main`.
-
-### Secrets de GitHub configurados
-
-En el environment `production` se cargaron:
-
-- `VPS_HOST`.
-- `VPS_USER`.
-- `DEPLOY_PATH`.
-- `VPS_SSH_KEY`.
-- `VPS_KNOWN_HOSTS`.
-- `GHCR_USERNAME`.
-- `GHCR_TOKEN`.
-
-No reemplazar ni exponer sus valores.
-
-La clave dedicada para GitHub Actions se creó localmente como `~/.ssh/forma-github-actions`, sin passphrase, se instaló en `/root/.ssh/authorized_keys` y fue probada con éxito mediante:
+El flujo es:
 
 ```text
-SSH_GITHUB_OK
+Editor -> saveSite -> sesión/ownership -> validateSite -> SQLite
 ```
 
-### Flujo CI/CD
+Guardar modifica únicamente `draft`. Publicar copia el documento validado a `published`. La web pública renderiza únicamente `published` desde `/s/[slug]`.
 
-- Pull Request hacia `main`: ejecuta `Verify application`.
-- Merge o push a `main`: ejecuta `Verify application`, `Publish container image` y `Deploy to VPS`.
-- La imagen se publica en `ghcr.io/jonathanvolker/dynamic-web:main` y con tag de SHA.
-- El workflow copia `deploy/compose.production.yaml` y `Caddyfile` a `/opt/forma`.
-- El VPS hace login en GHCR, ejecuta `docker compose pull`, `docker compose up -d` y limpia imágenes antiguas.
-
-### Primer fallo de despliegue y corrección
-
-El primer pipeline llegó al VPS, autenticó GHCR y descargó las imágenes correctamente, pero `forma-app-1` quedó unhealthy. El log mostró:
+La URL de MVP tiene este formato de ejemplo:
 
 ```text
-forma-web-editable@0.1.0 migrate
-cannot connect to Postgres 127.0.0.1:5432
+https://tu-dominio.com/s/nombre-del-sitio-abc123
 ```
 
-La causa fue que el Dockerfile tiene una etapa final `migration`; el workflow no indicaba qué target construir y Docker publicó esa etapa en vez de `runner`.
+La URL corta `dominio.com/nombre-del-sitio` todavía no está implementada.
 
-La corrección pendiente de confirmar en el PR es:
+Prueba pendiente obligatoria en VPS:
 
-```yaml
-target: runner
+1. Crear sitio.
+2. Editar título.
+3. Guardar.
+4. Confirmar persistencia del borrador.
+5. Publicar.
+6. Abrir `Ver sitio`.
+7. Confirmar la URL pública.
+8. Modificar el borrador sin publicar.
+9. Confirmar que la web pública no cambia.
+10. Publicar nuevamente y confirmar actualización.
+11. Despublicar y confirmar `404`.
+12. Probar un sitio con solo portada.
+
+## 7. Medios
+
+Los medios nuevos se reciben por `POST /api/platform/media`, aceptan JPG/PNG/WebP de hasta 8 MB, se convierten a WebP con Sharp, conservan transparencia, se guardan en `data/media` y se validan por propietario.
+
+Se soportan imágenes en logo, portada, nosotros, texto + imagen, proyectos, galería, logos y equipo.
+
+Falta biblioteca de medios, eliminación de archivos sin uso, cuotas reales y limpieza segura.
+
+## 8. Leads y formularios
+
+Los formularios públicos incluyen validación server-side, honeypot, contacto, newsletter, bandeja por propietario, contador de no leídos, notificación interna y rate limiting persistente.
+
+Límites actuales:
+
+- Contacto: 5 envíos por sitio, tipo e IP cada 15 minutos.
+- Newsletter: 3 envíos por sitio, tipo e IP cada 15 minutos.
+
+Faltan notificaciones por email y exportación de leads.
+
+## 9. Planes y suscripciones
+
+La primera versión es manual, sin proveedor de pagos.
+
+Planes sembrados:
+
+- `free`: 1 sitio, 250 MB, sin dominio propio.
+- `starter`: 3 sitios, 2 GB, sin dominio propio.
+- `pro`: 10 sitios, 10 GB, dominio propio permitido.
+
+Cada usuario nuevo recibe una suscripción `free` activa. El panel `/admin/platform` permite ver usuarios y cambiar manualmente plan y estado.
+
+Estados disponibles: `active`, `trialing`, `past_due`, `canceled`, `unpaid`.
+
+El acceso administrador se configura con:
+
+```dotenv
+PLATFORM_ADMIN_EMAILS=admin@dominio.com
 ```
 
-en `docker/build-push-action`.
+Todavía faltan límites reales, página `/planes`, checkout, integración de Mercado Pago o Stripe, webhooks, renovaciones, cancelaciones e impagos automáticos.
 
-Después de mergear esa corrección, el contenedor debe arrancar con `node server.js`, usar SQLite en `/app/data` y pasar el healthcheck.
+## 10. Despliegue VPS
 
-El comando de diagnóstico usado desde PowerShell no encontró la clave WSL porque se ejecutó con una ruta Linux desde PowerShell. Para inspeccionar el VPS desde WSL usar la clave `~/.ssh/forma-github-actions`; no compartirla.
+El flujo configurado es GitHub Actions -> GHCR -> SSH -> Docker Compose -> Caddy -> Next.js. La ejecución y la restauración de datos en un VPS deben verificarse operativamente.
 
-## Próximo Chat — Orden Exacto
+El workflow ejecuta verificación en PR y construye/despliega con push o merge a `main`. La imagen debe usar `target: runner`, no `migration`.
 
-1. Confirmar que el PR de despliegue contiene `target: runner` y que el pipeline vuelve a pasar.
-2. Abrir `http://201.32.129.6` y comprobar login, registro, editor, guardado, publicación y medios.
-3. Corregir cualquier error de runtime antes de tocar el dominio.
-4. Auditar y hacer funcionales todos los botones, enlaces, CTA, navegación, planes, comparativas, mapa y contacto.
-5. Agregar E2E de destinos y acciones de todas las plantillas.
-6. Cuando el dominio esté validado, activar DNS, HTTPS y `COOKIE_SECURE=true`.
-7. Implementar bandeja de leads por propietario.
-8. Implementar notificaciones y rate limiting persistente.
+Persistencia actual:
 
-## Reglas Operativas
+- SQLite en `/app/data`.
+- Medios en `/app/data/media`.
+- Volumen Docker `forma_data`.
 
-- No usar `node_modules` de Windows y WSL mezclados.
-- Git y npm deben ejecutarse desde PowerShell o desde un checkout Linux separado, no alternando ambos sobre `/mnt/c`.
-- No ejecutar comandos Git destructivos.
-- No versionar `.env`, claves privadas, tokens ni la base SQLite real.
-- No declarar funcional una plantilla si sus acciones no tienen destino válido y prueba E2E.
+Caddy actualmente resuelve un dominio principal y hace reverse proxy a Next.js. Dominios personalizados todavía no están implementados.
+
+## 11. Base de datos
+
+SQLite contiene `users`, `sessions`, `sites`, `media`, `leads`, `lead_notifications`, `lead_rate_limits`, `plans` y `subscriptions`.
+
+La inicialización crea tablas, planes y suscripciones gratuitas faltantes automáticamente.
+
+Para una etapa comercial seria se recomienda migrar usuarios, sitios, leads, medios y suscripciones a PostgreSQL.
+
+## 12. Próximo orden de trabajo
+
+### Prioridad 1: auditoría de producción
+
+- Ejecutar E2E actualizado contra build de producción.
+- Probar editor en VPS.
+- Probar agregar los 21 bloques.
+- Probar eliminar hasta dejar solo portada.
+- Probar guardar, publicar y despublicar.
+- Probar formularios y leads.
+- Revisar consola del navegador y logs Docker.
+
+### Prioridad 2: límites comerciales
+
+- Aplicar límites del plan Gratis.
+- Mostrar estado y límites en dashboard.
+- Crear página de planes.
+- Permitir solicitud manual de upgrade.
+- Registrar historial administrativo.
+
+### Prioridad 3: pagos
+
+- Elegir Mercado Pago o Stripe.
+- Crear checkout.
+- Crear webhooks.
+- Actualizar suscripciones desde eventos del proveedor.
+- Implementar cancelación e impagos.
+
+### Prioridad 4: dominios
+
+- Mantener `/s/[slug]` como URL inicial.
+- Agregar dominios registrados por sitio.
+- Verificar DNS.
+- Resolver por header `Host`.
+- Configurar HTTPS automático en Caddy.
+
+### Prioridad 5: plataforma operable
+
+- PostgreSQL.
+- Backups probados.
+- Recuperación de contraseña.
+- Verificación de email.
+- Monitoreo y alertas.
+- Control de concurrencia.
+- Historial persistente.
+
+## 13. Regla para el próximo chat
+
+No agregar más plantillas ni variaciones visuales antes de completar auditoría de producción, estabilidad del editor, publicación comprobada, límites de planes y suscripciones operativas.

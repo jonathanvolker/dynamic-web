@@ -6,6 +6,7 @@ import sharp from 'sharp'
 import { dataDirectory, db } from '@/server/db/sqlite'
 import { MEDIA_PATH, mediaId, mediaIdPattern } from '@/features/website/media'
 import type { SiteDocument } from '../types'
+import { mediaIdsInDocument } from './media-ownership'
 
 const filePath = (id: string) => path.join(dataDirectory(), 'media', `${id}.webp`)
 
@@ -35,8 +36,7 @@ export async function readImage(id: string) {
 }
 
 export function assertMediaOwnership(document: SiteDocument, owner: string) {
-  const images = [document.settings.logo, ...document.sections.flatMap(section => [section.image, ...(section.projects || []).map(project => project.image), ...(section.gallery || []).map(item => item.image)])]
-  const ids = new Set(images.flatMap(image => image?.url && mediaId(image.url) ? [mediaId(image.url)!] : []))
+  const ids = mediaIdsInDocument(document)
   const query = db().prepare('SELECT id FROM media WHERE id = ? AND owner_id = ?')
   for (const id of ids) {
     if (!query.get(id, owner)) throw new Error('Una imagen no pertenece a tu cuenta. Volvé a cargarla.')

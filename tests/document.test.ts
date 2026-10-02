@@ -5,6 +5,7 @@ import { validateSite } from '../src/features/sites/validation'
 import { templates } from '../src/features/templates/registry'
 import { isSafeHref, resolveHref, sectionAnchors } from '../src/features/website/links'
 import { blockDefinitions, blockTypes } from '../src/features/website/blocks'
+import { mediaIdsInDocument } from '../src/features/sites/server/media-ownership'
 
 test('legacy templates migrate without changing content, colors or public anchors', () => {
   for (const template of templates) {
@@ -107,4 +108,22 @@ test('catalog has three families with three templates each', () => {
   for (const template of templates) counts.set(template.familyId, (counts.get(template.familyId) || 0) + 1)
   assert.deepEqual([...counts.keys()].sort(), ['editorial', 'immersive', 'modular'])
   assert.deepEqual([...counts.values()].sort(), [3, 3, 3])
+})
+
+test('media ownership collects logo, section, gallery, project, logo and team references', () => {
+  const document = migrateDocument(templates[0])
+  const media = (id: string) => ({ url: `/api/platform/media/${id}`, alt: '' })
+  document.settings.logo = media('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+  document.sections.push({
+    ...blockDefinitions.logos.defaults,
+    image: media('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
+    logos: [{ name: 'Logo', image: media('cccccccc-cccc-cccc-cccc-cccccccccccc') }],
+    team: [{ name: 'Persona', role: 'Rol', bio: 'Bio', image: media('dddddddd-dddd-dddd-dddd-dddddddddddd') }],
+  })
+  assert.deepEqual([...mediaIdsInDocument(document)], [
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'cccccccc-cccc-cccc-cccc-cccccccccccc',
+    'dddddddd-dddd-dddd-dddd-dddddddddddd',
+  ])
 })

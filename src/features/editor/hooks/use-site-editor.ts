@@ -26,16 +26,17 @@ export function useSiteEditor(site: Site) {
   const [busy, setBusy] = useState(false)
   const [publishedAt, setPublishedAt] = useState(site.published_at)
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop')
-const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
+  const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
   const [panel, setPanel] = useState<Panel>('preview')
   const [recovered, setRecovered] = useState(false)
   const recoveryKey = `forma:draft:${site.id}`
   const initialDocument = useRef(true)
+  const latestDocument = useRef(site.draft)
   const dirty = saved !== JSON.stringify(document)
   const section = typeof active === 'number' ? document.sections[active] : null
 
   useEffect(() => {
-    const unload = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault() }
+    const unload = (event: BeforeUnloadEvent) => { if (dirty) { event.preventDefault(); event.returnValue = '' } }
     window.addEventListener('beforeunload', unload)
     return () => window.removeEventListener('beforeunload', unload)
   }, [dirty])
@@ -47,6 +48,7 @@ const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
         const parsed = JSON.parse(stored) as SiteDocument
         if (parsed.schemaVersion === 1 && Array.isArray(parsed.sections)) {
           setDocument(parsed)
+          latestDocument.current = parsed
           setMessage('Recuperamos cambios locales. Guardalos para conservarlos en tu cuenta.')
           setRecovered(true)
         } else if (stored) {
@@ -75,6 +77,7 @@ const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
     setHistory(previous => [...previous.slice(-19), document])
     setFuture([])
     setDocument(next)
+    latestDocument.current = next
     setError('')
   }
 
@@ -94,11 +97,12 @@ const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
 
   function move(index: number, to: number) {
     if (to < 0 || to >= document.sections.length || index === to) return
+    const selectedId = typeof active === 'number' ? document.sections[active]?.id : undefined
     change(next => {
       const [item] = next.sections.splice(index, 1)
       next.sections.splice(to, 0, item)
     })
-    setActive(to)
+    setActive(selectedId === document.sections[index]?.id ? to : typeof active === 'number' ? active : to)
   }
 
   function add(type: Section['blockType']) {
@@ -137,18 +141,24 @@ const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
 
   function undo() {
     if (!history.length) return
+    const previous = history[history.length - 1]
+    const selectedId = typeof active === 'number' ? document.sections[active]?.id : undefined
     setFuture([document, ...future])
-    setDocument(history[history.length - 1])
+    setDocument(previous)
+    latestDocument.current = previous
     setHistory(history.slice(0, -1))
-    setActive('settings')
+    setActive(selectedId ? Math.max(0, previous.sections.findIndex(item => item.id === selectedId)) : active === 'settings' ? 'settings' : Math.min(active, previous.sections.length - 1))
   }
 
   function redo() {
     if (!future.length) return
+    const next = future[0]
+    const selectedId = typeof active === 'number' ? document.sections[active]?.id : undefined
     setHistory([...history, document])
-    setDocument(future[0])
+    setDocument(next)
+    latestDocument.current = next
     setFuture(future.slice(1))
-    setActive('settings')
+    setActive(selectedId ? Math.max(0, next.sections.findIndex(item => item.id === selectedId)) : active === 'settings' ? 'settings' : Math.min(active, next.sections.length - 1))
   }
 
   async function save(publish: boolean, automatic = false) {
@@ -158,9 +168,15 @@ const [tab, setTab] = useState<'sections' | 'add' | 'styles'>('sections')
     try {
       const result = await saveSite(site.id, snapshot, publish)
       if (result.error) { setError(result.error); return }
-      setSaved(JSON.stringify(snapshot))
-      try { window.localStorage.removeItem(recoveryKey) } catch { /* Storage is optional. */ }
-      setRecovered(false)
+      const snapshotJson = JSON.stringify(snapshot)
+      const currentJson = JSON.stringify(latestDocument.current)
+      setSaved(snapshotJson)
+      if (snapshotJson === currentJson) {
+        try { window.localStorage.removeItem(recoveryKey) } catch { /* Storage is optional. */ }
+        setRecovered(false)
+      } else {
+        setMessage('Guardamos una versión anterior. Tus cambios posteriores siguen pendientes.')
+      }
       setPublishedAt(result.publishedAt || null)
       setMessage(publish
         ? '¡Tu web está publicada! Abrila con Ver sitio.'

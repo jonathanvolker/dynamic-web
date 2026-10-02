@@ -2,8 +2,8 @@ import type { Section } from '@/features/website/types'
 import { isSafeHref, sectionAnchors } from '@/features/website/links'
 import { Field } from './Field'
 
-export function LinkField({ label, value, sections, onChange }: {
-  label: string; value: string; sections: Section[]; onChange: (value: string) => void
+export function LinkField({ label, value, optional = false, sections, onChange }: {
+  label: string; value: string; optional?: boolean; sections: Section[]; onChange: (value: string) => void
 }) {
   const anchors = sectionAnchors(sections)
   const missing = value.startsWith('#') && value !== '#main' && !anchors.includes(value.slice(1))
@@ -17,6 +17,6 @@ export function LinkField({ label, value, sections, onChange }: {
     <Field label={`${label} · enlace`} value={value} onChange={onChange} />
     <p className="inspector-note">También: https://…, mailto:…, tel:… o https://wa.me/…</p>
     {missing && <p className="field-warning" role="status">La sección de destino no existe. El enlace no se mostrará en la web.</p>}
-    {!isSafeHref(value) && <p className="field-warning" role="status">Ingresá un destino válido para guardar.</p>}
+    {!optional && !isSafeHref(value) && <p className="field-warning" role="status">Ingresá un destino válido para guardar.</p>}
   </div>
 }
