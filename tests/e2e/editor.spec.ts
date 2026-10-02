@@ -43,7 +43,7 @@ test('edit, upload, preview, save, publish, isolate accounts and unpublish', asy
   const storedImage = await page.request.get(imageUrl!)
   expect(storedImage.status()).toBe(200)
   expect((await sharp(await storedImage.body()).metadata()).hasAlpha).toBe(true)
-  await page.getByRole('button', { name: 'Identidad y ajustes' }).click()
+   await page.getByRole('button', { name: 'Estilos', exact: true }).click()
   await page.getByLabel('Logo de marca', { exact: true }).setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png })
   await expect(preview.locator('.header .brand-image')).toBeVisible()
   await page.getByLabel('Tipografía de títulos').selectOption('serif')
@@ -169,6 +169,29 @@ test('all public templates expose their intended composition blocks', async ({ p
     await page.setViewportSize({ width: 390, height: 844 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), template).toBe(true)
   }
+})
+
+test('editor adds and removes sections and can publish a hero-only site', async ({ page }) => {
+  await register(page)
+  await createSite(page, 'blank')
+  const preview = page.frameLocator('iframe')
+  await page.getByRole('button', { name: '+ Agregar', exact: true }).click()
+  await page.locator('.block-library button').filter({ hasText: 'Testimonios' }).click()
+  await expect(preview.locator('.testimonials')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Secciones', exact: true }).first().click()
+  await page.getByRole('button', { name: 'Eliminar Testimonios' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Eliminar sección' }).click()
+  await expect(preview.locator('.testimonials')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Eliminar Contacto' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Eliminar sección' }).click()
+  await expect(preview.locator('h1')).toBeVisible()
+  await page.getByRole('button', { name: 'Publicar' }).click()
+  await expect(page.locator('.editor-status')).toContainText('Tu web está publicada')
+  const publicUrl = await page.getByRole('link', { name: 'Ver sitio' }).getAttribute('href')
+  const publicPage = await page.context().newPage()
+  await publicPage.goto(publicUrl!)
+  await expect(publicPage.locator('h1')).toBeVisible()
+  await expect(publicPage.locator('main > section')).toHaveCount(1)
 })
 
 test('all public template actions have a valid destination or documented interaction', async ({ page }) => {

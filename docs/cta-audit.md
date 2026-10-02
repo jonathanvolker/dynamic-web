@@ -1,6 +1,6 @@
 # Auditoría de CTAs y acciones
 
-Auditoría del renderizado actual. Los destinos internos se resuelven contra las anclas existentes; si una sección fue eliminada, el enlace no se renderiza. Los destinos externos aceptados son `https://`, `mailto:`, `tel:` y anclas internas.
+Auditoría del renderizado actual, basada en inspección del código y los recorridos E2E existentes. Los destinos internos se resuelven contra las anclas existentes; si una sección fue eliminada, el enlace no se renderiza. Los destinos externos aceptados son `https://`, `mailto:`, `tel:` y anclas internas.
 
 | Componente | Acción | Qué hace | Estado |
 | --- | --- | --- | --- |
@@ -47,7 +47,7 @@ Auditoría del renderizado actual. Los destinos internos se resuelven contra las
 - Todo `href` dinámico pasa por `resolveHref` antes de renderizarse.
 - Toda ancla interna renderizada tiene una sección destino.
 - Los formularios no quedan bloqueados si falla la red.
-- Cada lead genera una notificación para el propietario.
+- Cada lead válido genera una notificación interna para el propietario.
 - Los envíos públicos tienen límite persistente por sitio, tipo, IP y ventana de 15 minutos.
 
 ## Plataforma y editor

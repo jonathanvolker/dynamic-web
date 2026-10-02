@@ -12,14 +12,14 @@ El diagnóstico de las secciones 1 a 4 describe la situación inicial. La primer
 - Tres composiciones de portada, imágenes de portada/nosotros, logo, encuadre y destinos de botones/menú editables.
 - Fuentes de títulos y cuerpo, ancho y espaciado global configurables.
 - Carga autenticada y almacenamiento de imágenes WebP fuera del documento; validación de propiedad y compatibilidad con base64 anterior.
-- Nueve pruebas unitarias y seis recorridos de navegador, incluida edición móvil, aislamiento de cuentas/medios, recuperación local y separación entre borrador/publicación.
+- Pruebas unitarias y recorridos de navegador para edición móvil, aislamiento de cuentas/medios, recuperación local y separación entre borrador/publicación. La cantidad exacta cambia con el código; los comandos vigentes están en `package.json`.
 - Registro compartido ampliado a 21 bloques: los nueve originales más CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación.
 - Familia Inmersivo fotográfico con Alba, Marea y Línea, y familia Modular producto con Vector, Nimbus y Escala; ambas con layouts propios, footers propios y adaptación móvil. El catálogo queda balanceado: tres familias y nueve plantillas.
 - Autoguardado de borrador a los dos segundos de inactividad y recuperación local confirmada antes de reemplazar el documento abierto.
 
-Verificaciones ejecutadas: `npm run typecheck`, `npm run build`, `npm test` y `npm run test:e2e` correctos. Las dependencias actuales siguen enlazadas a un destino temporal WSL: una instalación duradera debe usar el lockfile en un filesystem adecuado.
+Las verificaciones históricas de esta entrega no sustituyen una ejecución sobre el checkout actual. Ejecutar `npm run typecheck`, `npm test`, `npm run build` y `npm run test:e2e` antes de declarar estabilidad. Las dependencias de cada entorno deben instalarse con `npm ci` usando el lockfile.
 
-Estado de fases: fase 0 verificada en Chromium para los recorridos cubiertos; fases 1, 2, 3 y 4 parcialmente implementadas. La primera ola de bloques y persistencia básica de leads ya está implementada. Fases 5 a 7 pendientes. Restan páginas y elementos anidados, aislamiento completo de CSS, biblioteca/limpieza de medios, controles responsive por propiedad, notificaciones de formularios, PostgreSQL, dominios y PWA/tiendas. Las dos familias nuevas ya no son solo propuestas: están implementadas con tres plantillas cada una.
+Estado de fases: fase 0 verificada en Chromium para los recorridos cubiertos; fases 1, 2, 3 y 4 parcialmente implementadas. La primera ola de bloques, persistencia de leads, bandeja, notificaciones internas, rate limiting, administración manual de planes y despliegue VPS ya están implementados. Restan páginas y elementos anidados, aislamiento completo de CSS, biblioteca/limpieza de medios, controles responsive por propiedad, notificaciones por email, pagos automáticos, PostgreSQL, dominios y PWA/tiendas. Las dos familias nuevas ya no son solo propuestas: están implementadas con tres plantillas cada una.
 
 ## 1. Etapa actual
 
@@ -30,7 +30,7 @@ El proyecto es un MVP local de constructor multisitio: supera una maqueta visual
 - Next.js 15, React 19 y TypeScript, con módulos por funcionalidad.
 - Registro, login, logout, contraseñas con scrypt y sesiones con token almacenado como hash.
 - Sitios asociados a un propietario; las acciones de edición verifican pertenencia.
-- Galería pública, previews y creación desde Forma, Brasa, Nexo, Alba, Vector o base simple.
+- Galería pública, previews y creación desde las nueve plantillas o base simple.
 - Editor con 21 tipos de sección, listas, colores, imágenes, reordenamiento, duplicación y eliminación. La composición libre con elementos anidados y los controles responsive por propiedad siguen pendientes.
 - Deshacer/rehacer en memoria y aviso de cambios sin guardar.
 - Preview en iframe con selección de secciones y tamaños escritorio/móvil.
@@ -39,7 +39,7 @@ El proyecto es un MVP local de constructor multisitio: supera una maqueta visual
 
 ### Alcance de la verificación
 
-Se revisaron arquitectura, rutas, autenticación, persistencia, catálogo, renderizador, estilos, editor, validación y configuración de despliegue. También se verificaron en Chromium los cinco templates en escritorio y móvil mediante recorridos automatizados y capturas.
+Se revisaron arquitectura, rutas, autenticación, persistencia, catálogo, renderizador, estilos, editor, validación y configuración de despliegue. Los recorridos automatizados actuales cubren las nueve plantillas; la revisión visual manual completa de escritorio y móvil sigue pendiente.
 
 Las dependencias fueron recuperadas en WSL y las comprobaciones actuales pasan. El `node_modules` enlazado a `/tmp` sigue siendo temporal para este entorno; una instalación duradera debe usar `npm ci` desde un filesystem con permisos normales.
 
@@ -81,18 +81,19 @@ La comparación con Wix Studio, Webflow, Framer, Squarespace y Shopify confirmó
 
 La propuesta concreta, las referencias y la separación entre secciones listas y elementos combinables están consolidadas en el handoff de `PLAN.md`. Las nueve plantillas ya fueron rehechas usando combinaciones diferentes; no se debe volver a resolver variedad maquillando el catálogo.
 
-## 4. Límites concretos del editor actual
+## 4. Diagnóstico histórico previo a la primera entrega
 
-- `website/types.ts`: secciones con campos opcionales compartidos; no hay páginas, árbol de elementos ni versión del documento.
-- `HeroSection`: botón a `#contact` y enlace a `#projects` fijos. Eliminar esas secciones puede dejar enlaces sin destino.
-- `Header`: símbolo de marca y botón “Hablemos” fijos; no admite logo propio ni configuración completa de cabecera.
+Las limitaciones de esta sección describen el estado previo a la primera entrega y se conservan como contexto histórico. Para el estado vigente consultar `docs/architecture.md` y `docs/project-audit.md`.
+
+- `website/types.ts`: secciones con campos opcionales compartidos; no hay páginas ni árbol de elementos. El documento ahora sí tiene `schemaVersion`.
+- Los destinos de botones y menú ahora son configurables y se resuelven contra anclas existentes.
+- El header admite logo y botón configurables.
 - `ContactSection`: contacto exclusivamente por `mailto:`. Las reservas y agendas anunciadas en ejemplos no tienen motor funcional.
 - `SiteView`: pie fijo y anclas calculadas por tipo/posición; al reordenar secciones repetidas puede cambiar qué contenido recibe un enlace.
-- Imágenes propias solo en proyectos; portada y nosotros conservan ilustraciones programadas.
-- `image.ts`: transforma todo a JPEG sobre fondo opaco, lo que no sirve para preservar transparencia de futuros logos.
-- Imágenes base64 dentro del JSON, límite de documento de 5 MB, hasta 30 secciones, 20 elementos por lista y 5 enlaces de menú.
+- Imágenes propias están soportadas en logo, portada, nosotros, texto + imagen, proyectos, galería, logos y equipo.
+- Las imágenes nuevas se almacenan como WebP y preservan transparencia; los documentos legacy con base64 siguen siendo compatibles.
 - Historial de unos 20 cambios, clonado del documento en cada edición y pérdida del historial al recargar. Con imágenes incluidas, aumenta el consumo de memoria.
-- No hay guardado automático, recuperación persistente de cambios ni control de conflictos entre pestañas.
+- El autoguardado y la recuperación local ya existen; el control de conflictos entre pestañas sigue pendiente.
 - La base simple solo filtra Forma a portada y contacto; no es un lienzo independiente.
 - Solo hay una página por sitio y SEO básico de título/descripción.
 - No hay gestión completa para renombrar, duplicar o eliminar sitios ni cambiar su slug.

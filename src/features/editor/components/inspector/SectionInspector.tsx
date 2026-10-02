@@ -56,8 +56,8 @@ export function SectionInspector({ editor }: { editor: EditorController }) {
       {rows && <ArrayField name={rows} editor={editor} />}
       <div className="section-controls">
         <p className="inspector-note">Dirección estable: #{section.anchor}</p>
-        <button className="add-row" disabled={editor.document.sections.length >= 30} onClick={editor.duplicate}>Duplicar sección</button>
-        <button className="remove-row" disabled={editor.document.sections.length <= 1} onClick={() => setConfirmRemove(true)}>Eliminar sección</button>
+        <button type="button" className="add-row" disabled={editor.document.sections.length >= 30} onClick={editor.duplicate}>Duplicar sección</button>
+        <button type="button" className="remove-row" disabled={editor.document.sections.length <= 1} onClick={() => setConfirmRemove(true)}>Eliminar sección</button>
       </div>
       <Modal open={confirmRemove} title="¿Eliminar esta sección?" description="La sección desaparecerá de tu borrador. Podés recuperarla inmediatamente con Deshacer." confirmLabel="Eliminar sección" tone="danger" onConfirm={() => { editor.remove(); setConfirmRemove(false) }} onCancel={() => setConfirmRemove(false)} />
     </>

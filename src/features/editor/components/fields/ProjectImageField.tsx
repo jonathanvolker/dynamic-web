@@ -49,7 +49,7 @@ export function ProjectImageField({ title, image, onChange, onError, label = 'Im
         <>
           <img className="upload-preview" src={image.url} alt={image.alt || label} />
           <Field label="Texto alternativo" value={image.alt || ''} onChange={alt => onChange({ ...image, alt })} />
-          <button className="remove-row" disabled={uploading} onClick={() => onChange(undefined)}>{removeLabel}</button>
+           <button type="button" className="remove-row" disabled={uploading} onClick={() => onChange(undefined)}>{removeLabel}</button>
         </>
       )}
     </>

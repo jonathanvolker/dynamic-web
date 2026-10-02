@@ -1,8 +1,8 @@
 # Plan de acción — plataforma multisitio
 
-## Handoff actual — 1 de octubre de 2026
+## Handoff actual — 2 de octubre de 2026
 
-El estado completo para continuar en otro chat está documentado en [`docs/next-chat.md`](docs/next-chat.md). Incluye el estado del producto, el despliegue en el VPS, el CI/CD de GitHub y la auditoría pendiente de botones, destinos y navegación.
+El estado completo para continuar en otro chat está documentado en [`docs/next-chat.md`](docs/next-chat.md). Incluye producto, editor, autenticación, publicación, leads, administración, suscripciones manuales, VPS, pruebas y próximos pasos. La auditoría específica del editor está en [`docs/editor-audit.md`](docs/editor-audit.md).
 
 ## Objetivo
 
@@ -22,7 +22,7 @@ El editor registra los nueve tipos originales más CTA, texto + imagen, video, l
 
 ### Problema principal
 
-No agregar más variaciones cosméticas a las nueve plantillas. La biblioteca ya llegó a 21 tipos y las plantillas ahora los combinan con recorridos diferentes por familia. El siguiente límite es cerrar los flujos operativos de captación.
+No agregar más variaciones cosméticas a las nueve plantillas. La biblioteca ya llegó a 21 tipos y las plantillas ahora los combinan con recorridos diferentes por familia. El siguiente límite es estabilizar el editor en producción, verificar publicación en VPS y convertir los planes manuales en límites y suscripciones operativas.
 
 ### Primera ola implementada
 
@@ -43,15 +43,15 @@ La primera ola amplió el registro a 21 tipos de sección. Se agregaron estos 12
 
 La segunda ola puede sumar galería masonry, galería horizontal, cita, banda CTA, timeline, eventos, blog, productos, mapa, reserva, características de producto y demo de producto.
 
-Los bloques ya tienen contrato de datos, default, renderizador público/preview, inspector, validación server-side, responsive y accesibilidad base. Formularios y newsletter persisten leads en SQLite con honeypot; los recorridos E2E de publicación, envío, persistencia, validación y honeypot ya están cubiertos. Todavía faltan notificaciones, bandeja de entradas y rate limiting persistente. La carga de imágenes está integrada en portada, nosotros, texto + imagen, proyectos y galería; logos/equipo todavía necesitan un selector de medios propio.
+Los bloques ya tienen contrato de datos, default, renderizador público/preview, inspector, validación server-side, responsive y accesibilidad base. Formularios y newsletter persisten leads en SQLite con honeypot, bandeja por propietario, notificaciones internas y rate limiting persistente. La carga de imágenes está integrada en portada, nosotros, texto + imagen, proyectos, galería, logos y equipo. Todavía faltan notificaciones por email, exportación y biblioteca de medios.
 
 ### Orden de trabajo recomendado
 
 1. Agregar pruebas E2E de edición, guardado, publicación y envío de formularios.
 2. Rehacer las nueve plantillas combinando bloques diferentes y variantes reales.
-3. Incorporar bandeja de leads por propietario.
-4. Agregar notificaciones y rate limiting persistente.
-5. Recién después evaluar páginas, elementos anidados y canvas más libre.
+3. Aplicar límites reales a los planes manuales.
+4. Validar publicación y editor en el VPS.
+5. Recién después integrar pagos, páginas y elementos anidados.
 
 ### Referencia competitiva
 
@@ -62,7 +62,7 @@ La dirección se contrastó con Wix Studio, Webflow, Framer, Squarespace y Shopi
 - No crear otra familia visual sin ampliar primero el vocabulario de bloques.
 - No resolver variedad cambiando únicamente colores, fuentes, copy o nombres.
 - No duplicar un componente por plantilla si una variante configurable resuelve el caso.
-- No declarar completa la biblioteca mientras falten pruebas operativas, bandeja de leads, notificaciones y composición avanzada.
+- No declarar completa la biblioteca mientras falten pruebas operativas, límites comerciales y composición avanzada.
 
 ### Verificación mínima
 
@@ -83,8 +83,8 @@ Después de cada ola: `npm run typecheck`, `npm run build`, `npm test`, `npm run
 1. Leer este handoff y `README.md` antes de editar.
 2. Ejecutar `npm run typecheck`, `npm test` y `npm run build` desde el entorno elegido.
 3. Rehacer las plantillas con bloques nuevos y revisar desktop/móvil.
-4. Implementar bandeja de leads por propietario.
-5. Agregar notificaciones y rate limiting antes de avanzar a páginas anidadas.
+4. Aplicar límites y estados de los planes manuales.
+5. Validar publicación y editor en el VPS antes de integrar pagos.
 
 ## Base implementada
 
@@ -108,11 +108,11 @@ Después de cada ola: `npm run typecheck`, `npm run build`, `npm test`, `npm run
 ## Siguiente etapa
 
 1. Completar revisión visual manual de los 12 bloques nuevos en desktop y móvil.
-2. Agregar bandeja de leads por propietario.
-3. Incorporar notificaciones y rate limiting persistente.
+2. Validar editor y publicación en producción.
+3. Aplicar límites del plan Gratis y administrar upgrades.
 4. Completar el modelo extensible: páginas, variantes y elementos combinables.
 5. Ampliar controles por sección y dispositivo, biblioteca de medios, SEO y gestión de sitios.
-6. Incorporar PostgreSQL para VPS; resolver dominios, DNS, HTTPS, despliegue y backups.
+6. Evaluar PostgreSQL para una futura escala del VPS; resolver dominios, DNS, HTTPS, backups y restauración probada.
 7. Preparar PWA y publicación en tiendas móviles.
 
 ## Primera entrega del plan implementada
@@ -129,9 +129,9 @@ Después de cada ola: `npm run typecheck`, `npm run build`, `npm test`, `npm run
 - Autoguardado del borrador y recuperación local confirmados como parte del editor; publicar mantiene separado el snapshot público.
 - Primera ola de 12 bloques funcionales agregada al registro compartido: CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación. Los leads de formulario y newsletter se persisten por sitio en SQLite con validación server-side y honeypot.
 
-La entrega de familias, las composiciones diferenciadas y la primera ola de bloques están implementadas, pero no completan la visión del constructor. El diagnóstico comparativo y la dirección de la siguiente entrega están consolidados en el handoff de este archivo. Las fases 1 y 2 siguen parciales: composición por elementos, páginas, controles responsive por propiedad, limpieza de medios, bandeja/notificaciones de formularios y despliegue siguen pendientes.
+La entrega de familias, las composiciones diferenciadas, la primera ola de bloques, la bandeja de leads, las notificaciones internas, el rate limiting, el panel administrativo y la configuración de despliegue VPS están implementados. La ejecución real del VPS, backups y restauración todavía requieren verificación operativa. El diagnóstico comparativo y la dirección siguiente están consolidados en `docs/next-chat.md`. Siguen parciales la composición por elementos, páginas, controles responsive por propiedad, limpieza de medios, enforcement de límites, pagos automáticos y dominios personalizados.
 
-El despliegue Docker está pospuesto por indicación del usuario. El CMS de la primera demo permanece aislado en `features/cms`; no es el constructor que usa el usuario de la plataforma.
+El despliegue Docker está configurado para la plataforma multisitio. El CMS de la primera demo permanece aislado en `features/cms`; no es el constructor que usa el usuario de la plataforma. La ejecución contra un VPS y la restauración de backups todavía deben verificarse.
 
 ## Ampliación del producto y objetivo móvil
 

@@ -26,10 +26,10 @@ export function SettingsInspector({ editor }: { editor: EditorController }) {
         <div className="nav-row" key={index}>
           <Field label="Nombre" value={item.label} onChange={value => editor.change(next => { next.settings.navigation[index].label = value })} />
            <LinkField label="Destino" value={item.href} sections={editor.document.sections} onChange={value => editor.change(next => { next.settings.navigation[index].href = value })} />
-          <button className="remove-row" onClick={() => editor.change(next => { next.settings.navigation.splice(index, 1) })}>Quitar enlace</button>
+           <button type="button" className="remove-row" onClick={() => editor.change(next => { next.settings.navigation.splice(index, 1) })}>Quitar enlace</button>
         </div>
       ))}
-      <button className="add-row" disabled={settings.navigation.length >= 5} onClick={() => editor.change(next => next.settings.navigation.push({ label: 'Nuevo enlace', href: '#contact' }))}>
+       <button type="button" className="add-row" disabled={settings.navigation.length >= 5} onClick={() => editor.change(next => next.settings.navigation.push({ label: 'Nuevo enlace', href: '#contact' }))}>
         + Agregar enlace
       </button>
       <p className="inspector-note">Elegí una sección de la lista. Su dirección se conserva al reordenar el sitio.</p>

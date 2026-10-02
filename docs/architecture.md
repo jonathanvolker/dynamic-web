@@ -36,12 +36,13 @@ src/
 │   │   └── styles/editor.css
 │   ├── website/
 │   │   ├── components/sections/ # Un componente por tipo de sección
-│   │   ├── content/defaults.ts  # Contenido de las plantillas
+│   │   ├── content/defaults.ts  # Defaults de la plantilla base
 │   │   ├── styles/site.css
 │   │   ├── theme/palettes.ts    # Paletas, valores de respaldo y contraste de acentos
 │   │   └── types.ts             # Contrato compartido de los bloques
 │   ├── platform/styles/         # Estilos de acceso, panel y portada
-│   ├── templates/               # Registro, contenido, galería y vistas públicas
+│   ├── templates/               # Registro, contenido por plantilla, galería y vistas públicas
+│   ├── billing/                 # Planes y suscripciones manuales
 │   └── cms/config.ts            # Configuración aislada de Payload
 ├── server/db/sqlite.ts          # Conexión y esquema de la persistencia local
 └── payload.config.ts            # Entrada estable para la integración de Payload
@@ -70,7 +71,7 @@ Los documentos nuevos incluyen `schemaVersion: 1`, `familyId` y `templateId`. `m
 
 `POST /api/platform/media` verifica origen y sesión, recibe JPG/PNG/WebP de hasta 8 MB y normaliza la imagen con Sharp, conservando transparencia. `features/sites/server/media.ts` almacena el WebP en `PLATFORM_DATA_DIR/media/` y registra su propietario en SQLite. `GET /api/platform/media/[id]` sirve el recurso público por un ID opaco.
 
-`saveSite` valida el documento y la pertenencia de todas las referencias de imágenes nuevas antes de persistir. El frontend guarda URLs, no base64. Las imágenes embebidas de sitios anteriores se siguen aceptando. Los recursos son inmutables; reemplazar genera otro ID. La eliminación y recolección de archivos sin referencias todavía no están implementadas para evitar borrar recursos usados por un snapshot publicado.
+`saveSite` valida el documento y la pertenencia de todas las referencias de imágenes nuevas, incluidas logo, portada, proyectos, galería, logos y equipo, antes de persistir. El frontend guarda URLs, no base64. Las imágenes embebidas de sitios anteriores se siguen aceptando. Los recursos son inmutables; reemplazar genera otro ID. La eliminación y recolección de archivos sin referencias todavía no están implementadas para evitar borrar recursos usados por un snapshot publicado.
 
 ## Personalización compartida
 

@@ -159,7 +159,7 @@ Desarrollo usa `.next-dev` y producción usa `.next`, para que una compilación 
 
 ## Despliegue
 
-El flujo de VPS y GitHub Actions está documentado en [`docs/next-chat.md`](docs/next-chat.md) y [`deploy/README.md`](deploy/README.md). El Pull Request ejecuta verificaciones; el merge a `main` construye la imagen Docker, la publica en GHCR y actualiza el VPS mediante SSH.
+El flujo de VPS y GitHub Actions está documentado en [`docs/next-chat.md`](docs/next-chat.md) y [`deploy/README.md`](deploy/README.md). El Pull Request ejecuta typecheck, pruebas unitarias y build; el push a `main` construye la imagen Docker, la publica en GHCR y actualiza el VPS mediante SSH. La ejecución real contra el VPS debe verificarse por separado.
 
 Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.next`. Las pruebas de navegador requieren el build previo y levantan producción en el puerto 3100. Usan una base independiente en el directorio temporal del sistema (`/tmp/opencode/forma-e2e-<id>` en Linux), incluso si tenés `PLATFORM_DATA_DIR` configurado; el servidor de desarrollo puede seguir en el puerto 3000. Los tests cubren edición/publicación, compatibilidad de documentos anteriores, aislamiento entre cuentas y uso del editor a 390 px.
 
@@ -172,8 +172,10 @@ Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.nex
 - 21 bloques registrados en un catálogo compartido: los nueve originales más CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación. La composición libre con elementos anidados sigue pendiente.
 - Documentos versionados (`schemaVersion: 1`), con familia, plantilla y anclas estables; lectura compatible de documentos anteriores sin sobrescribir su publicación.
 - Imágenes nuevas optimizadas en el servidor como WebP y guardadas en `data/media/`, con referencias en SQLite y verificación de propietario al guardar. Conservan transparencia y ya no aumentan el JSON del sitio. Las imágenes base64 anteriores siguen funcionando.
-- Dirección local por sitio; conexión de dominios reales y HTTPS pendiente para la VPS.
-- Docker está pospuesto: los archivos existentes son la base de la demo inicial y requieren adaptación a la plataforma multisitio.
+- Cada sitio publicado tiene una dirección `/s/[slug]` en el dominio de la plataforma; conexión de dominios personalizados y HTTPS por sitio están pendientes.
+- Docker y la automatización de despliegue en VPS están configurados mediante GitHub Actions, GHCR, Docker Compose y Caddy. La persistencia productiva usa `/app/data`; la primera ejecución y la restauración de backups deben verificarse en el VPS. Dominios personalizados y HTTPS por sitio todavía están pendientes.
 - Contenido inicial ficticio. El bloque `contact` histórico abre email; los bloques `form` y `newsletter` nuevos persisten leads en SQLite.
 
 Los archivos subidos tienen URLs públicas con identificadores aleatorios, necesarias para mostrarlos en los sitios. Quitar una imagen del editor elimina la referencia, no el archivo: la biblioteca, cuotas y limpieza de recursos sin uso quedan para la siguiente etapa. El backup local debe incluir la base SQLite y `data/media/`.
+
+El handoff general está en [`docs/next-chat.md`](docs/next-chat.md), la auditoría del editor en [`docs/editor-audit.md`](docs/editor-audit.md), la auditoría de CTAs en [`docs/cta-audit.md`](docs/cta-audit.md) y el relevamiento integral en [`docs/project-audit.md`](docs/project-audit.md). El panel administrativo inicial está en `/admin/platform` y requiere `PLATFORM_ADMIN_EMAILS`.
