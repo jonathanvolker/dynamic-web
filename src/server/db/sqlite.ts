@@ -21,7 +21,7 @@ export function db() {
     PRAGMA journal_mode=WAL;
     PRAGMA foreign_keys=ON;
     CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL
+      id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'user'
     );
     CREATE TABLE IF NOT EXISTS sessions (
       token TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL
@@ -45,6 +45,14 @@ export function db() {
     CREATE TABLE IF NOT EXISTS schema_migrations (
       version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS lead_notifications (
+      id TEXT PRIMARY KEY, lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+      owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, read_at TEXT
+    );
+    CREATE INDEX IF NOT EXISTS lead_notifications_owner ON lead_notifications(owner_id, read_at);
+    CREATE TABLE IF NOT EXISTS lead_rate_limits (
+      bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
+    );
   `)
   migrateBilling()
   return database
@@ -56,6 +64,7 @@ function migrateBilling() {
   const addColumn = (table: string, column: string, definition: string) => {
     if (!hasColumn(table, column)) database!.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
   }
+  addColumn('users', 'role', "TEXT NOT NULL DEFAULT 'user'")
   const applied = database.prepare('SELECT version FROM schema_migrations').all() as { version: number }[]
   const versions = new Set(applied.map(item => item.version))
   if (!versions.has(1)) {

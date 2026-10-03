@@ -1,6 +1,6 @@
 # Despliegue en VPS
 
-El workflow de `.github/workflows/deploy.yml` construye la imagen en GitHub Actions, la publica en GHCR y actualiza el VPS al hacer push a `main`. El VPS no compila el proyecto.
+El workflow de `.github/workflows/deploy.yml` ejecuta typecheck, pruebas unitarias y build; luego construye la imagen en GitHub Actions, la publica en GHCR y actualiza el VPS al hacer push a `main`. El VPS no compila el proyecto. La primera ejecución debe verificarse con los secretos y el host reales.
 
 ## Preparar el VPS una vez
 
@@ -26,9 +26,12 @@ DOMAIN=:80
 PUBLIC_URL=http://201.32.129.6
 PAYLOAD_SECRET=una-cadena-aleatoria-de-al-menos-32-caracteres
 COOKIE_SECURE=false
+PLATFORM_ADMIN_EMAILS=tu-email@dominio.com
 ```
 
 Mientras el dominio está en validación, `DOMAIN=:80` permite probar por HTTP usando la IP. Cuando el dominio esté activo, cambiar ambos valores a `DOMAIN=tu-dominio.com` y `PUBLIC_URL=https://tu-dominio.com`, y cambiar `COOKIE_SECURE=true`.
+
+`PLATFORM_ADMIN_EMAILS` contiene los emails de los dueños de la plataforma, separados por coma. Esos usuarios pueden acceder a `/admin/platform` para ver cuentas y administrar manualmente suscripciones.
 
 El workflow autentica el VPS contra GHCR, por lo que el paquete puede permanecer privado. El token solo necesita permiso de lectura de paquetes.
 
@@ -48,4 +51,4 @@ No subir `.env`, claves privadas ni tokens al repositorio.
 
 ## Primer despliegue
 
-Después de crear los secrets, el primer push a `main` ejecutará las verificaciones, publicará `ghcr.io/jonathanvolker/dynamic-web:main`, copiará el Compose y Caddyfile, y reiniciará la aplicación.
+Después de crear los secrets, el primer push a `main` ejecutará las verificaciones, publicará `ghcr.io/jonathanvolker/dynamic-web:main`, copiará el Compose y Caddyfile, y reiniciará la aplicación. Los datos de SQLite y medios persisten en el volumen `forma_data` montado en `/app/data`; todavía falta documentar y probar un procedimiento de backup/restauración.

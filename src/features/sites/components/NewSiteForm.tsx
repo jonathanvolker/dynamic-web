@@ -7,7 +7,7 @@ import { families, templates } from '@/features/templates/registry'
 import { TemplateThumbnail } from '@/features/templates/components/TemplateThumbnail'
 import type { FamilyId, TemplateId } from '@/features/website/types'
 
-export default function NewSiteForm({ selectedTemplate = 'studio' }: { selectedTemplate?: TemplateId }) {
+export default function NewSiteForm({ selectedTemplate = 'studio' }: { selectedTemplate?: TemplateId | 'blank' }) {
   const [state, action, pending] = useActionState(newSite, { error: '' })
   const initialFamily = families.find(family => templates.some(template => template.familyId === family.id && template.id === selectedTemplate))?.id || families[0].id
   const [familyId, setFamilyId] = useState<FamilyId>(initialFamily)

@@ -52,3 +52,22 @@ export function recordBillingEvent(provider: string, eventId: string, payload: s
     .run(eventId, provider, payload, new Date().toISOString())
   return result.changes > 0
 }
+
+export function ensureFreeSubscription(userId: string) {
+  createTrial(userId)
+}
+
+export function listAdminSubscriptions() {
+  return db().prepare(`SELECT subscriptions.id AS subscription_id, users.id AS user_id, users.name AS user_name, users.email,
+    subscriptions.status, subscriptions.provider, subscriptions.current_period_ends_at, subscriptions.updated_at,
+    plans.id, plans.name, plans.price, plans.currency, plans.max_sites, plans.custom_domain
+    FROM subscriptions JOIN users ON users.id = subscriptions.user_id JOIN plans ON plans.id = subscriptions.plan_id ORDER BY users.name COLLATE NOCASE`).all() as {
+    subscription_id: string; user_id: string; user_name: string; email: string; status: string; provider: string;
+    current_period_ends_at: string | null; updated_at: string; id: PlanId; name: string; price: number; currency: string; max_sites: number; custom_domain: number
+  }[]
+}
+
+export function updateSubscription(subscriptionId: string, planId: PlanId, status: SubscriptionStatus) {
+  const now = new Date().toISOString()
+  db().prepare('UPDATE subscriptions SET plan_id = ?, status = ?, updated_at = ? WHERE id = ?').run(planId, status, now, subscriptionId)
+}

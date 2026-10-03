@@ -4,7 +4,7 @@ import { SettingsInspector } from './inspector/SettingsInspector'
 import { SectionInspector } from './inspector/SectionInspector'
 
 export function EditorInspector({ editor }: { editor: EditorController }) {
-  const title = editor.active === 'settings' ? 'Tu identidad'
+  const title = editor.active === 'settings' ? 'Estilos'
     : editor.section ? blockLabels[editor.section.blockType] : 'Elegí una sección'
 
   return (

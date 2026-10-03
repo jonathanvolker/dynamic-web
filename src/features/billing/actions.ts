@@ -4,6 +4,9 @@ import { redirect } from 'next/navigation'
 import { currentUser } from '@/features/auth/server/session'
 import { createMercadoPagoCheckout } from './providers/mercadopago'
 import type { PlanId } from './types'
+import { requireAdmin } from '@/features/auth/server/session'
+import { updateSubscription } from './server/repository'
+import type { SubscriptionStatus } from './types'
 
 export async function startCheckout(planId: PlanId, _formData?: FormData): Promise<void> {
   const user = await currentUser()
@@ -16,4 +19,14 @@ export async function startCheckout(planId: PlanId, _formData?: FormData): Promi
     redirect(`/planes?error=${encodeURIComponent(error instanceof Error ? error.message : 'No pudimos iniciar el checkout.')}`)
   }
   redirect(url)
+}
+
+export async function changeSubscription(form: FormData): Promise<void> {
+  await requireAdmin()
+  const subscriptionId = String(form.get('subscriptionId') || '')
+  const planId = String(form.get('planId') || '') as PlanId
+  const status = String(form.get('status') || '') as SubscriptionStatus
+  if (!['free', 'initial', 'professional'].includes(planId) || !['trialing', 'active', 'past_due', 'canceled', 'expired'].includes(status)) redirect('/admin/platform?error=Datos+de+suscripción+inválidos.')
+  updateSubscription(subscriptionId, planId, status)
+  redirect('/admin/platform?success=Suscripción+actualizada.')
 }

@@ -16,6 +16,7 @@ export function ThemeInspector({ editor }: { editor: EditorController }) {
       <div className="theme-presets" role="group" aria-label="Paletas prediseñadas">
         {palettes.map(palette => (
           <button
+            type="button"
             key={palette.id}
             className="theme-preset"
             aria-pressed={selected?.id === palette.id}

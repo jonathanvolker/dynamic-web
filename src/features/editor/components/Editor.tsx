@@ -18,9 +18,9 @@ export default function Editor({ site, access }: { site: Site; access: EditorAcc
       {access.status === 'past_due' && <div className="editor-lock-banner warning">Tu pago está pendiente. Tenés {access.graceDaysRemaining} días para regularizarlo antes de retirar la publicación. <a href="/planes">Ver planes ↗</a></div>}
       <EditorToolbar editor={editor} />
       <div className="editor-mobile-tabs">
-        <button onClick={() => editor.setPanel('sections')}>Secciones</button>
-        <button onClick={() => editor.setPanel('preview')}>Vista previa</button>
-        <button onClick={() => editor.setPanel('properties')}>Propiedades</button>
+         <button type="button" aria-selected={editor.panel === 'sections'} className={editor.panel === 'sections' ? 'active' : ''} onClick={() => editor.setPanel('sections')}>Secciones</button>
+         <button type="button" aria-selected={editor.panel === 'preview'} className={editor.panel === 'preview' ? 'active' : ''} onClick={() => editor.setPanel('preview')}>Vista previa</button>
+         <button type="button" aria-selected={editor.panel === 'properties'} className={editor.panel === 'properties' ? 'active' : ''} onClick={() => editor.setPanel('properties')}>Propiedades</button>
       </div>
       <div className="editor-body">
         <EditorSidebar editor={editor} />

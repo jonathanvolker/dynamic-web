@@ -43,7 +43,7 @@ test('edit, upload, preview, save, publish, isolate accounts and unpublish', asy
   const storedImage = await page.request.get(imageUrl!)
   expect(storedImage.status()).toBe(200)
   expect((await sharp(await storedImage.body()).metadata()).hasAlpha).toBe(true)
-  await page.getByRole('button', { name: 'Identidad y ajustes' }).click()
+   await page.getByRole('button', { name: 'Estilos', exact: true }).click()
   await page.getByLabel('Logo de marca', { exact: true }).setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png })
   await expect(preview.locator('.header .brand-image')).toBeVisible()
   await page.getByLabel('Tipografía de títulos').selectOption('serif')
@@ -168,6 +168,52 @@ test('all public templates expose their intended composition blocks', async ({ p
     for (const block of blocks) await expect(page.locator(block), `${template} should render ${block}`).toHaveCount(1)
     await page.setViewportSize({ width: 390, height: 844 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), template).toBe(true)
+  }
+})
+
+test('editor adds and removes sections and can publish a hero-only site', async ({ page }) => {
+  await register(page)
+  await createSite(page, 'blank')
+  const preview = page.frameLocator('iframe')
+  await page.getByRole('button', { name: '+ Agregar', exact: true }).click()
+  await page.locator('.block-library button').filter({ hasText: 'Testimonios' }).click()
+  await expect(preview.locator('.testimonials')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Secciones', exact: true }).first().click()
+  await page.getByRole('button', { name: 'Eliminar Testimonios' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Eliminar sección' }).click()
+  await expect(preview.locator('.testimonials')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Eliminar Contacto' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Eliminar sección' }).click()
+  await expect(preview.locator('h1')).toBeVisible()
+  await page.getByRole('button', { name: 'Publicar' }).click()
+  await expect(page.locator('.editor-status')).toContainText('Tu web está publicada')
+  const publicUrl = await page.getByRole('link', { name: 'Ver sitio' }).getAttribute('href')
+  const publicPage = await page.context().newPage()
+  await publicPage.goto(publicUrl!)
+  await expect(publicPage.locator('h1')).toBeVisible()
+  await expect(publicPage.locator('main > section')).toHaveCount(1)
+})
+
+test('all public template actions have a valid destination or documented interaction', async ({ page }) => {
+  for (const template of ['studio', 'restaurant', 'consultant', 'retreat', 'coast', 'atelier', 'product', 'launch', 'scale']) {
+    await page.goto(`/templates/${template}`)
+    const links = await page.locator('a[href]').evaluateAll(elements => elements.map(element => ({ href: (element as HTMLAnchorElement).getAttribute('href'), text: element.textContent?.trim() })))
+    expect(links.length, `${template} should expose actions`).toBeGreaterThan(3)
+    for (const link of links) {
+      expect(link.href, `${template} has an empty action: ${link.text}`).toBeTruthy()
+      if (link.href?.startsWith('#')) {
+        await expect(page.locator(link.href)).toHaveCount(1)
+      } else {
+        expect(link.href).toMatch(/^(https:\/\/|mailto:|tel:|\/) */)
+      }
+    }
+    const project = page.locator('.project-card').first()
+    if (await project.count()) {
+      await project.click()
+      await expect(page.locator('.project-dialog[open]')).toBeVisible()
+      await page.getByRole('button', { name: 'Cerrar proyecto' }).click()
+      await expect(page.locator('.project-dialog[open]')).toHaveCount(0)
+    }
   }
 })
 
