@@ -1,0 +1,13 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { requireUser } from '@/features/auth/server/session'
+import { adminStats, isPlatformAdmin } from '@/features/admin/server/repository'
+
+export const dynamic = 'force-dynamic'
+
+export default async function AdminPlatformPage() {
+  const user = await requireUser()
+  if (!isPlatformAdmin(user.email)) notFound()
+  const stats = adminStats()
+  return <main className="platform admin-page"><header className="p-header"><Link href="/dashboard" className="p-logo">forma<span>✳</span></Link><div className="admin-nav"><span>Administración</span><Link href="/dashboard" className="text-link">Volver a la plataforma ↗</Link></div></header><main className="admin-main"><div className="admin-heading"><div><span className="p-kicker">FORMA · CONTROL</span><h1>Lo que pasa en Forma.</h1><p>Usuarios, sitios y suscripciones en un mismo lugar.</p></div><span className="admin-mark">✳</span></div><div className="admin-metrics"><article><span>CUENTAS</span><strong>{stats.users}</strong><small>usuarios registrados</small></article><article><span>SITIOS</span><strong>{stats.sites}</strong><small>{stats.published} publicados</small></article><article><span>SUSCRIPCIONES</span><strong>{stats.subscriptions}</strong><small>activas o en prueba</small></article></div><section className="admin-table-section"><div className="admin-section-heading"><div><span className="p-kicker">USUARIOS</span><h2>Qué tiene cada cuenta</h2></div><Link className="p-button secondary admin-small-button" href="/planes">Ver planes ↗</Link></div><div className="admin-users-table"><div className="admin-users-head"><span>USUARIO</span><span>PLAN Y ESTADO</span><span>SITIOS</span></div>{stats.usersList.map(account => <div className="admin-user-row" key={account.id}><div><strong>{account.name}</strong><small>{account.email}</small></div><div><b>{account.plan_id === 'none' ? 'Sin plan' : account.plan_id}</b><small className={`admin-status ${account.subscription_status}`}>{account.subscription_status}</small></div><div><strong>{account.site_count}</strong><small>{account.published_count} publicados</small></div></div>)}</div></section><section className="admin-table-section admin-plans-section"><div className="admin-section-heading"><div><span className="p-kicker">CATÁLOGO COMERCIAL</span><h2>Planes contratados</h2></div></div><div className="admin-plan-table">{stats.plans.map(plan => <div className="admin-plan-row" key={plan.id}><div><strong>{plan.name}</strong><small>{plan.id}</small></div><span>{plan.price ? `$ ${plan.price.toLocaleString('es-AR')} ${plan.currency}` : 'Trial gratuito'}</span><b>{plan.subscribers} suscripciones</b></div>)}</div></section></main></main>
+}

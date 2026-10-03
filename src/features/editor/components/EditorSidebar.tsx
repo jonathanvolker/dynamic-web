@@ -1,5 +1,6 @@
 import { blockLabels, blockSymbols, blockTypesForFamily, descriptionForBlock, labelForBlock } from '../config/blocks'
 import type { EditorController } from '../hooks/use-site-editor'
+import { minimumPlanForBlock } from '@/features/billing/plans'
 
 export function EditorSidebar({ editor }: { editor: EditorController }) {
   return (
@@ -42,8 +43,8 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
         <div className="block-library">
           <p className="sidebar-hint">Bloques diseñados para combinar bien.</p>
           {blockTypesForFamily(editor.document.familyId).map(type => (
-            <button key={type} onClick={() => editor.add(type)}>
-              <span>{blockSymbols[type]}</span><strong>{labelForBlock(type, editor.document.familyId)}</strong><small>{descriptionForBlock(type, editor.document.familyId)}</small>
+            <button key={type} onClick={() => editor.add(type)} disabled={Boolean(editor.access.availableBlocks && !editor.access.availableBlocks.includes(type))} className={editor.access.availableBlocks && !editor.access.availableBlocks.includes(type) ? 'locked-block' : ''}>
+              <span>{blockSymbols[type]}</span><strong>{labelForBlock(type, editor.document.familyId)}{editor.access.availableBlocks && !editor.access.availableBlocks.includes(type) && <em> · {minimumPlanForBlock(type)}</em>}</strong><small>{descriptionForBlock(type, editor.document.familyId)}</small>
             </button>
           ))}
         </div>

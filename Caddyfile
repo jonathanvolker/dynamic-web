@@ -1,4 +1,18 @@
+{
+  on_demand_tls {
+    ask http://app:3000/api/domains/allow
+  }
+}
+
 {$DOMAIN} {
+  encode zstd gzip
+  reverse_proxy app:3000
+}
+
+:443 {
+  tls {
+    on_demand
+  }
   encode zstd gzip
   reverse_proxy app:3000
 }

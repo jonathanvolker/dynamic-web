@@ -9,8 +9,9 @@ import { getTemplate } from '@/features/templates/registry'
 import { availableAnchor } from '@/features/sites/document'
 
 type Panel = 'sections' | 'preview' | 'properties'
+export type EditorAccess = { canEdit: boolean; canPublish: boolean; availableBlocks: string[] | null; planName: string; status: string; graceDaysRemaining: number }
 
-export function useSiteEditor(site: Site) {
+export function useSiteEditor(site: Site, access: EditorAccess) {
   const [document, setDocument] = useState<SiteDocument>(site.draft)
   const [active, setActive] = useState<number | 'settings'>(0)
   const [history, setHistory] = useState<SiteDocument[]>([])
@@ -65,6 +66,7 @@ export function useSiteEditor(site: Site) {
   }, [document, dirty, busy, recoveryKey])
 
   function change(update: (next: SiteDocument) => void) {
+    if (!access.canEdit) { setError('Tu suscripción está vencida. Activá un plan para continuar.'); return }
     const next = structuredClone(document)
     update(next)
     setHistory(previous => [...previous.slice(-19), document])
@@ -97,6 +99,8 @@ export function useSiteEditor(site: Site) {
   }
 
   function add(type: Section['blockType']) {
+    if (!access.canEdit) { setError('Tu suscripción está vencida. Activá un plan para continuar.'); return }
+    if (access.availableBlocks && !access.availableBlocks.includes(type)) { setError(`Este bloque requiere un plan superior a ${access.planName}.`); return }
     if (document.sections.length >= 30) {
       setError('Podés agregar hasta 30 secciones.')
       return
@@ -109,6 +113,7 @@ export function useSiteEditor(site: Site) {
   }
 
   function duplicate() {
+    if (!access.canEdit) return
     if (!section || typeof active !== 'number' || document.sections.length >= 30) return
     change(next => {
       next.sections.splice(active + 1, 0, { ...structuredClone(section), id: crypto.randomUUID(), anchor: availableAnchor(section.blockType, next.sections) })
@@ -117,6 +122,7 @@ export function useSiteEditor(site: Site) {
   }
 
   function remove() {
+    if (!access.canEdit) return
     if (typeof active !== 'number' || document.sections.length <= 1) return
     change(next => { next.sections.splice(active, 1) })
     setActive(0)
@@ -139,6 +145,10 @@ export function useSiteEditor(site: Site) {
   }
 
   async function save(publish: boolean, automatic = false) {
+    if (!access.canEdit || (publish && !access.canPublish)) {
+      setError(publish ? 'Tu suscripción no permite publicar.' : 'Tu suscripción venció. Activá un plan para guardar.')
+      return
+    }
     setBusy(true)
     setError('')
     const snapshot = document
@@ -160,7 +170,7 @@ export function useSiteEditor(site: Site) {
   }
 
   return {
-    site, document, active, section, dirty, message, error, busy, publishedAt, recovered,
+    site, access, document, active, section, dirty, message, error, busy, publishedAt, recovered,
     device, tab, panel, canUndo: history.length > 0, canRedo: future.length > 0,
     change, changeSection, changeSetting, select, move, add, duplicate, remove,
     undo, redo, save, setError, setDevice, setTab, setPanel,
