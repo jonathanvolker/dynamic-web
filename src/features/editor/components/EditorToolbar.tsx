@@ -28,9 +28,9 @@ export function EditorToolbar({ editor }: { editor: EditorController }) {
         </div>
       </div>
       <div className="editor-publish">
-        {editor.publishedAt && <><span className="publish-pill">Publicado</span><a className="text-link" href={`/s/${editor.site.slug}`} target="_blank" rel="noreferrer">Ver sitio ↗</a></>}
-        <button type="button" className="p-button secondary" onClick={() => editor.save(false)} disabled={editor.busy}>{editor.busy ? 'Guardando…' : 'Guardar'}</button>
-        <button type="button" className="p-button primary" onClick={() => editor.save(true)} disabled={editor.busy}>{editor.busy ? 'Publicando…' : editor.publishedAt ? 'Actualizar publicación ↗' : 'Publicar ↗'}</button>
+        {editor.publishedAt && <a className="text-link" href={`/s/${editor.site.slug}`} target="_blank" rel="noreferrer">Ver sitio ↗</a>}
+        <button className="p-button secondary" onClick={() => editor.save(false)} disabled={editor.busy || !editor.access.canEdit}>{editor.busy ? 'Guardando…' : 'Guardar'}</button>
+        <button className="p-button primary" onClick={() => editor.save(true)} disabled={editor.busy || !editor.access.canPublish}>{editor.busy ? 'Un momento…' : 'Publicar ↗'}</button>
       </div>
       <Modal open={leaveConfirm} title="Tenés cambios sin guardar" description="Si salís ahora, los cambios que todavía no se hayan guardado quedarán solo en este dispositivo." confirmLabel="Salir sin guardar" tone="danger" onConfirm={() => { leave?.(); setLeaveConfirm(false) }} onCancel={() => setLeaveConfirm(false)} />
     </header>

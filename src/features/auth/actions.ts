@@ -6,7 +6,7 @@ import { session, endSession } from './server/session'
 import { hashPassword, verifyPassword } from './server/password'
 import { findUserByEmail, insertUser } from './server/repository'
 import { getTemplate } from '@/features/templates/registry'
-import { ensureFreeSubscription } from '@/features/billing/server/repository'
+import { createTrial } from '@/features/billing/server/repository'
 
 export async function authenticate(_state: { error: string }, form: FormData): Promise<{ error: string }> {
   const email = String(form.get('email') || '').trim().toLowerCase()
@@ -24,7 +24,7 @@ export async function authenticate(_state: { error: string }, form: FormData): P
     const id = randomUUID()
     try {
       insertUser({ id, name, email }, hashPassword(password))
-      ensureFreeSubscription(id)
+      createTrial(id)
     } catch {
       return { error: 'No pudimos crear la cuenta. Intentá nuevamente.' }
     }

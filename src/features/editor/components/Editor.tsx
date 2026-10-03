@@ -2,17 +2,20 @@
 
 import type { Site } from '@/features/sites/types'
 import { useSiteEditor } from '../hooks/use-site-editor'
+import type { EditorAccess } from '../hooks/use-site-editor'
 import { EditorToolbar } from './EditorToolbar'
 import { EditorSidebar } from './EditorSidebar'
 import { EditorCanvas } from './EditorCanvas'
 import { EditorInspector } from './EditorInspector'
 
 /** Layout only: state and document mutations live in useSiteEditor. */
-export default function Editor({ site }: { site: Site }) {
-  const editor = useSiteEditor(site)
+export default function Editor({ site, access }: { site: Site; access: EditorAccess }) {
+  const editor = useSiteEditor(site, access)
 
   return (
-    <div className="platform editor-shell">
+    <div className={`platform editor-shell ${!access.canEdit ? 'editor-locked' : ''}`}>
+      {!access.canEdit && <div className="editor-lock-banner">Tu suscripción venció. El sitio fue retirado de publicación. <a href="/planes">Elegí un plan para continuar ↗</a></div>}
+      {access.status === 'past_due' && <div className="editor-lock-banner warning">Tu pago está pendiente. Tenés {access.graceDaysRemaining} días para regularizarlo antes de retirar la publicación. <a href="/planes">Ver planes ↗</a></div>}
       <EditorToolbar editor={editor} />
       <div className="editor-mobile-tabs">
          <button type="button" aria-selected={editor.panel === 'sections'} className={editor.panel === 'sections' ? 'active' : ''} onClick={() => editor.setPanel('sections')}>Secciones</button>

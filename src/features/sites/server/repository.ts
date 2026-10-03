@@ -27,7 +27,12 @@ export function publicSite(slug: string) {
   return deserialize(db().prepare('SELECT * FROM sites WHERE slug = ? AND published IS NOT NULL').get(slug))
 }
 
-export function createSite(owner: string, name: string, template: string) {
+export function publicSiteByHostname(hostname: string) {
+  return deserialize(db().prepare(`SELECT sites.* FROM sites INNER JOIN domains ON domains.site_id = sites.id
+    WHERE domains.hostname = ? AND domains.status IN ('verified', 'active') AND sites.published IS NOT NULL`).get(hostname))
+}
+
+export function createSite(owner: string, name: string, template: string, allowedBlocks: string[] | 'all' = 'all') {
   const id = randomUUID()
   const baseSlug = name.normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -35,9 +40,9 @@ export function createSite(owner: string, name: string, template: string) {
   const slug = `${baseSlug}-${id.slice(0, 6)}`
   const selected = getTemplate(template === 'blank' ? 'studio' : template)
   if (!selected) throw new Error('Plantilla no disponible.')
-  const sections = template === 'blank'
-    ? selected.sections.filter(section => ['hero', 'contact'].includes(section.blockType))
-    : selected.sections
+  const sections = (template === 'blank'
+    ? selected.sections.filter(section => ['hero', 'gallery'].includes(section.blockType))
+    : selected.sections).filter(section => allowedBlocks === 'all' || allowedBlocks.includes(section.blockType))
   const document = migrateDocument({
     familyId: selected.familyId,
     templateId: selected.id,
