@@ -105,7 +105,30 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DOMAIN: ${{ secrets.DOMAIN }}
+          PUBLIC_URL: ${{ secrets.PUBLIC_URL }}
+          COOKIE_SECURE: ${{ secrets.COOKIE_SECURE }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          PLATFORM_ADMIN_EMAILS: ${{ secrets.PLATFORM_ADMIN_EMAILS }}
+          PLAN_INITIAL_PRICE_ARS: ${{ secrets.PLAN_INITIAL_PRICE_ARS }}
+          PLAN_PROFESSIONAL_PRICE_ARS: ${{ secrets.PLAN_PROFESSIONAL_PRICE_ARS }}
+          MERCADOPAGO_ACCESS_TOKEN: ${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
+          MERCADOPAGO_WEBHOOK_SECRET: ${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}
+          FORMA_CNAME_TARGET: ${{ secrets.FORMA_CNAME_TARGET }}
         run: |
+          ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "umask 077 && cat > '$DEPLOY_PATH/.env'" <<EOF
+          IMAGE_NAME=$IMAGE_NAME
+          DOMAIN=$DOMAIN
+          PUBLIC_URL=$PUBLIC_URL
+          COOKIE_SECURE=$COOKIE_SECURE
+          PAYLOAD_SECRET=$PAYLOAD_SECRET
+          PLATFORM_ADMIN_EMAILS=$PLATFORM_ADMIN_EMAILS
+          PLAN_INITIAL_PRICE_ARS=$PLAN_INITIAL_PRICE_ARS
+          PLAN_PROFESSIONAL_PRICE_ARS=$PLAN_PROFESSIONAL_PRICE_ARS
+          MERCADOPAGO_ACCESS_TOKEN=$MERCADOPAGO_ACCESS_TOKEN
+          MERCADOPAGO_WEBHOOK_SECRET=$MERCADOPAGO_WEBHOOK_SECRET
+          FORMA_CNAME_TARGET=$FORMA_CNAME_TARGET
+          EOF
           printf '%s' "$GHCR_TOKEN" | ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "docker login ghcr.io --username '$GHCR_USERNAME' --password-stdin"
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_PATH' && docker compose -f compose.production.yaml pull && docker compose -f compose.production.yaml up -d --remove-orphans && docker image prune -f"
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "docker logout ghcr.io"
