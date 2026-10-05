@@ -117,7 +117,7 @@ jobs:
           FORMA_CNAME_TARGET: ${{ secrets.FORMA_CNAME_TARGET }}
         run: |
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "umask 077 && cat > '$DEPLOY_PATH/.env'" <<EOF
-          IMAGE_NAME=$IMAGE_NAME
+          IMAGE_NAME=${IMAGE_NAME}:main
           DOMAIN=$DOMAIN
           PUBLIC_URL=$PUBLIC_URL
           COOKIE_SECURE=$COOKIE_SECURE
