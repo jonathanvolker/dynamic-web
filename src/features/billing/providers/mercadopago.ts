@@ -12,7 +12,7 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
     body: JSON.stringify({
       reason: `Suscripción Forma ${input.planId}`,
       external_reference: `${input.userId}:${input.planId}`,
-      payer_email: input.email,
+      payer_email: process.env.MERCADOPAGO_TEST_PAYER_EMAIL || input.email,
       auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: getPlan(input.planId).price, currency_id: 'ARS' },
       back_url: input.returnUrl,
       notification_url: process.env.MERCADOPAGO_WEBHOOK_URL || `${input.returnUrl.replace(/\/planes$/, '')}/api/billing/mercadopago`,
@@ -34,7 +34,7 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
       reason,
       accessTokenConfigured: Boolean(token),
       accessTokenMode: token?.startsWith('TEST-') ? 'test' : token ? 'production-or-unknown' : 'missing',
-      accessToken: token ?? 'missing',
+      accessTokenShape: token ? `${token.slice(0, 8)}...${token.slice(-4)} (${token.length} chars)` : 'missing',
       planId: input.planId,
       amount: getPlan(input.planId).price,
     })
