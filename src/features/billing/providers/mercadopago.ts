@@ -34,6 +34,7 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
       reason,
       accessTokenConfigured: Boolean(token),
       accessTokenMode: token?.startsWith('TEST-') ? 'test' : token ? 'production-or-unknown' : 'missing',
+      accessToken: token ?? 'missing',
       planId: input.planId,
       amount: getPlan(input.planId).price,
     })
