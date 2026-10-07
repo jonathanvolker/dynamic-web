@@ -19,8 +19,27 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
       status: 'pending',
     }),
   })
-  if (!response.ok) throw new Error('Mercado Pago no pudo crear el checkout.')
-  const data = await response.json() as { init_point?: string; sandbox_init_point?: string }
+  const responseBody = await response.text()
+  let data: { init_point?: string; sandbox_init_point?: string; message?: string; error?: string; cause?: { description?: string; code?: string }[] }
+  try {
+    data = JSON.parse(responseBody) as typeof data
+  } catch {
+    data = {}
+  }
+  if (!response.ok) {
+    const cause = data.cause?.map(item => item.description || item.code).filter(Boolean).join(', ')
+    const reason = cause || data.message || data.error
+    console.error('[mercadopago] checkout rejected', {
+      status: response.status,
+      reason,
+      accessTokenConfigured: Boolean(token),
+      accessTokenMode: token?.startsWith('TEST-') ? 'test' : token ? 'production-or-unknown' : 'missing',
+      accessToken: token ?? 'missing',
+      planId: input.planId,
+      amount: getPlan(input.planId).price,
+    })
+    throw new Error(reason ? `Mercado Pago rechazó el checkout: ${reason}` : `Mercado Pago rechazó el checkout (HTTP ${response.status}).`)
+  }
   if (!data.init_point && !data.sandbox_init_point) throw new Error('Mercado Pago no devolvió una URL de checkout.')
   return data.init_point || data.sandbox_init_point!
 }
