@@ -23,5 +23,6 @@ const renderers = {
 
 export function SectionRenderer(props: SectionProps) {
   const Component = renderers[props.section.blockType]
+  if (!Component) return <section id={props.anchor} className="section editor-invalid-block">Este bloque no se puede mostrar. Volvé a seleccionarlo desde el editor.</section>
   return <Component {...props} />
 }

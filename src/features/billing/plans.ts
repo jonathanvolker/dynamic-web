@@ -8,21 +8,21 @@ const price = (name: string, fallback: number) => {
 export const planCatalog: Record<PlanId, Plan> = {
   free: {
     id: 'free', name: 'Gratis',
-    description: 'Probá Forma durante 30 días con una selección esencial de bloques.',
-    features: ['1 sitio', 'Hero y galería', 'Publicaciones ilimitadas durante el trial', 'Sin dominio personalizado'],
+    description: 'Probá Forma durante 30 días y publicá un sitio simple.',
+    features: ['1 sitio', 'Portada y galería', 'Publicación durante la prueba', 'Sin dominio propio'],
     price: 0, currency: 'ARS', maxSites: 1, allowedBlocks: ['hero', 'gallery'], customDomain: false,
   },
   initial: {
     id: 'initial', name: 'Inicial',
-    description: 'Construí un sitio comercial completo con los bloques esenciales para empezar a vender.',
-    features: ['1 sitio', '12 bloques disponibles', 'Publicaciones ilimitadas', 'Sin dominio personalizado'],
+    description: 'Todo lo necesario para presentar tu negocio y empezar a recibir consultas.',
+    features: ['1 sitio', '12 tipos de sección', 'Publicaciones ilimitadas', 'URL de Forma'],
     price: price('PLAN_INITIAL_PRICE_ARS', 6000), currency: 'ARS', maxSites: 1,
     allowedBlocks: ['hero', 'services', 'projects', 'about', 'faq', 'contact', 'gallery', 'testimonials', 'cta', 'textImage', 'form', 'process'], customDomain: false,
   },
   professional: {
     id: 'professional', name: 'Profesional',
-    description: 'Accedé a toda la biblioteca, varios sitios y un dominio propio para crecer sin límites.',
-    features: ['Hasta 3 sitios', 'Los 21 bloques', 'Publicaciones ilimitadas', 'Dominio personalizado'],
+    description: 'La biblioteca completa y hasta tres sitios para llevar tu presencia online más lejos.',
+    features: ['Hasta 3 sitios', 'Todas las secciones', 'Publicaciones ilimitadas', 'Dominio propio'],
     price: price('PLAN_PROFESSIONAL_PRICE_ARS', 19000), currency: 'ARS', maxSites: 3, allowedBlocks: 'all', customDomain: true,
   },
 }

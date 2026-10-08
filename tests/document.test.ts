@@ -4,7 +4,7 @@ import { migrateDocument, availableAnchor } from '../src/features/sites/document
 import { validateSite } from '../src/features/sites/validation'
 import { templates } from '../src/features/templates/registry'
 import { isSafeHref, resolveHref, sectionAnchors } from '../src/features/website/links'
-import { blockDefinitions, blockTypes } from '../src/features/website/blocks'
+import { blockDefinitions, blockTypes, rowFields } from '../src/features/website/blocks'
 import { mediaIdsInDocument } from '../src/features/sites/server/media-ownership'
 
 test('legacy templates migrate without changing content, colors or public anchors', () => {
@@ -126,4 +126,62 @@ test('media ownership collects logo, section, gallery, project, logo and team re
     'cccccccc-cccc-cccc-cccc-cccccccccccc',
     'dddddddd-dddd-dddd-dddd-dddddddddddd',
   ])
+})
+
+test('every editable row rejects non-string required values', () => {
+  for (const [rowKey, fields] of Object.entries(rowFields)) {
+    const source = blockTypes.map(type => blockDefinitions[type].defaults).find(section => (section as Record<string, unknown>)[rowKey] !== undefined)
+    assert.ok(source, rowKey)
+    const document = migrateDocument({ settings: templates[0].settings, sections: [structuredClone(source)] })
+    const rows = (document.sections[0] as Record<string, unknown>)[rowKey] as Record<string, unknown>[]
+    assert.ok(rows.length, rowKey)
+    rows[0][fields.find(field => !field.optional)?.name || fields[0].name] = { invalid: true }
+    assert.throws(() => validateSite(document), /contenido|planes|acciones|logos|datos del equipo/)
+  }
+})
+
+test('optional link fields accept empty values but reject unsafe values', () => {
+  const document = migrateDocument({ settings: templates[0].settings, sections: [structuredClone(blockDefinitions.logos.defaults), structuredClone(blockDefinitions.team.defaults)] })
+  document.sections[0].logos![0].href = ''
+  document.sections[1].team![0].href = ''
+  validateSite(document)
+  document.sections[0].logos![0].href = 'javascript:alert(1)'
+  assert.throws(() => validateSite(document), /logos/)
+})
+
+test('form field names must be unique and have a supported type', () => {
+  const document = migrateDocument({ settings: templates[0].settings, sections: [structuredClone(blockDefinitions.form.defaults)] })
+  const fields = document.sections[0].formFields!
+  fields[1].name = fields[0].name
+  assert.throws(() => validateSite(document), /formulario/)
+  fields[1].name = 'email'
+  fields[1].type = 'number' as never
+  assert.throws(() => validateSite(document), /formulario/)
+})
+
+test('video and map blocks require valid playable destinations', () => {
+  const video = migrateDocument({ settings: templates[0].settings, sections: [structuredClone(blockDefinitions.video.defaults)] })
+  video.sections[0].videoId = ''
+  assert.throws(() => validateSite(video), /video/) 
+  const hours = migrateDocument({ settings: templates[0].settings, sections: [structuredClone(blockDefinitions.hours.defaults)] })
+  hours.sections[0].mapHref = 'https://'
+  assert.throws(() => validateSite(hours), /mapa/)
+})
+
+test('sections require non-empty headings and row collections must be arrays', () => {
+  const document = migrateDocument(templates[0])
+  document.sections[0].title = '   '
+  assert.throws(() => validateSite(document), /sección/)
+  const invalid = migrateDocument(templates[0])
+  ;(invalid.sections.find(section => section.blockType === 'services') as unknown as Record<string, unknown>).services = { title: 'not an array' }
+  assert.throws(() => validateSite(invalid), /contenido/)
+})
+
+test('resolveHref rejects malformed and accepts supported edge-case links', () => {
+  for (const href of ['/ruta?x=1#final', 'https://example.com:443/path?q=1#x', 'mailto:persona@example.com', 'tel:+54(11)4000-0000']) {
+    assert.equal(resolveHref(href, []), href)
+  }
+  for (const href of ['#missing', '//evil.example', '/\\evil.example', 'mailto:missing', 'tel:abc', 'https://user:pass@example.com']) {
+    assert.equal(resolveHref(href, ['hero']), undefined)
+  }
 })

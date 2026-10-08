@@ -15,9 +15,9 @@ export function SectionInspector({ editor }: { editor: EditorController }) {
   const rows = blockDefinitions[section.blockType].rows
   return (
     <>
-      <Field label="Etiqueta superior" value={section.eyebrow} onChange={value => editor.changeSection('eyebrow', value)} />
-      <Field label="Título" value={section.title} multiline onChange={value => editor.changeSection('title', value)} />
-      <Field label="Descripción" value={section.description || ''} multiline onChange={value => editor.changeSection('description', value)} />
+      <Field label="Etiqueta superior" fieldKey="eyebrow" value={section.eyebrow} onChange={value => editor.changeSection('eyebrow', value)} />
+      <Field label="Título" fieldKey="title" value={section.title} multiline onChange={value => editor.changeSection('title', value)} />
+      <Field label="Descripción" fieldKey="description" value={section.description || ''} multiline onChange={value => editor.changeSection('description', value)} />
       {['hero', 'contact', 'cta'].includes(section.blockType) && (
         <>
           <Field label="Texto del botón" value={section.buttonLabel || ''} onChange={value => editor.changeSection('buttonLabel', value)} />

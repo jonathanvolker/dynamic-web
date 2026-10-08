@@ -2,7 +2,7 @@ import type { EditorController } from '../hooks/use-site-editor'
 import { useLivePreview } from '../hooks/use-live-preview'
 
 export function EditorCanvas({ editor }: { editor: EditorController }) {
-  const { iframe, sendPreview } = useLivePreview(editor.document, editor.select)
+  const { iframe, sendPreview } = useLivePreview(editor.document, editor.select, editor.active, editor.activeField)
   return (
     <section className={`editor-canvas ${editor.panel === 'preview' ? 'mobile-visible' : ''}`}>
       <div className="canvas-label">

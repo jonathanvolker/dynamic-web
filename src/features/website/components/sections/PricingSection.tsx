@@ -2,7 +2,7 @@ import type { SectionProps } from './types'
 import { SectionHeading } from './SectionHeading'
 import { resolveHref } from '../../links'
 
-export function PricingSection({ section, anchor, anchors = [] }: SectionProps) {
+export function PricingSection({ section, anchor, anchors = [], preview }: SectionProps) {
   return <section id={anchor} className="section wrap pricing">
     <SectionHeading section={section} />
     <div className="pricing-grid">
@@ -13,7 +13,7 @@ export function PricingSection({ section, anchor, anchors = [] }: SectionProps) 
           <p className="plan-description">{plan.description}</p>
           <p className="plan-price">{plan.price}</p><p className="plan-period">{plan.period}</p>
           <ul>{plan.features.split('\n').map(item => item.trim()).filter(Boolean).map((item, itemIndex) => <li key={itemIndex}><span aria-hidden="true">✓</span>{item}</li>)}</ul>
-          {href && plan.buttonLabel && <a className="button" href={href}>{plan.buttonLabel}<span>↗</span></a>}
+          {plan.buttonLabel && (href ? <a className="button" href={href}>{plan.buttonLabel}<span>↗</span></a> : preview ? <span className="button editor-invalid-link" title="El destino de este botón no existe">{plan.buttonLabel}<span>⚠ Destino inválido</span></span> : null)}
         </article>
       })}
     </div>

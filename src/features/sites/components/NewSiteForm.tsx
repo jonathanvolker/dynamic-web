@@ -19,33 +19,33 @@ export default function NewSiteForm({ selectedTemplate = 'studio' }: { selectedT
   }
   return (
     <form action={action} className="p-form">
-      <label>Nombre de tu sitio<input name="name" required maxLength={80} placeholder="Por ejemplo: Estudio Aurora" /></label>
-      <div className="creation-family-switcher" role="tablist" aria-label="Elegir familia visual">
+       <label>¿Cómo se llama tu sitio?<input name="name" required maxLength={80} placeholder="Por ejemplo: Estudio Aurora" /></label>
+       <div className="creation-family-switcher" role="tablist" aria-label="Elegí un estilo">
         {families.map(family => <button type="button" role="tab" aria-selected={family.id === familyId} className={family.id === familyId ? 'active' : ''} key={family.id} onClick={() => selectFamily(family.id)}>
-          <span>{family.name}</span><small>{templates.filter(template => template.familyId === family.id).length} opciones</small>
+           <span>{family.name}</span><small>{templates.filter(template => template.familyId === family.id).length} plantillas</small>
         </button>)}
       </div>
       <fieldset className={`template-options creation-template-family family-${familyId}`}>
-        <legend>{families.find(family => family.id === familyId)?.name} <small>· elegí una base</small></legend>
+         <legend>{families.find(family => family.id === familyId)?.name} <small>· elegí una plantilla</small></legend>
         {familyTemplates.map(template => (
           <label key={template.id}>
             <input type="radio" name="template" value={template.id} checked={choice === template.id} onChange={() => setChoice(template.id)} />
             <TemplateThumbnail template={template} />
             <strong>{template.name} · {template.category}</strong><small>{template.description}</small>
-            <Link className="template-choice-preview" href={`/templates/${template.id}`} target="_blank" rel="noreferrer">Ver el diseño completo ↗</Link>
+             <Link className="template-choice-preview" href={`/templates/${template.id}`} target="_blank" rel="noreferrer">Ver vista previa ↗</Link>
           </label>
         ))}
       </fieldset>
       <fieldset className="template-options">
-        <legend>Empezar con menos contenido</legend>
+         <legend>Empezar desde cero</legend>
         <label>
           <input type="radio" name="template" value="blank" checked={choice === 'blank'} onChange={() => setChoice('blank')} />
           <span className="template-art blank">Aa<b>+</b></span>
-          <strong>Base simple</strong><small>Portada y contacto. El resto lo decidís vos.</small>
+           <strong>Sitio en blanco</strong><small>Incluye una portada y una sección de contacto. Agregá el resto desde el editor.</small>
         </label>
       </fieldset>
       {state.error && <p role="alert" className="p-error">{state.error}</p>}
-      <button className="p-button primary" disabled={pending}>{pending ? 'Preparando tu espacio…' : 'Empezar a diseñar ↗'}</button>
+       <button className="p-button primary" disabled={pending}>{pending ? 'Creando tu sitio…' : 'Crear sitio y abrir editor ↗'}</button>
     </form>
   )
 }
