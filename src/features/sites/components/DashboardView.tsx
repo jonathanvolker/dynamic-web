@@ -19,9 +19,9 @@ export function DashboardView({ user, sites, entitlements }: { user: User; sites
             <span className="p-kicker">TU ESPACIO CREATIVO</span>
             <h1>Mis sitios<span className="site-count">{sites.length}</span></h1>
             <p>Ideas que ya tienen un lugar. Y las que están por venir.</p>
-            <p className="plan-status"><strong>Plan {entitlements.plan.name}</strong> · {entitlements.subscription.status === 'trialing' ? `trial: ${entitlements.graceDaysRemaining || Math.max(0, Math.ceil((new Date(entitlements.subscription.current_period_ends_at).getTime() - Date.now()) / 86400000))} días restantes` : entitlements.subscription.status === 'past_due' ? `pago pendiente: ${entitlements.graceDaysRemaining} días` : entitlements.subscription.status}</p>
+             <p className="plan-status"><strong>{entitlements.subscription.status === 'trialing' ? 'Prueba gratuita' : `Plan ${entitlements.plan.name}`}</strong> · {entitlements.subscription.status === 'trialing' ? `te quedan ${entitlements.graceDaysRemaining || Math.max(0, Math.ceil((new Date(entitlements.subscription.current_period_ends_at).getTime() - Date.now()) / 86400000))} días` : entitlements.subscription.status === 'active' ? 'activo' : entitlements.subscription.status === 'past_due' ? `pago pendiente: ${entitlements.graceDaysRemaining} días` : entitlements.subscription.status === 'expired' ? 'vencido: tus sitios están pausados' : 'cancelado'}</p>
           </div>
-          <div className="dashboard-actions"><Link className="p-button secondary dashboard-secondary-button" href="/planes">Ver planes ↗</Link><Link className="p-button secondary dashboard-secondary-button" href="/dashboard/domains">Dominios ↗</Link>{isPlatformAdmin(user.email) && <Link className="p-button secondary dashboard-secondary-button" href="/admin/platform">Admin ↗</Link>}{entitlements.canCreateSite && <Link className="p-button primary" href="/dashboard/new">+ Crear un sitio</Link>}</div>
+           <div className="dashboard-actions"><Link className="p-button secondary dashboard-secondary-button" href="/planes">{entitlements.subscription.status === 'past_due' ? 'Resolver pago ↗' : ['active', 'trialing'].includes(entitlements.subscription.status) ? 'Cambiar de plan ↗' : 'Activar un plan ↗'}</Link><Link className="p-button secondary dashboard-secondary-button" href="/dashboard/domains">Dominios ↗</Link>{isPlatformAdmin(user.email) && <Link className="p-button secondary dashboard-secondary-button" href="/admin/platform">Admin ↗</Link>}{entitlements.canCreateSite && <Link className="p-button primary" href="/dashboard/new">+ Crear un sitio</Link>}</div>
         </div>
         {sites.length ? (
           <div className="site-grid">{sites.map(site => <SiteCard key={site.id} site={site} />)}</div>
@@ -33,7 +33,7 @@ export function DashboardView({ user, sites, entitlements }: { user: User; sites
         )}
         <div className="domain-note">
           <span>◎</span><div><strong>Una dirección para cada web.</strong>
-            <p>Cada sitio publicado tiene su propia URL local. La conexión de dominios y HTTPS se configura en la siguiente etapa, al desplegar la plataforma.</p>
+             <p>Cada sitio publicado tiene su propia URL pública. Con un plan Profesional podés conectar un dominio propio.</p>
           </div>
         </div>
       </main>

@@ -4,15 +4,19 @@ import { RestaurantArtwork } from '../artwork/RestaurantArtwork'
 import { ConsultantArtwork } from '../artwork/ConsultantArtwork'
 import { ProductArtwork } from '../artwork/ProductArtwork'
 
-export function HeroSection({ section, settings, anchor, buttonHref, discoveryHref }: SectionProps) {
+export function HeroSection({ section, settings, anchor, buttonHref, buttonInvalid, discoveryHref, preview }: SectionProps) {
   const template = settings.template || 'studio'
   return (
     <section id={anchor} className={`hero wrap hero-layout-${section.heroLayout || 'split'}`}>
       <div className="hero-copy">
-        <p className="eyebrow"><span className="status-dot" />{section.eyebrow}</p>
-        <h1>{section.title}</h1>
-        <p className="hero-description">{section.description}</p>
-        {buttonHref && section.buttonLabel && <a className="button dark" href={buttonHref}>{section.buttonLabel}<span>↗</span></a>}
+          <p className="eyebrow" data-forma-field="eyebrow"><span className="status-dot" />{section.eyebrow}</p>
+          <h1 data-forma-field="title">{section.title}</h1>
+          <p className="hero-description" data-forma-field="description">{section.description}</p>
+        {section.buttonLabel && (buttonHref
+          ? <a className="button dark" href={buttonHref}>{section.buttonLabel}<span>↗</span></a>
+          : preview && buttonInvalid
+            ? <span className="button dark editor-invalid-link" title="El destino de este botón no existe">{section.buttonLabel}<span>⚠ Destino inválido</span></span>
+            : null)}
       </div>
       {section.image?.url
         ? <div className="hero-media"><img src={section.image.url} alt={section.image.alt || ''} style={{ objectPosition: section.imagePosition || 'center' }} fetchPriority="high" /></div>

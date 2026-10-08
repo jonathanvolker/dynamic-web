@@ -24,6 +24,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop')
   const [tab, setTab] = useState<'sections' | 'add'>('sections')
   const [panel, setPanel] = useState<Panel>('preview')
+  const [activeField, setActiveField] = useState<string | null>(null)
   const [recovered, setRecovered] = useState(false)
   const recoveryKey = `forma:draft:${site.id}`
   const initialDocument = useRef(true)
@@ -86,6 +87,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function select(index: number | 'settings') {
     setActive(index)
+    setActiveField(null)
     setPanel('properties')
   }
 
@@ -115,6 +117,10 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   function duplicate() {
     if (!access.canEdit) return
     if (!section || typeof active !== 'number' || document.sections.length >= 30) return
+    if (access.availableBlocks && !access.availableBlocks.includes(section.blockType)) {
+      setError(`Este bloque requiere un plan superior a ${access.planName}.`)
+      return
+    }
     change(next => {
       next.sections.splice(active + 1, 0, { ...structuredClone(section), id: crypto.randomUUID(), anchor: availableAnchor(section.blockType, next.sections) })
     })
@@ -124,8 +130,10 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   function remove() {
     if (!access.canEdit) return
     if (typeof active !== 'number' || document.sections.length <= 1) return
+    const nextActive = Math.min(active, document.sections.length - 2)
     change(next => { next.sections.splice(active, 1) })
-    setActive(0)
+    setActive(nextActive)
+    setActiveField(null)
   }
 
   function undo() {
@@ -133,7 +141,8 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
     setFuture([document, ...future])
     setDocument(history[history.length - 1])
     setHistory(history.slice(0, -1))
-    setActive('settings')
+    setActive(current => typeof current === 'number' && current < history[history.length - 1].sections.length ? current : 'settings')
+    setActiveField(null)
   }
 
   function redo() {
@@ -141,7 +150,8 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
     setHistory([...history, document])
     setDocument(future[0])
     setFuture(future.slice(1))
-    setActive('settings')
+    setActive(current => typeof current === 'number' && current < future[0].sections.length ? current : 'settings')
+    setActiveField(null)
   }
 
   async function save(publish: boolean, automatic = false) {
@@ -171,9 +181,9 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   return {
     site, access, document, active, section, dirty, message, error, busy, publishedAt, recovered,
-    device, tab, panel, canUndo: history.length > 0, canRedo: future.length > 0,
+    device, tab, panel, activeField, canUndo: history.length > 0, canRedo: future.length > 0,
     change, changeSection, changeSetting, select, move, add, duplicate, remove,
-    undo, redo, save, setError, setDevice, setTab, setPanel,
+    undo, redo, save, setError, setDevice, setTab, setPanel, setActiveField,
   }
 }
 

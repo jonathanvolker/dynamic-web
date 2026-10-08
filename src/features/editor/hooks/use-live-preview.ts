@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { SiteDocument } from '@/features/sites/types'
 
-export function useLivePreview(document: SiteDocument, onSelect: (index: number) => void) {
+export function useLivePreview(document: SiteDocument, onSelect: (index: number) => void, active: number | 'settings', activeField: string | null) {
   const iframe = useRef<HTMLIFrameElement>(null)
   const latest = useRef({ document, onSelect })
   latest.current = { document, onSelect }
@@ -15,6 +15,9 @@ export function useLivePreview(document: SiteDocument, onSelect: (index: number)
   }, [])
 
   useEffect(() => { sendPreview() }, [document, sendPreview])
+  useEffect(() => {
+    iframe.current?.contentWindow?.postMessage({ type: 'forma:highlight', index: active, field: activeField }, window.location.origin)
+  }, [active, activeField])
   useEffect(() => {
     const listener = (event: MessageEvent) => {
       if (event.origin !== window.location.origin || event.source !== iframe.current?.contentWindow) return

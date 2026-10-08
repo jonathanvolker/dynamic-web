@@ -7,9 +7,9 @@ import { fontFamilies } from '../theme/design'
 import { resolveHref, sectionAnchors } from '../links'
 import { Footer } from './Footer'
 
-type Props = { settings: Settings; sections: Section[]; familyId?: FamilyId; demo?: boolean; siteSlug?: string }
+type Props = { settings: Settings; sections: Section[]; familyId?: FamilyId; demo?: boolean; siteSlug?: string; preview?: boolean }
 
-export default function SiteView({ settings, sections, familyId = 'editorial', demo = false, siteSlug }: Props) {
+export default function SiteView({ settings, sections, familyId = 'editorial', demo = false, siteSlug, preview = false }: Props) {
   const anchors = sectionAnchors(sections)
   const colors = resolveColors(settings)
   const theme = {
@@ -37,12 +37,14 @@ export default function SiteView({ settings, sections, familyId = 'editorial', d
       data-heading-font={settings.design?.headingFont} data-body-font={settings.design?.bodyFont}
       data-width={settings.design?.width} data-spacing={settings.design?.spacing}>
       <a className="skip-link" href="#main">Ir al contenido</a>
-      <Header settings={settings} anchors={anchors} />
+      <Header settings={settings} anchors={anchors} preview={preview} />
       <main id="main">
         {sections.map((section, index) => {
           const defaultHref = section.blockType === 'contact' ? `mailto:${settings.email}` : '#contact'
+          const rawButtonHref = section.buttonHref ?? defaultHref
+          const buttonHref = resolveHref(rawButtonHref, anchors)
           return <SectionRenderer key={section.id || index} section={section} settings={settings} anchor={anchors[index]}
-            anchors={anchors} siteSlug={siteSlug} buttonHref={resolveHref(section.buttonHref ?? defaultHref, anchors)} discoveryHref={resolveHref(familyId === 'immersive' ? '#gallery' : familyId === 'modular' ? '#services' : '#projects', anchors)} />
+            anchors={anchors} siteSlug={siteSlug} preview={preview} buttonHref={buttonHref} buttonInvalid={Boolean(rawButtonHref && !buttonHref)} discoveryHref={resolveHref(familyId === 'immersive' ? '#gallery' : familyId === 'modular' ? '#services' : '#projects', anchors)} />
         })}
       </main>
       <Footer settings={settings} familyId={familyId} anchors={anchors} demo={demo} />

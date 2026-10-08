@@ -125,3 +125,9 @@
   .creation-template-family::-webkit-scrollbar { display: none; }
   .creation-template-family > label { flex: 0 0 88%; scroll-snap-align: start; }
 }
+
+@media (max-width: 760px) {
+  .creation-family-switcher { overflow-x: visible; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-inline: 0; }
+  .creation-family-switcher button { min-width: 0; padding-inline: 7px; }
+  .creation-family-switcher button span { overflow-wrap: anywhere; }
+}

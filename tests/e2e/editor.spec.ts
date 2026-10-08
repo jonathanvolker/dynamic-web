@@ -18,10 +18,18 @@ async function register(page: Page) {
 
 async function createSite(page: Page, template = 'studio') {
   await page.goto(`/dashboard/new?template=${template}`)
-  await page.getByLabel('Nombre de tu sitio').fill('Mi sitio de prueba')
-  await page.getByRole('button', { name: 'Empezar a diseñar' }).click()
+  await page.getByLabel('¿Cómo se llama tu sitio?').fill('Mi sitio de prueba')
+  await page.getByRole('button', { name: 'Crear sitio y abrir editor ↗' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   await expect(page.frameLocator('iframe').locator('h1')).toBeVisible()
+}
+
+async function grantProfessional(email: string) {
+  const db = new DatabaseSync(path.join(process.env.PLATFORM_DATA_DIR!, 'platform.sqlite'))
+  const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email) as { id: string }
+  db.prepare("UPDATE subscriptions SET plan_id = 'professional', status = 'active', current_period_ends_at = ? WHERE user_id = ?")
+    .run(new Date(Date.now() + 30 * 86400000).toISOString(), user.id)
+  db.close()
 }
 
 test('edit, upload, preview, save, publish, isolate accounts and unpublish', async ({ page, browser }) => {
@@ -43,7 +51,7 @@ test('edit, upload, preview, save, publish, isolate accounts and unpublish', asy
   const storedImage = await page.request.get(imageUrl!)
   expect(storedImage.status()).toBe(200)
   expect((await sharp(await storedImage.body()).metadata()).hasAlpha).toBe(true)
-   await page.getByRole('button', { name: 'Estilos', exact: true }).click()
+  await page.getByRole('button', { name: '⚙ Identidad y ajustes', exact: true }).click()
   await page.getByLabel('Logo de marca', { exact: true }).setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png })
   await expect(preview.locator('.header .brand-image')).toBeVisible()
   await page.getByLabel('Tipografía de títulos').selectOption('serif')
@@ -176,14 +184,12 @@ test('editor adds and removes sections and can publish a hero-only site', async 
   await createSite(page, 'blank')
   const preview = page.frameLocator('iframe')
   await page.getByRole('button', { name: '+ Agregar', exact: true }).click()
-  await page.locator('.block-library button').filter({ hasText: 'Testimonios' }).click()
-  await expect(preview.locator('.testimonials')).toHaveCount(1)
+  await page.locator('.block-library button').filter({ hasText: 'Galería' }).click()
+  await expect(preview.locator('.gallery')).toHaveCount(1)
   await page.getByRole('button', { name: 'Secciones', exact: true }).first().click()
-  await page.getByRole('button', { name: 'Eliminar Testimonios' }).click()
+  await page.locator('.section-controls .remove-row').click()
   await page.getByRole('dialog').getByRole('button', { name: 'Eliminar sección' }).click()
-  await expect(preview.locator('.testimonials')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Eliminar Contacto' }).click()
-  await page.getByRole('dialog').getByRole('button', { name: 'Eliminar sección' }).click()
+  await expect(preview.locator('.gallery')).toHaveCount(0)
   await expect(preview.locator('h1')).toBeVisible()
   await page.getByRole('button', { name: 'Publicar' }).click()
   await expect(page.locator('.editor-status')).toContainText('Tu web está publicada')
@@ -235,7 +241,9 @@ test('draft autosaves after inactivity and can recover a local change', async ({
 })
 
 test('published contact form and newsletter persist leads', async ({ page }) => {
-  await register(page)
+  const email = await register(page)
+  await page.goto('/dashboard')
+  await grantProfessional(email)
   await createSite(page)
 
   await page.getByRole('button', { name: 'Publicar' }).click()
@@ -282,9 +290,25 @@ test('published contact form and newsletter persist leads', async ({ page }) => 
   await publicPage.close()
 })
 
+test('mobile platform screens keep content inside the viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await register(page)
+  await page.goto('/dashboard')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.goto('/planes')
+  await expect(page.locator('.plan-mobile-selector label')).toHaveCount(3)
+  await expect(page.locator('.plans-chooser .plan-card:visible')).toHaveCount(1)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.goto('/dashboard/new')
+  await expect(page.locator('.creation-family-switcher button')).toHaveCount(3)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
+
 for (const variant of [
   { template: 'retreat', family: 'immersive', hero: 'cover', footer: '.immersive-footer', block: 'Galería', count: 3 },
-  { template: 'product', family: 'modular', hero: 'centered', footer: '.modular-footer', block: 'Planes y precios', count: 3 },
+  { template: 'product', family: 'modular', hero: 'centered', footer: '.modular-footer', block: 'Portada', count: 0 },
 ]) {
   test(`${variant.template}: distinctive layout, editable new blocks and published mobile site`, async ({ page }) => {
     await page.goto(`/templates/${variant.template}`)
@@ -298,28 +322,29 @@ for (const variant of [
     await expect(preview.locator(`.family-${variant.family}`)).toBeVisible()
     await page.locator('.section-select').filter({ hasText: variant.block }).click()
     await page.getByLabel('Título', { exact: true }).fill('Un bloque hecho a mi medida')
-    await page.locator('.row-detail summary').first().click()
+    if (variant.template === 'retreat') await page.locator('.row-detail summary').first().click()
     if (variant.template === 'retreat') {
       await page.getByLabel('Nombre', { exact: true }).first().fill('Mi espacio favorito')
       await expect(preview.locator('.gallery-item h3').first()).toHaveText('Mi espacio favorito')
       await expect(preview.locator('.gallery-item')).toHaveCount(variant.count)
+    } else if (variant.template === 'product') {
+      await expect(preview.locator('.pricing-card')).toHaveCount(0)
     } else {
       await page.getByLabel('Precio o valor').first().fill('US$ 49')
       await page.getByLabel('Destino del plan · enlace', { exact: true }).first().fill('https://example.com/planes')
       await expect(preview.locator('.plan-price').first()).toHaveText('US$ 49')
       await expect(preview.locator('.pricing-card')).toHaveCount(variant.count)
     }
-    // A new block is available across families, not only inside its initial template.
+    // A paid-only block remains visible in the library but unavailable on the free plan.
     await page.getByRole('button', { name: '+ Agregar', exact: true }).click()
-    await page.locator('.block-library button').filter({ hasText: 'Testimonios' }).click()
-    await expect(preview.locator('.testimonials')).toHaveCount(2)
+    await expect(page.locator('.block-library button').filter({ hasText: 'Testimonios' })).toBeDisabled()
     await page.getByRole('button', { name: 'Publicar' }).click()
     await expect(page.getByRole('status')).toContainText('Tu web está publicada')
     const publicUrl = await page.getByRole('link', { name: 'Ver sitio' }).getAttribute('href')
     await page.goto(publicUrl!)
     await expect(page.getByRole('heading', { name: 'Un bloque hecho a mi medida' })).toBeVisible()
     await expect(page.locator(variant.footer)).toHaveCount(1)
-    if (variant.template === 'product') await expect(page.locator('.pricing-card .button').first()).toHaveAttribute('href', 'https://example.com/planes')
+    if (variant.template === 'product') await expect(page.locator('.pricing-card')).toHaveCount(0)
     await page.setViewportSize({ width: 390, height: 844 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
     await page.getByRole('button', { name: 'Menú' }).click()

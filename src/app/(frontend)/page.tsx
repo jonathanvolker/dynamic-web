@@ -21,17 +21,17 @@ export default async function PlatformHome() {
       <main className="landing-main">
         <span className="p-kicker">TU IDEA. TU WEB. TU ESPACIO.</span>
         <h1>Tu próxima web.<br /><em>Hecha por vos.</em></h1>
-        <p>Elegí una base, hacela tuya y publicala. Un espacio para construir tu presencia online, sin tocar código.</p>
+        <p>Elegí una plantilla, cambiale el contenido y publicá tu sitio sin escribir código.</p>
         <div className="landing-actions">
-          <Link className="p-button primary" href={user ? '/dashboard/new' : '/register'}>Crear mi web <span>↗</span></Link>
-          <Link href="/templates" className="text-link">Explorar las plantillas →</Link>
+          <Link className="p-button primary" href={user ? '/dashboard/new' : '/register'}>{user ? 'Crear un sitio' : 'Elegir una plantilla'} <span>↗</span></Link>
+          <Link href="/templates" className="text-link">Ver las plantillas →</Link>
         </div>
         <div className="landing-browser">
           <div className="browser-chrome"><span>● ● ●</span><span>tu-marca · una web con tu identidad</span><span>↗</span></div>
           <div className="landing-sample"><div><span>HECHO A TU MANERA</span><h2>Buenas ideas.<br />Tu propia forma.</h2><p>Una web que habla de vos.</p></div><div className="sample-star">✳</div></div>
         </div>
         <div className="landing-features"><span><b>01</b> Diseñá en vivo</span><span><b>02</b> Guardá tus cambios</span><span><b>03</b> Publicá tu sitio</span></div>
-        <section className="landing-plans"><span className="p-kicker">PLANES CLAROS</span><h2>Empezá gratis. Crecé cuando quieras.</h2><div className="landing-plan-grid">{Object.values(planCatalog).map(plan => <article key={plan.id}><h3>{plan.name}</h3><p>{plan.description}</p><strong>{plan.price ? `$ ${plan.price.toLocaleString('es-AR')} / mes` : '30 días sin costo'}</strong><Link href={user ? '/planes' : '/register'}>Ver detalles ↗</Link></article>)}</div></section>
+        <section className="landing-plans"><span className="p-kicker">PLANES CLAROS</span><h2>Empezá gratis. Subí de nivel cuando lo necesites.</h2><div className="landing-plan-grid">{Object.values(planCatalog).map(plan => <article key={plan.id}><h3>{plan.name}</h3><p>{plan.description}</p><strong>{plan.price ? `$ ${plan.price.toLocaleString('es-AR')} / mes` : 'Prueba gratis durante 30 días'}</strong><Link href={user ? '/planes' : '/register'}>{user ? 'Comparar planes ↗' : 'Empezar gratis ↗'}</Link></article>)}</div></section>
       </main>
       <footer className="landing-footer">Forma · Tu lugar en internet.<Link href="/templates">Explorar estilos y plantillas ↗</Link></footer>
     </div>
