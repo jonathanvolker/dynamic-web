@@ -38,12 +38,13 @@ export async function POST(request: Request) {
       status: subscription.status,
       externalReference: subscription.external_reference || 'missing',
     })
-    if (!recordBillingEvent('mercadopago', `${payload.type || 'event'}:${externalId}`, body)) return NextResponse.json({ received: true })
     const [userId, planId] = String(subscription.external_reference || '').split(':')
     if (!userId || !['initial', 'professional'].includes(planId)) {
       console.warn('[mercadopago] webhook ignored: invalid external reference', { externalId, userId: userId || 'missing', planId: planId || 'missing' })
       return NextResponse.json({ received: true })
     }
+    const eventId = `${payload.type || 'event'}:${payload.action || 'update'}:${externalId}:${subscription.status}`
+    if (!recordBillingEvent('mercadopago', eventId, body)) return NextResponse.json({ received: true })
     if (subscription.status === 'authorized') activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
     else if (subscription.status === 'paused' || subscription.status === 'cancelled') {
       const local = activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
