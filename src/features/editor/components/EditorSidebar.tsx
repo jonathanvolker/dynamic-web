@@ -1,8 +1,10 @@
 import { blockLabels, blockSymbols, blockTypesForFamily, descriptionForBlock, labelForBlock } from '../config/blocks'
 import type { EditorController } from '../hooks/use-site-editor'
-import { minimumPlanForBlock } from '@/features/billing/plans'
 
 export function EditorSidebar({ editor }: { editor: EditorController }) {
+  const allTypes = blockTypesForFamily(editor.document.familyId)
+  const availableTypes = allTypes.filter(type => !editor.access.availableBlocks || editor.access.availableBlocks.includes(type))
+  const hiddenBlockCount = allTypes.length - availableTypes.length
   return (
     <aside className={`editor-sidebar ${editor.panel === 'sections' ? 'mobile-visible' : ''}`}>
       <div className="sidebar-tabs">
@@ -16,23 +18,24 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
             {editor.document.sections.map((item, index) => (
               <div
                 key={item.id || index}
-                draggable
-                className={`section-item ${editor.active === index ? 'selected' : ''}`}
-                onDragStart={event => event.dataTransfer.setData('text/plain', String(index))}
+                 draggable={editor.access.availableBlocks?.includes(item.blockType) !== false}
+                 className={`section-item ${editor.active === index ? 'selected' : ''} ${editor.access.availableBlocks?.includes(item.blockType) === false ? 'section-item-locked' : ''}`}
+                 onDragStart={event => { if (editor.access.availableBlocks?.includes(item.blockType) === false) { event.preventDefault(); return } event.dataTransfer.setData('text/plain', String(index)) }}
                 onDragOver={event => event.preventDefault()}
                 onDrop={event => {
                   event.preventDefault()
                   const from = Number(event.dataTransfer.getData('text/plain'))
+                  if (editor.access.availableBlocks?.includes(item.blockType) === false) return
                   if (Number.isInteger(from) && from >= 0 && from < editor.document.sections.length) editor.move(from, index)
                 }}
               >
-                <button className="section-select" onClick={() => editor.select(index)}>
-                  <span>{blockSymbols[item.blockType]}</span>
-                  <span>{blockLabels[item.blockType]}<small>{item.title.split('\n')[0].slice(0, 27)}</small></span>
+                 <button className="section-select" onClick={() => editor.select(index)} aria-disabled={editor.access.availableBlocks?.includes(item.blockType) === false}>
+                   <span>{blockSymbols[item.blockType]}</span>
+                   <span>{blockLabels[item.blockType]}{editor.access.availableBlocks?.includes(item.blockType) === false && <em className="section-lock-label"> · Conservada</em>}<small>{item.title.split('\n')[0].slice(0, 27)}</small></span>
                 </button>
                 <div className="section-order">
-                  <button aria-label={`Subir ${blockLabels[item.blockType]}`} onClick={() => editor.move(index, index - 1)} disabled={index === 0}>↑</button>
-                  <button aria-label={`Bajar ${blockLabels[item.blockType]}`} onClick={() => editor.move(index, index + 1)} disabled={index === editor.document.sections.length - 1}>↓</button>
+                   <button aria-label={`Subir ${blockLabels[item.blockType]}`} onClick={() => editor.move(index, index - 1)} disabled={index === 0 || editor.access.availableBlocks?.includes(item.blockType) === false}>↑</button>
+                   <button aria-label={`Bajar ${blockLabels[item.blockType]}`} onClick={() => editor.move(index, index + 1)} disabled={index === editor.document.sections.length - 1 || editor.access.availableBlocks?.includes(item.blockType) === false}>↓</button>
                 </div>
               </div>
             ))}
@@ -42,11 +45,12 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
       ) : (
         <div className="block-library">
           <p className="sidebar-hint">Bloques diseñados para combinar bien.</p>
-          {blockTypesForFamily(editor.document.familyId).map(type => (
-            <button key={type} onClick={() => editor.add(type)} disabled={Boolean(editor.access.availableBlocks && !editor.access.availableBlocks.includes(type))} className={editor.access.availableBlocks && !editor.access.availableBlocks.includes(type) ? 'locked-block' : ''}>
-              <span>{blockSymbols[type]}</span><strong>{labelForBlock(type, editor.document.familyId)}{editor.access.availableBlocks && !editor.access.availableBlocks.includes(type) && <em> · {minimumPlanForBlock(type)}</em>}</strong><small>{descriptionForBlock(type, editor.document.familyId)}</small>
+          {availableTypes.map(type => (
+            <button key={type} onClick={() => editor.add(type)}>
+              <span>{blockSymbols[type]}</span><strong>{labelForBlock(type, editor.document.familyId)}</strong><small>{descriptionForBlock(type, editor.document.familyId)}</small>
             </button>
           ))}
+          {hiddenBlockCount > 0 && <p className="upgrade-note">Hay {hiddenBlockCount} bloques más disponibles en planes superiores. <a href="/planes">Mejorar plan ↗</a></p>}
         </div>
       )}
       <button className={`site-settings-button ${editor.active === 'settings' ? 'selected' : ''}`} onClick={() => editor.select('settings')}>⚙ Identidad y ajustes</button>

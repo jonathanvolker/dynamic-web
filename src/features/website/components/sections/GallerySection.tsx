@@ -7,38 +7,77 @@ import { SectionHeading } from './SectionHeading'
 export function GallerySection({ section, anchor }: SectionProps) {
   const items = section.gallery ?? []
   const trackRef = useRef<HTMLDivElement>(null)
+  const activeIndexRef = useRef(0)
+  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const pauseRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [reducedMotion, setReducedMotion] = useState(false)
 
   const scrollToItem = (index: number) => {
-    const item = trackRef.current?.children[index] as HTMLElement | undefined
-    item?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
-    setActiveIndex(index)
+    const nextIndex = items.length ? (index + items.length) % items.length : 0
+    const item = trackRef.current?.children[nextIndex] as HTMLElement | undefined
+    item?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'start' })
+    activeIndexRef.current = nextIndex
+    setActiveIndex(nextIndex)
   }
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updateMotionPreference = () => setReducedMotion(media.matches)
+    updateMotionPreference()
+    media.addEventListener('change', updateMotionPreference)
+    return () => media.removeEventListener('change', updateMotionPreference)
+  }, [])
 
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
     const onScroll = () => {
       const children = Array.from(track.children) as HTMLElement[]
+      if (!children.length) return
       const index = children.reduce((closest, child, i) => {
         const distance = Math.abs(child.offsetLeft - track.scrollLeft)
         const closestDistance = Math.abs(children[closest]?.offsetLeft - track.scrollLeft)
         return distance < closestDistance ? i : closest
       }, 0)
+      activeIndexRef.current = index
       setActiveIndex(index)
     }
     track.addEventListener('scroll', onScroll, { passive: true })
     return () => track.removeEventListener('scroll', onScroll)
   }, [items.length])
 
+  useEffect(() => {
+    if (items.length < 2 || reducedMotion) return
+    autoplayRef.current = setInterval(() => {
+      scrollToItem(activeIndexRef.current + 1)
+    }, 5000)
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current)
+      if (pauseRef.current) clearTimeout(pauseRef.current)
+    }
+  }, [items.length, reducedMotion])
+
+  const pauseAfterInteraction = () => {
+    if (reducedMotion || items.length < 2) return
+    if (autoplayRef.current) clearInterval(autoplayRef.current)
+    if (pauseRef.current) clearTimeout(pauseRef.current)
+    pauseRef.current = setTimeout(() => {
+      autoplayRef.current = setInterval(() => {
+        scrollToItem(activeIndexRef.current + 1)
+      }, 5000)
+    }, 3000)
+  }
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    pauseAfterInteraction()
     if (event.key === 'ArrowRight') {
       event.preventDefault()
-      scrollToItem(Math.min(activeIndex + 1, items.length - 1))
+      scrollToItem(activeIndex + 1)
     }
     if (event.key === 'ArrowLeft') {
       event.preventDefault()
-      scrollToItem(Math.max(activeIndex - 1, 0))
+      scrollToItem(activeIndex - 1)
     }
     if (event.key === 'Home') {
       event.preventDefault()
@@ -52,11 +91,7 @@ export function GallerySection({ section, anchor }: SectionProps) {
 
   return <section id={anchor} className="section wrap gallery">
     <SectionHeading section={section} />
-    <div className="gallery-carousel" role="region" aria-label={section.title || 'Galería'}>
-      {items.length > 1 && <div className="gallery-controls">
-        <button className="gallery-control" type="button" onClick={() => scrollToItem(Math.max(activeIndex - 1, 0))} disabled={activeIndex === 0} aria-label="Imagen anterior">←</button>
-        <button className="gallery-control" type="button" onClick={() => scrollToItem(Math.min(activeIndex + 1, items.length - 1))} disabled={activeIndex === items.length - 1} aria-label="Imagen siguiente">→</button>
-      </div>}
+    <div className="gallery-carousel" role="region" aria-label={section.title || 'Galería'} onMouseEnter={pauseAfterInteraction} onFocus={pauseAfterInteraction} onPointerDown={pauseAfterInteraction} onTouchStart={pauseAfterInteraction} onWheel={pauseAfterInteraction}>
       <div className="gallery-grid" ref={trackRef} tabIndex={0} onKeyDown={onKeyDown} aria-label="Galería deslizable">
       {items.map((item, index) => <figure className="gallery-item" key={index}>
         {item.image?.url
@@ -66,7 +101,7 @@ export function GallerySection({ section, anchor }: SectionProps) {
       </figure>)}
       </div>
       {items.length > 1 && <div className="gallery-dots" aria-label="Seleccionar imagen">
-        {items.map((item, index) => <button key={index} type="button" className={index === activeIndex ? 'active' : ''} onClick={() => scrollToItem(index)} aria-label={`Ir a imagen ${index + 1}`} aria-current={index === activeIndex ? 'true' : undefined} />)}
+        {items.map((item, index) => <button key={index} type="button" className={index === activeIndex ? 'active' : ''} onClick={() => { pauseAfterInteraction(); scrollToItem(index) }} aria-label={`Ir a imagen ${index + 1}`} aria-current={index === activeIndex ? 'true' : undefined} />)}
       </div>}
     </div>
   </section>

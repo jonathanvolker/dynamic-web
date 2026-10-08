@@ -19,7 +19,7 @@ export function HeroSection({ section, settings, anchor, buttonHref, buttonInval
             : null)}
       </div>
       {section.image?.url
-         ? <div className="hero-media"><img src={section.image.url} alt={section.image.alt || section.title || settings.brand} style={{ objectPosition: section.imagePosition || 'center' }} fetchPriority="high" /></div>
+         ? <div className={`hero-media${section.heroLayout === 'cover' ? ' hero-media-cover' : ''}`} style={section.heroLayout === 'cover' ? { backgroundImage: `url("${section.image.url}")`, backgroundPosition: section.imagePosition || 'center' } : undefined}><img src={section.image.url} alt={section.image.alt || section.title || settings.brand} style={{ objectPosition: section.imagePosition || 'center' }} fetchPriority="high" /></div>
         : template === 'product' ? <ProductArtwork settings={settings} /> : template === 'restaurant' ? <RestaurantArtwork /> : template === 'consultant' ? <ConsultantArtwork /> : <StudioArtwork />}
       <div className="hero-bottom">
         <span>{settings.tagline}</span>

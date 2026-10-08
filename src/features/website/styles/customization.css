@@ -8,8 +8,8 @@
 .website-root[data-spacing=compact] :is(.section, .about) { padding-block: 48px; }
 .website-root[data-spacing=airy] :is(.section, .about) { padding-block: 128px; }
 .website-root .brand-image { width: auto; max-width: min(220px, 35vw); height: 52px; object-fit: contain; }
-.website-root .hero-media { min-width: 0; min-height: 420px; overflow: hidden; border-radius: 8px; }
-.website-root .hero-media img { height: 100%; min-height: 420px; max-height: 640px; object-fit: cover; }
+.website-root .hero-media { min-width: 0; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 8px; }
+.website-root .hero-media img { height: 100%; object-fit: cover; }
 .website-root .about-media { min-width: 0; overflow: hidden; border-radius: 8px; }
 .website-root .about-media img { height: 410px; object-fit: cover; }
 .website-root .hero-layout-centered { grid-template-columns: minmax(0, 1fr); text-align: center; gap: 32px; }
@@ -18,10 +18,12 @@
 .website-root .hero-layout-centered .hero-description { margin-inline: auto; max-width: 600px; }
 .website-root .hero-layout-centered > :is(.hero-media, .hero-art, .restaurant-illustration, .consultant-illustration) { width: 100%; max-width: 960px; justify-self: center; transform: none; }
 .website-root .hero-layout-centered .hero-bottom { text-align: left; }
-.website-root .hero-layout-cover { isolation: isolate; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 32px; min-height: 650px; padding: 72px 64px 28px; margin-block: 28px; border-radius: 12px; color: white; background: #202820; }
+.website-root .hero-layout-cover { isolation: isolate; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 32px; min-height: clamp(560px, 72svh, 760px); padding: 72px 64px 28px; margin-block: 28px; border-radius: 12px; color: white; background: #202820; }
 .website-root .hero-layout-cover::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #000c, #0005); }
 .website-root .hero-layout-cover > :is(.hero-media, .hero-art, .restaurant-illustration, .consultant-illustration) { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; border-radius: 0; transform: none; z-index: -2; }
-.website-root .hero-layout-cover .hero-media img { height: 100%; max-height: none; }
+.website-root .hero-layout-cover .hero-media-cover { background-size: cover; background-repeat: no-repeat; }
+.website-root .hero-layout-cover .hero-media-cover::after { content: ''; position: absolute; inset: -24px; background: inherit; background-size: cover; background-position: inherit; filter: blur(18px); opacity: .55; transform: scale(1.04); }
+.website-root .hero-layout-cover .hero-media-cover img { position: relative; z-index: 1; width: 100%; height: 100%; max-height: none; object-fit: contain; }
 .website-root .hero-layout-cover .hero-copy { max-width: 800px; padding: 0; }
 .website-root .hero-layout-cover .hero-description { color: #ffffffe0; max-width: 540px; }
 .website-root .hero-layout-cover .status-dot { background: white; }
@@ -32,9 +34,9 @@
   .website-root[data-spacing=compact] :is(.section, .about) { padding-block: 32px; }
   .website-root[data-spacing=airy] :is(.section, .about) { padding-block: 80px; }
   .website-root .brand-image { max-width: min(180px, 45vw); height: 42px; }
-  .website-root .hero-media, .website-root .hero-media img { min-height: 300px; }
+  .website-root .hero-media { aspect-ratio: 5 / 4; }
   .website-root .about-media img { height: 300px; }
   .website-root .hero-layout-centered > :is(.hero-media, .hero-art, .restaurant-illustration, .consultant-illustration) { width: 100%; }
-  .website-root .hero-layout-cover { min-height: 580px; padding: 48px 24px 24px; margin-top: 20px; }
+  .website-root .hero-layout-cover { min-height: clamp(520px, 88svh, 680px); padding: 48px 24px 24px; margin-top: 20px; }
   .website-root .hero-layout-cover h1 { font-size: clamp(38px, 9vw, 64px); }
 }

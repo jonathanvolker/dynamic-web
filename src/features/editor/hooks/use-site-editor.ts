@@ -31,6 +31,8 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   const initialDocument = useRef(true)
   const dirty = saved !== JSON.stringify(document)
   const section = typeof active === 'number' ? document.sections[active] : null
+  const isBlockAvailable = (type: Section['blockType']) => !access.availableBlocks || access.availableBlocks.includes(type)
+  const sectionLocked = Boolean(section && !isBlockAvailable(section.blockType))
 
   useEffect(() => {
     const unload = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault() }
@@ -69,6 +71,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function change(update: (next: SiteDocument) => void) {
     if (!access.canEdit) { setError('Tu suscripción está vencida. Activá un plan para continuar.'); return }
+    if (sectionLocked) { setError(`Esta sección requiere un plan superior a ${access.planName}. Conservamos su contenido, pero no se puede editar.`); return }
     const next = structuredClone(document)
     update(next)
     setHistory(previous => [...previous.slice(-19), document])
@@ -94,6 +97,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function move(index: number, to: number) {
     if (to < 0 || to >= document.sections.length || index === to) return
+    if (!isBlockAvailable(document.sections[index].blockType)) return
     change(next => {
       const [item] = next.sections.splice(index, 1)
       next.sections.splice(to, 0, item)
@@ -131,6 +135,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   function remove() {
     if (!access.canEdit) return
     if (typeof active !== 'number' || document.sections.length <= 1) return
+    if (sectionLocked) return
     const nextActive = Math.min(active, document.sections.length - 2)
     change(next => { next.sections.splice(active, 1) })
     setActive(nextActive)
@@ -182,7 +187,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   return {
     site, access, document, active, section, dirty, message, error, busy, publishedAt, recovered,
-    device, tab, panel, activeField, canUndo: history.length > 0, canRedo: future.length > 0,
+    device, tab, panel, activeField, sectionLocked, canUndo: history.length > 0, canRedo: future.length > 0,
     change, changeSection, changeSetting, select, move, add, duplicate, remove,
     undo, redo, save, setError, setDevice, setTab, setPanel, setActiveField,
   }

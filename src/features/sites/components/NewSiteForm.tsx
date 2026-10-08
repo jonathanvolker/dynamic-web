@@ -7,7 +7,7 @@ import { families, templates } from '@/features/templates/registry'
 import { TemplateThumbnail } from '@/features/templates/components/TemplateThumbnail'
 import type { FamilyId, TemplateId } from '@/features/website/types'
 
-export default function NewSiteForm({ selectedTemplate = 'studio' }: { selectedTemplate?: TemplateId | 'blank' }) {
+export default function NewSiteForm({ selectedTemplate = 'studio', availableBlocks = null }: { selectedTemplate?: TemplateId | 'blank'; availableBlocks?: string[] | null }) {
   const [state, action, pending] = useActionState(newSite, { error: '' })
   const initialFamily = families.find(family => templates.some(template => template.familyId === family.id && template.id === selectedTemplate))?.id || families[0].id
   const [familyId, setFamilyId] = useState<FamilyId>(initialFamily)
@@ -79,7 +79,7 @@ export default function NewSiteForm({ selectedTemplate = 'studio' }: { selectedT
   useEffect(() => () => { if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current) }, [])
   function selectFamily(id: FamilyId) {
     setFamilyId(id)
-    if (choice !== 'blank' && !templates.some(template => template.id === choice && template.familyId === id)) setChoice(templates.find(template => template.familyId === id)!.id)
+    if (choice !== 'blank' && !templates.some(template => template.id === choice && template.familyId === id)) setChoice(templates.find(template => template.familyId === id)?.id || 'blank')
   }
   return (
     <form action={action} className="p-form">
@@ -93,9 +93,9 @@ export default function NewSiteForm({ selectedTemplate = 'studio' }: { selectedT
           <legend>{families.find(family => family.id === familyId)?.name} <small>· elegí una plantilla</small></legend>
          {[0, 1, 2].flatMap(copy => familyTemplates.map(template => (
            <label data-carousel-card key={`${copy}-${template.id}`} aria-hidden={copy !== 1}>
-             <input disabled={copy !== 1} tabIndex={copy === 1 ? 0 : -1} type="radio" name="template" value={template.id} checked={copy === 1 && choice === template.id} onChange={() => setChoice(template.id)} />
-             <TemplateThumbnail template={template} />
-             <strong>{template.name} · {template.category}</strong><small>{template.description}</small>
+               <input disabled={copy !== 1} tabIndex={copy === 1 ? 0 : -1} type="radio" name="template" value={template.id} checked={copy === 1 && choice === template.id} onChange={() => setChoice(template.id)} />
+              <TemplateThumbnail template={template} />
+               <strong>{template.name} · {template.category}</strong><small>{template.description}{availableBlocks && ' · Los bloques no incluidos se ocultan según tu plan.'}</small>
               <Link tabIndex={copy === 1 ? 0 : -1} className="template-choice-preview" href={`/templates/${template.id}`}>Ver vista previa ↗</Link>
            </label>
          )))}
@@ -108,7 +108,7 @@ export default function NewSiteForm({ selectedTemplate = 'studio' }: { selectedT
         <label>
           <input type="radio" name="template" value="blank" checked={choice === 'blank'} onChange={() => setChoice('blank')} />
           <span className="template-art blank">Aa<b>+</b></span>
-           <strong>Sitio en blanco</strong><small>Incluye una portada y una sección de contacto. Agregá el resto desde el editor.</small>
+            <strong>Sitio en blanco</strong><small>Incluye una portada y una galería. Agregá el resto desde el editor.</small>
         </label>
       </fieldset>
       {state.error && <p role="alert" className="p-error">{state.error}</p>}

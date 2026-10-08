@@ -38,6 +38,12 @@ export async function saveSite(id: string, input: unknown, publish: boolean) {
     const existing = new Set(site.draft.sections.map(section => `${section.id}:${section.blockType}`))
     const invalid = document.sections.find(section => !canUseBlock(entitlements, section.blockType) && !existing.has(`${section.id}:${section.blockType}`))
     if (invalid) throw new Error(`El bloque ${invalid.blockType} requiere un plan superior.`)
+    const changedLocked = document.sections.find(section => {
+      if (canUseBlock(entitlements, section.blockType)) return false
+      const original = site.draft.sections.find(item => item.id === section.id && item.blockType === section.blockType)
+      return original && JSON.stringify(original) !== JSON.stringify(section)
+    })
+    if (changedLocked) throw new Error('Las secciones conservadas de un plan anterior no se pueden editar.')
     if (publish) assertCanPublish(user.id)
   } catch (error) { return { error: error instanceof Error ? error.message : 'Datos no válidos.' } }
   const now = saveDocument(id, user.id, input, publish)
