@@ -14,7 +14,7 @@ services:
       timeout: 5s
       retries: 20
   app:
-    image: ${IMAGE_NAME:?Definí IMAGE_NAME en el .env}
+    image: ${IMAGE_NAME:?Definí IMAGE_NAME en el .env}:main
     restart: unless-stopped
     environment:
       DATABASE_URI: postgresql://forma:${POSTGRES_PASSWORD}@db:5432/forma
