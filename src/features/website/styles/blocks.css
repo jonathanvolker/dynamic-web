@@ -1,5 +1,14 @@
 /* New blocks share semantic markup and adapt to each visual family. */
-.website-root .gallery-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.website-root .gallery-carousel { position: relative; }
+.website-root .gallery-grid { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; padding: 2px 2px 12px; }
+.website-root .gallery-grid::-webkit-scrollbar { display: none; }
+.website-root .gallery-item { flex: 0 0 min(72%, 620px); min-width: 0; scroll-snap-align: start; }
+.website-root .gallery-controls { display: flex; justify-content: flex-end; gap: 8px; margin: -20px 0 20px; }
+.website-root .gallery-control { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; background: transparent; font-size: 20px; }
+.website-root .gallery-control:disabled { opacity: .35; cursor: not-allowed; }
+.website-root .gallery-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+.website-root .gallery-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: var(--line); }
+.website-root .gallery-dots button.active { background: var(--ink); transform: scale(1.25); }
 .website-root .gallery-item { margin: 0; min-width: 0; }
 .website-root .gallery-item > img, .website-root .gallery-placeholder { height: 340px; object-fit: cover; border-radius: 8px; }
 .website-root .gallery-placeholder { background: var(--surface); border: 1px dashed var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: var(--muted); font-size: 12px; }
@@ -91,11 +100,13 @@
 .website-root .consent input { width: auto; margin-top: 3px; }
 .website-root .honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @media (max-width: 760px) {
-  .website-root .gallery-grid { grid-template-columns: 1fr; gap: 30px; }
+  .website-root .gallery-grid { gap: 16px; }
+  .website-root .gallery-item { flex-basis: 88%; }
   .website-root .gallery-item > img, .website-root .gallery-placeholder { height: 320px; }
   .website-root .testimonial-card, .website-root .pricing-card { padding: 26px; }
   .website-root .utility-cta, .website-root .newsletter-block { display: block; padding: 30px; }
   .website-root .utility-actions { margin-top: 24px; }
+  .website-root .utility-actions .button { flex: 1 1 180px; min-width: 0; }
   .website-root .text-image, .website-root .hours-layout { grid-template-columns: 1fr; gap: 26px; }
   .website-root .text-image-image-left .text-image-copy, .website-root .text-image-image-left .text-image-media { order: initial; }
   .website-root .text-image-media img, .website-root .utility-image-placeholder { min-height: 280px; }

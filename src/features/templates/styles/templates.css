@@ -53,6 +53,13 @@
 .creation-family-switcher button.active { background: #283325; color: #d6f76b; border-color: #283325 !important; box-shadow: 0 5px 0 #d6f76b; }
 .creation-family-switcher button.active span { color: white; }
 .creation-template-family { margin-bottom: 22px; }
+.creation-template-family { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 8px; gap: 12px; padding: 0 8px 12px; scrollbar-width: none; }
+.creation-template-family::-webkit-scrollbar { display: none; }
+.creation-template-family > legend { flex: 0 0 100%; }
+.creation-template-family > label { flex: 0 0 min(340px, 88%); scroll-snap-align: start; }
+.creation-carousel-bullets { display: flex; justify-content: center; gap: 7px; margin: -12px 0 22px; }
+.creation-carousel-bullets button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: #cbd3c0; cursor: pointer; }
+.creation-carousel-bullets button.active { background: #283325; transform: scale(1.25); }
 .creation-template-family legend small { color: #929b86; font-size: 10px; font-weight: 400; }
 .landing-template-link { display: inline-flex; gap: 15px; align-items: center; font-size: 12px; }
 .template-options > label:only-of-type { grid-column: 1 / -1; }
@@ -121,13 +128,4 @@
   .catalog-family::after { content: 'Deslizá para ver las opciones →'; display: block; margin: 1px 22px 0; color: #99a18f; font-size: 9px; letter-spacing: .03em; }
   .creation-family-switcher { position: sticky; top: 0; z-index: 3; margin: 18px -2px 16px; padding: 8px 2px 12px; background: #fbfcf8; overflow-x: auto; grid-template-columns: repeat(3, minmax(145px, 1fr)); }
   .creation-family-switcher button { min-height: 60px; }
-  .creation-template-family { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 8px; gap: 12px; padding: 0 8px 12px; scrollbar-width: none; }
-  .creation-template-family::-webkit-scrollbar { display: none; }
-  .creation-template-family > label { flex: 0 0 88%; scroll-snap-align: start; }
-}
-
-@media (max-width: 760px) {
-  .creation-family-switcher { overflow-x: visible; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-inline: 0; }
-  .creation-family-switcher button { min-width: 0; padding-inline: 7px; }
-  .creation-family-switcher button span { overflow-wrap: anywhere; }
 }
