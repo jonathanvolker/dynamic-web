@@ -6,7 +6,7 @@ Fecha de referencia: 8 de octubre de 2026.
 
 El soporte es parcial y no debe considerarse listo para producción:
 
-- `domains` ya se crea en SQLite con `hostname`, token, estado y fechas.
+- `platform_domains` ya se crea en PostgreSQL con `hostname`, token, estado y fechas.
 - El panel permite asociar un hostname `www.*` a un sitio del usuario con capacidad `customDomain`.
 - La verificación manual consulta el CNAME mediante DNS y pasa el dominio a `verified`.
 - La página pública busca un sitio publicado por `Host` cuando el hostname está `verified` o `active`.
@@ -55,7 +55,7 @@ El soporte es parcial y no debe considerarse listo para producción:
 
 ## Archivos involucrados
 
-- `src/server/db/sqlite.ts`: esquema y migración de `domains`.
+- `src/server/db/postgres-schema.sql`: esquema de `platform_domains`.
 - `src/features/domains/actions.ts`: alta y autorización por plan.
 - `src/features/domains/server/repository.ts`: persistencia, estados y resolución.
 - `src/features/domains/components/DomainVerifyButton.tsx`: acción de verificación del panel.
@@ -83,5 +83,5 @@ El soporte es parcial y no debe considerarse listo para producción:
 - **DNS/TLS depende de infraestructura externa:** staging con dominio real, logs y checklist de operación antes del lanzamiento.
 - **Emisión TLS on-demand puede abusarse:** mantener la consulta de autorización estricta, limitar dominios permitidos y monitorear solicitudes.
 - **Aislamiento por `Host` puede fallar en rutas auxiliares:** prueba específica de assets, APIs, cookies y formularios desde dominio personalizado.
-- **SQLite y cambios concurrentes pueden dejar estados inconsistentes:** transiciones idempotentes y backup/restauración probados.
+- **PostgreSQL y cambios concurrentes pueden dejar estados inconsistentes:** transiciones idempotentes y backup/restauración probados.
 - **La documentación previa declara dominios como pendientes:** actualizar referencias solo cuando las pruebas de VPS pasen; hasta entonces, comunicarlo como soporte parcial.

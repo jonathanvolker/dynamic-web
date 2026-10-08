@@ -4,7 +4,7 @@ Aplicación **React / Next.js + Node** con registro, panel de sitios, editor por
 
 ## Levantar local
 
-Requiere **Node 22.23 o posterior** (persistencia local con `node:sqlite`) y npm incluido con Node. No necesitás PostgreSQL ni Docker para probar la plataforma. La base local se crea automáticamente en `data/platform.sqlite`.
+Requiere **Node 22.23 o posterior**, npm y PostgreSQL. La plataforma y Payload comparten la misma base PostgreSQL; la configuración está en `.env.example`.
 
 ### Windows PowerShell
 
@@ -111,7 +111,7 @@ npm run dev
 5. **Guardar** conserva el borrador. **Publicar** actualiza la web pública.
 6. **Ver sitio** abre `/s/[slug]`. Cada cuenta accede solo a sus propios sitios.
 
-La plantilla original se puede ver en `/template`. `/admin` pertenece al CMS de la demo inicial y requiere su propia configuración de PostgreSQL; el constructor de la plataforma es `/editor/[id]`.
+La plantilla original se puede ver en `/template`. `/admin` pertenece al CMS de la demo inicial y usa la misma PostgreSQL con colecciones propias de Payload; el constructor de la plataforma es `/editor/[id]`. Los usuarios de `platform_users` y los usuarios de Payload son identidades separadas.
 
 ## Plantillas públicas
 
@@ -140,7 +140,7 @@ src/features/website/   Plantillas y renderizado de webs
 src/features/templates/ Catálogo, contenido y vistas públicas de las plantillas
 src/features/platform/  Estilos de la plataforma
 src/features/cms/       Integración de Payload de la primera demo
-src/server/db/          Persistencia local
+ src/server/db/          Pool y esquema PostgreSQL
 ```
 
 Detalle de responsabilidades: [`docs/architecture.md`](docs/architecture.md).
@@ -152,6 +152,7 @@ npm run check:cms-catalog
 npm run typecheck
 npm run build
 npm test
+npm run test:integration
 npx playwright install chromium
 npm run test:e2e
 ```
@@ -162,7 +163,7 @@ Desarrollo usa `.next-dev` y producción usa `.next`, para que una compilación 
 
 ## Despliegue
 
-El flujo de VPS y GitHub Actions está documentado en [`deploy/README.md`](deploy/README.md). El job de verificación ejecuta typecheck y build; las pruebas unitarias y E2E se ejecutan manualmente o en un job separado para no formar parte del build productivo. El push a `main` construye la imagen Docker, la publica en GHCR y actualiza el VPS mediante SSH. La ejecución real contra el VPS debe verificarse por separado.
+ El flujo de VPS y GitHub Actions está documentado en [`deploy/README.md`](deploy/README.md). El job de verificación ejecuta typecheck, tests unitarios y build. El push a `main` publica una imagen de aplicación y otra de migración en GHCR, copia Compose/Caddy y actualiza el VPS mediante SSH. Antes de levantar la aplicación, el workflow ejecuta automáticamente las migraciones de plataforma y Payload.
 
 Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.next`. Las pruebas de navegador requieren el build previo y levantan producción en el puerto 3100. Usan una base independiente en el directorio temporal del sistema (`/tmp/opencode/forma-e2e-<id>` en Linux), incluso si tenés `PLATFORM_DATA_DIR` configurado; el servidor de desarrollo puede seguir en el puerto 3000. Los tests cubren edición/publicación, compatibilidad de documentos anteriores, aislamiento entre cuentas y uso del editor a 390 px.
 
@@ -174,12 +175,12 @@ Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.nex
 - Autoguardado del borrador y recuperación opcional de cambios locales tras una suspensión o cierre de pestaña.
 - 22 bloques registrados en un catálogo compartido, incluido el pie de página, con configuración consistente entre editor y Payload.
 - Documentos versionados (`schemaVersion: 1`), con familia, plantilla y anclas estables; lectura compatible de documentos anteriores sin sobrescribir su publicación.
-- Imágenes nuevas optimizadas en el servidor como WebP y guardadas en `data/media/`, con referencias en SQLite y verificación de propietario al guardar. Conservan transparencia y ya no aumentan el JSON del sitio. Las imágenes base64 anteriores siguen funcionando.
+- Imágenes nuevas optimizadas en el servidor como WebP y guardadas en `PLATFORM_DATA_DIR/media/`, con metadata y propietario en PostgreSQL. Conservan transparencia y ya no aumentan el JSON del sitio. Las imágenes base64 anteriores siguen funcionando.
 - Cada sitio publicado tiene una dirección `/s/[slug]` en el dominio de la plataforma; los dominios personalizados validan hostname, entitlement, DNS y estado de verificación antes de habilitarse.
-- Docker y la automatización de despliegue en VPS están configurados mediante GitHub Actions, GHCR, Docker Compose y Caddy. La persistencia productiva usa `/app/data`; la primera ejecución y la restauración de backups deben verificarse en el VPS.
-- Contenido inicial ficticio. El bloque `contact` histórico abre email; los bloques `form` y `newsletter` nuevos persisten leads en SQLite.
-- Rate limiting distribuido/proxy documentado en [`docs/rate-limiting.md`](docs/rate-limiting.md), con store SQLite compartido y fallback local seguro sin servicios externos obligatorios.
+- Docker y la automatización de despliegue en VPS están configurados mediante GitHub Actions, GHCR, Docker Compose y Caddy. La base persiste en el volumen PostgreSQL y los archivos de la plataforma en `/app/data`.
+- Contenido inicial ficticio. El bloque `contact` histórico abre email; los bloques `form` y `newsletter` nuevos persisten leads en PostgreSQL.
+- Rate limiting distribuido/proxy documentado en [`docs/rate-limiting.md`](docs/rate-limiting.md), con store PostgreSQL y fallback local seguro sin servicios externos obligatorios.
 
-Los archivos subidos tienen URLs públicas con identificadores aleatorios, necesarias para mostrarlos en los sitios. Quitar una imagen del editor elimina la referencia, no el archivo: la limpieza automática de recursos sin uso queda para una siguiente etapa. El backup local debe incluir la base SQLite y `data/media/`.
+Los archivos subidos tienen URLs públicas con identificadores aleatorios, necesarias para mostrarlos en los sitios. Quitar una imagen del editor elimina la referencia, no el archivo: la limpieza automática de recursos sin uso queda para una siguiente etapa. Un backup productivo debe incluir el volumen PostgreSQL, `/app/data` y, si Payload recibe media, su volumen correspondiente.
 
 La funcionalidad detallada del editor está en [`docs/editor-component-functionality.md`](docs/editor-component-functionality.md) y el seguimiento de auditoría en [`docs/audit-followup.md`](docs/audit-followup.md). El panel administrativo inicial está en `/admin/platform` y requiere `PLATFORM_ADMIN_EMAILS`.

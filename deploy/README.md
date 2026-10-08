@@ -1,54 +1,86 @@
 # Despliegue en VPS
 
-El workflow de `.github/workflows/deploy.yml` ejecuta typecheck, pruebas unitarias y build; luego construye la imagen en GitHub Actions, la publica en GHCR y actualiza el VPS al hacer push a `main`. El VPS no compila el proyecto. La primera ejecución debe verificarse con los secretos y el host reales.
+El workflow `.github/workflows/deploy.yml` verifica typecheck, tests unitarios y build. En pushes a `main` publica dos imágenes en GHCR:
+
+- `dynamic-web:main`: aplicación compilada.
+- `dynamic-web:migration-main`: scripts, código fuente y dependencias para migraciones.
+
+Después copia Compose y Caddy al VPS, ejecuta las migraciones y recién entonces levanta la aplicación.
 
 ## Preparar el VPS una vez
 
-En el VPS, como `root`:
+Instalar Docker Engine, Compose Plugin y crear el directorio de deploy:
 
 ```bash
 apt update
-apt install -y ca-certificates curl
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-chmod a+r /etc/apt/keyrings/docker.asc
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list
-apt update
-apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+apt install -y ca-certificates curl docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 mkdir -p /opt/forma
 ```
 
-Crear `/opt/forma/.env` con valores reales:
+No es necesario crear manualmente el `.env`: GitHub Actions lo escribe con permisos `0600` en cada deploy.
 
-```dotenv
-IMAGE_NAME=ghcr.io/jonathanvolker/dynamic-web:main
-DOMAIN=:80
-PUBLIC_URL=http://201.32.129.6
-PAYLOAD_SECRET=una-cadena-aleatoria-de-al-menos-32-caracteres
-COOKIE_SECURE=false
-PLATFORM_ADMIN_EMAILS=tu-email@dominio.com
+## GitHub Secrets
+
+Crear un environment `production` con:
+
+```text
+VPS_HOST
+VPS_USER
+DEPLOY_PATH
+VPS_SSH_KEY
+VPS_KNOWN_HOSTS
+GHCR_USERNAME
+GHCR_TOKEN
+POSTGRES_PASSWORD
+DOMAIN
+PUBLIC_URL
+PAYLOAD_SECRET
+COOKIE_SECURE
+TRUST_PROXY_HEADERS
+PLATFORM_ADMIN_EMAILS
+PLAN_INITIAL_PRICE_ARS
+PLAN_PROFESSIONAL_PRICE_ARS
+MERCADOPAGO_ACCESS_TOKEN
+MERCADOPAGO_WEBHOOK_SECRET
+MERCADOPAGO_SANDBOX
+FORMA_CNAME_TARGET
 ```
 
-Mientras el dominio está en validación, `DOMAIN=:80` permite probar por HTTP usando la IP. Cuando el dominio esté activo, cambiar ambos valores a `DOMAIN=tu-dominio.com` y `PUBLIC_URL=https://tu-dominio.com`, y cambiar `COOKIE_SECURE=true`.
+`POSTGRES_PASSWORD` es obligatorio para crear el contenedor PostgreSQL. `PAYLOAD_SECRET` debe ser aleatorio y tener al menos 32 caracteres. No subir secretos, `.env`, claves privadas ni tokens al repositorio.
 
-`PLATFORM_ADMIN_EMAILS` contiene los emails de los dueños de la plataforma, separados por coma. Esos usuarios pueden acceder a `/admin/platform` para ver cuentas y administrar manualmente suscripciones.
+## Primer deploy
 
-El workflow autentica el VPS contra GHCR, por lo que el paquete puede permanecer privado. El token solo necesita permiso de lectura de paquetes.
+El push a `main` ejecuta este flujo:
 
-## Secrets de GitHub
+1. Construye y publica las imágenes `main` y `migration-main`.
+2. Copia `compose.production.yaml` y `Caddyfile` al VPS.
+3. Escribe el `.env` productivo.
+4. Hace login en GHCR y descarga las imágenes.
+5. Crea PostgreSQL y espera el healthcheck.
+6. Ejecuta `migrate:platform` y `payload migrate`.
+7. Levanta `app`, Caddy y PostgreSQL.
 
-Crear un environment llamado `production` y agregar:
+No hay migración de datos desde SQLite. La instalación PostgreSQL se crea limpia.
 
-- `VPS_HOST`: `201.32.129.6`
-- `VPS_USER`: `root` inicialmente
-- `DEPLOY_PATH`: `/opt/forma`
-- `VPS_SSH_KEY`: contenido de la clave privada que GitHub usará para conectarse
-- `VPS_KNOWN_HOSTS`: salida de `ssh-keyscan -H 201.32.129.6` ejecutada desde un entorno confiable
-- `GHCR_USERNAME`: usuario de GitHub que creó el token
-- `GHCR_TOKEN`: token de GitHub con permiso `read:packages`
+## Deploys posteriores
 
-No subir `.env`, claves privadas ni tokens al repositorio.
+El mismo flujo se ejecuta en cada push. Las migraciones son idempotentes y Payload solo aplica migraciones pendientes. No hay que ejecutar comandos manualmente ni eliminar el paso de migración del workflow.
 
-## Primer despliegue
+## Persistencia
 
-Después de crear los secrets, el primer push a `main` ejecutará las verificaciones, publicará `ghcr.io/jonathanvolker/dynamic-web:main`, copiará el Compose y Caddyfile, y reiniciará la aplicación. Los datos de SQLite y medios persisten en el volumen `forma_data` montado en `/app/data`; todavía falta documentar y probar un procedimiento de backup/restauración.
+- PostgreSQL: volumen `forma_postgres_data`.
+- Media de la plataforma: volumen `forma_data`, montado en `/app/data`.
+- Caddy: volúmenes `caddy_data` y `caddy_config`.
+
+Los backups productivos deben incluir PostgreSQL, `/app/data`, la configuración de Caddy y los secretos necesarios para restaurar. Los media administrados por Payload requieren una política de volumen separada si se usan.
+
+## Diagnóstico
+
+```bash
+cd /opt/forma
+docker compose -f compose.production.yaml ps
+docker compose -f compose.production.yaml logs --tail=200 db
+docker compose -f compose.production.yaml logs --tail=200 app
+```
+
+Si falla una migración, no borrar volúmenes. Revisar `POSTGRES_PASSWORD`, `PAYLOAD_SECRET`, disponibilidad de PostgreSQL y que exista la imagen `:migration-main` del mismo deploy.
