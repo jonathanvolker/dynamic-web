@@ -5,13 +5,14 @@ import { Field } from './Field'
 export function LinkField({ label, value, optional = false, sections, onChange, fieldKey }: {
   label: string; value: string; optional?: boolean; sections: Section[]; onChange: (value: string) => void; fieldKey?: string
 }) {
-  const anchors = sectionAnchors(sections)
-  const missing = value.startsWith('#') && value !== '#main' && !anchors.includes(value.slice(1))
+  const linkableSections = sections.filter(section => section.blockType !== 'footer')
+  const linkableAnchors = sectionAnchors(linkableSections)
+  const missing = value.startsWith('#') && value !== '#main' && !linkableAnchors.includes(value.slice(1))
   return <div className="link-field">
     <label className="editor-field">{label} · sección
-      <select value={anchors.includes(value.slice(1)) && value.startsWith('#') ? value : ''} onChange={event => { if (event.target.value) onChange(event.target.value) }}>
+      <select value={linkableAnchors.includes(value.slice(1)) && value.startsWith('#') ? value : ''} onChange={event => { if (event.target.value) onChange(event.target.value) }}>
         <option value="">Elegir una sección…</option>
-        {sections.map((section, index) => <option key={anchors[index]} value={`#${anchors[index]}`}>{section.title.split('\n')[0].slice(0, 45)} · #{anchors[index]}</option>)}
+        {linkableSections.map((section, index) => <option key={linkableAnchors[index]} value={`#${linkableAnchors[index]}`}>{section.title.split('\n')[0].slice(0, 45)} · #{linkableAnchors[index]}</option>)}
       </select>
     </label>
     <Field label={`${label} · enlace`} fieldKey={fieldKey} value={value} onChange={onChange} />

@@ -28,7 +28,7 @@ export function ArrayField({ name, editor }: { name: RowKey; editor: EditorContr
         <details className="row-detail" key={index} open={items.length === 1 || undefined}>
           <summary>{String(row.title || row.question || row.name || row.label || `Elemento ${index + 1}`)}<span>⌄</span></summary>
           <div className="row-fields">
-            {rowFields[name].map(field => field.link ? (
+             {rowFields[name].filter(field => !(name === 'formFields' && field.name === 'type')).map(field => field.link ? (
               <LinkField key={field.name} fieldKey={`${name}.${index}.${field.name}`} label={field.label} value={String(row[field.name] || '')} optional={field.optional} sections={editor.document.sections} onChange={value => updateRow(index, field.name, value)} />
             ) : (
               <Field

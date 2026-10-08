@@ -60,3 +60,11 @@ export function assertCanPublish(userId: string) {
     : 'Tu suscripción venció. Activá un plan para publicar.')
   return entitlements
 }
+
+export function assertCanUseCustomDomain(userId: string) {
+  const entitlements = getEntitlements(userId)
+  if (!entitlements.plan.customDomain || !entitlements.canEdit) {
+    throw new Error('El dominio personalizado requiere una suscripción Profesional vigente.')
+  }
+  return entitlements
+}

@@ -2,11 +2,14 @@
 
 import { randomUUID } from 'node:crypto'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { session, endSession } from './server/session'
 import { hashPassword, verifyPassword } from './server/password'
 import { findUserByEmail, insertUser } from './server/repository'
 import { getTemplate } from '@/features/templates/registry'
 import { createTrial } from '@/features/billing/server/repository'
+import { clearLoginFailures, loginAllowed, recordLoginFailure } from './server/rate-limit'
+import { clientAddress, consumeRateLimit } from '@/server/rate-limit'
 
 export async function authenticate(_state: { error: string }, form: FormData): Promise<{ error: string }> {
   const email = String(form.get('email') || '').trim().toLowerCase()
@@ -30,8 +33,15 @@ export async function authenticate(_state: { error: string }, form: FormData): P
     }
     await session(id)
   } else {
+    const address = clientAddress(await headers())
+    if (!consumeRateLimit(`login:${address}`, 20, 15 * 60 * 1000)) return { error: 'Demasiados intentos. Probá nuevamente más tarde.' }
+    if (!loginAllowed(email)) return { error: 'Email o contraseña incorrectos.' }
     const user = findUserByEmail(email)
-    if (!user || !verifyPassword(password, user.password)) return { error: 'Email o contraseña incorrectos.' }
+    if (!user || !verifyPassword(password, user.password)) {
+      recordLoginFailure(email)
+      return { error: 'Email o contraseña incorrectos.' }
+    }
+    clearLoginFailures(email)
     await session(user.id)
   }
   const template = getTemplate(String(form.get('template') || ''))

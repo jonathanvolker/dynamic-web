@@ -6,6 +6,11 @@ import { templates } from '../src/features/templates/registry'
 import { isSafeHref, resolveHref, sectionAnchors } from '../src/features/website/links'
 import { blockDefinitions, blockTypes, rowFields } from '../src/features/website/blocks'
 import { mediaIdsInDocument } from '../src/features/sites/server/media-ownership'
+import { assertCmsCatalogConsistency } from '../src/features/cms/catalog-consistency'
+
+test('editor catalog and Payload block configuration stay consistent', () => {
+  assert.doesNotThrow(assertCmsCatalogConsistency)
+})
 
 test('legacy templates migrate without changing content, colors or public anchors', () => {
   for (const template of templates) {

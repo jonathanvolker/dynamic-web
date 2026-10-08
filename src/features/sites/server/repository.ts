@@ -1,4 +1,3 @@
-import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { db } from '@/server/db/sqlite'
 import { getTemplate } from '@/features/templates/registry'
@@ -7,16 +6,31 @@ import { ensureFooter, migrateDocument } from '../document'
 
 function deserialize(row: Record<string, unknown> | undefined): Site | null {
   if (!row) return null
-  return {
-    ...row,
-    draft: migrateDocument(JSON.parse(row.draft as string)),
-    published: row.published ? migrateDocument(JSON.parse(row.published as string)) : null,
-  } as Site
+  try {
+    return {
+      ...row,
+      draft: migrateDocument(JSON.parse(row.draft as string)),
+      published: row.published ? migrateDocument(JSON.parse(row.published as string)) : null,
+    } as Site
+  } catch {
+    // A damaged snapshot must not take down the site list or public renderer.
+    return null
+  }
+}
+
+function hasPublicEntitlement(ownerId: string, now = Date.now()) {
+  const subscription = db().prepare(`SELECT status, current_period_ends_at, grace_period_ends_at
+    FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`).get(ownerId) as {
+    status: string; current_period_ends_at: string; grace_period_ends_at: string | null
+  } | undefined
+  if (!subscription) return false
+  if (subscription.status === 'trialing' || subscription.status === 'active') return new Date(subscription.current_period_ends_at).getTime() > now
+  return subscription.status === 'past_due' && Boolean(subscription.grace_period_ends_at) && new Date(subscription.grace_period_ends_at!).getTime() > now
 }
 
 export function listSites(owner: string) {
   return db().prepare('SELECT * FROM sites WHERE owner_id = ? ORDER BY updated_at DESC')
-    .all(owner).map(row => deserialize(row)!)
+    .all(owner).map(row => deserialize(row)).filter((site): site is Site => site !== null)
 }
 
 export function findSite(id: string, owner: string) {
@@ -24,12 +38,14 @@ export function findSite(id: string, owner: string) {
 }
 
 export function publicSite(slug: string) {
-  return deserialize(db().prepare('SELECT * FROM sites WHERE slug = ? AND published IS NOT NULL').get(slug))
+  const row = db().prepare('SELECT * FROM sites WHERE slug = ? AND published IS NOT NULL').get(slug) as Record<string, unknown> | undefined
+  return row && hasPublicEntitlement(String(row.owner_id)) ? deserialize(row) : null
 }
 
 export function publicSiteByHostname(hostname: string) {
-  return deserialize(db().prepare(`SELECT sites.* FROM sites INNER JOIN domains ON domains.site_id = sites.id
-    WHERE domains.hostname = ? AND domains.status IN ('verified', 'active') AND sites.published IS NOT NULL`).get(hostname))
+  const row = db().prepare(`SELECT sites.* FROM sites INNER JOIN domains ON domains.site_id = sites.id
+    WHERE domains.hostname = ? AND domains.status IN ('verified', 'active') AND sites.published IS NOT NULL`).get(hostname) as Record<string, unknown> | undefined
+  return row && hasPublicEntitlement(String((row as Record<string, unknown>).owner_id)) ? deserialize(row as Record<string, unknown>) : null
 }
 
 export function createSite(owner: string, name: string, template: string, allowedBlocks: string[] | 'all' = 'all') {
