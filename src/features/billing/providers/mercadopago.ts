@@ -41,8 +41,11 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
     })
     throw new Error(reason ? `Mercado Pago rechazó el checkout: ${reason}` : `Mercado Pago rechazó el checkout (HTTP ${response.status}).`)
   }
-  if (!data.init_point && !data.sandbox_init_point) throw new Error('Mercado Pago no devolvió una URL de checkout.')
-  return data.init_point || data.sandbox_init_point!
+  const checkoutUrl = process.env.MERCADOPAGO_SANDBOX === 'true'
+    ? data.sandbox_init_point || data.init_point
+    : data.init_point || data.sandbox_init_point
+  if (!checkoutUrl) throw new Error('Mercado Pago no devolvió una URL de checkout.')
+  return checkoutUrl
 }
 
 export async function fetchMercadoPagoSubscription(id: string) {
