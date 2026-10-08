@@ -36,10 +36,10 @@ export async function saveSite(id: string, input: unknown, publish: boolean) {
     assertMediaOwnership(input, user.id)
     const document = input as { sections: { id?: string; blockType: string }[] }
     const existing = new Set(site.draft.sections.map(section => `${section.id}:${section.blockType}`))
-    const invalid = document.sections.find(section => !canUseBlock(entitlements, section.blockType) && !existing.has(`${section.id}:${section.blockType}`))
+    const invalid = document.sections.find(section => section.blockType !== 'footer' && !canUseBlock(entitlements, section.blockType) && !existing.has(`${section.id}:${section.blockType}`))
     if (invalid) throw new Error(`El bloque ${invalid.blockType} requiere un plan superior.`)
     const changedLocked = document.sections.find(section => {
-      if (canUseBlock(entitlements, section.blockType)) return false
+      if (section.blockType === 'footer' || canUseBlock(entitlements, section.blockType)) return false
       const original = site.draft.sections.find(item => item.id === section.id && item.blockType === section.blockType)
       return original && JSON.stringify(original) !== JSON.stringify(section)
     })

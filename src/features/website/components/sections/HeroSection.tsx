@@ -13,13 +13,13 @@ export function HeroSection({ section, settings, anchor, buttonHref, buttonInval
           <h1 data-forma-field="title">{section.title}</h1>
           <p className="hero-description" data-forma-field="description">{section.description}</p>
         {section.buttonLabel && (buttonHref
-          ? <a className="button dark" href={buttonHref}>{section.buttonLabel}<span>↗</span></a>
+          ? <a className="button dark" data-forma-field="buttonLabel" href={buttonHref}>{section.buttonLabel}<span>↗</span></a>
           : preview && buttonInvalid
-            ? <span className="button dark editor-invalid-link" title="El destino de este botón no existe">{section.buttonLabel}<span>⚠ Destino no válido</span></span>
+            ? <span className="button dark editor-invalid-link" data-forma-field="buttonLabel" title="El destino de este botón no existe">{section.buttonLabel}<span>⚠ Destino no válido</span></span>
             : null)}
       </div>
       {section.image?.url
-         ? <div className={`hero-media${section.heroLayout === 'cover' ? ' hero-media-cover' : ''}`} style={section.heroLayout === 'cover' ? { backgroundImage: `url("${section.image.url}")`, backgroundPosition: section.imagePosition || 'center' } : undefined}><img src={section.image.url} alt={section.image.alt || section.title || settings.brand} style={{ objectPosition: section.imagePosition || 'center' }} fetchPriority="high" /></div>
+         ? <div className={`hero-media${section.heroLayout === 'cover' ? ' hero-media-cover' : ''}`} data-forma-field="image" style={section.heroLayout === 'cover' ? { backgroundImage: `url("${section.image.url}")`, backgroundPosition: section.imagePosition || 'center' } : undefined}><img src={section.image.url} alt={section.image.alt || section.title || settings.brand} style={{ objectPosition: section.imagePosition || 'center' }} fetchPriority="high" /></div>
         : template === 'product' ? <ProductArtwork settings={settings} /> : template === 'restaurant' ? <RestaurantArtwork /> : template === 'consultant' ? <ConsultantArtwork /> : <StudioArtwork />}
       <div className="hero-bottom">
         <span>{settings.tagline}</span>

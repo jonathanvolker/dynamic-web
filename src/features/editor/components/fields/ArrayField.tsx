@@ -29,19 +29,20 @@ export function ArrayField({ name, editor }: { name: RowKey; editor: EditorContr
           <summary>{String(row.title || row.question || row.name || row.label || `Elemento ${index + 1}`)}<span>⌄</span></summary>
           <div className="row-fields">
             {rowFields[name].map(field => field.link ? (
-              <LinkField key={field.name} label={field.label} value={String(row[field.name] || '')} optional={field.optional} sections={editor.document.sections} onChange={value => updateRow(index, field.name, value)} />
+              <LinkField key={field.name} fieldKey={`${name}.${index}.${field.name}`} label={field.label} value={String(row[field.name] || '')} optional={field.optional} sections={editor.document.sections} onChange={value => updateRow(index, field.name, value)} />
             ) : (
               <Field
                 key={field.name}
                 label={field.label}
                 value={String(row[field.name] || '')}
                 multiline={field.multiline}
+                fieldKey={`${name}.${index}.${field.name}`}
                 onChange={value => updateRow(index, field.name, value)}
               />
             ))}
             {name === 'projects' && (
               <>
-                <label className="editor-field">
+                <label className="editor-field" data-editor-field={`${name}.${index}.tone`}>
                   Composición
                   <select value={String(row.tone)} onChange={event => updateRow(index, 'tone', event.target.value)}>
                     <option value="peach">Durazno</option><option value="purple">Violeta</option><option value="lime">Lima</option>
@@ -50,17 +51,17 @@ export function ArrayField({ name, editor }: { name: RowKey; editor: EditorContr
               </>
             )}
             {name === 'formFields' && <>
-              <label className="editor-field">Tipo de campo
+               <label className="editor-field" data-editor-field={`${name}.${index}.type`}>Tipo de campo
                 <select value={String(row.type || 'text')} onChange={event => updateRow(index, 'type', event.target.value)}><option value="text">Texto</option><option value="email">Email</option><option value="tel">Teléfono</option><option value="textarea">Texto largo</option></select>
               </label>
-              <label className="editor-checkbox"><input type="checkbox" checked={Boolean(row.required)} onChange={event => updateRow(index, 'required', event.target.checked)} />Campo obligatorio</label>
+               <label className="editor-checkbox" data-editor-field={`${name}.${index}.required`}><input type="checkbox" checked={Boolean(row.required)} onChange={event => updateRow(index, 'required', event.target.checked)} />Campo obligatorio</label>
             </>}
              {['projects', 'gallery', 'logos', 'team'].includes(name) && <ProjectImageField
                label={name === 'gallery' ? 'Imagen de la galería' : name === 'logos' ? 'Imagen del logo' : name === 'team' ? 'Imagen de la persona' : 'Imagen del proyecto'} title={String(row.title || row.name || '')}
-               image={row.image as Media | undefined} onChange={image => updateRow(index, 'image', image)} onError={editor.setError}
+                image={row.image as Media | undefined} fieldKey={`${name}.${index}.image`} onChange={image => updateRow(index, 'image', image)} onError={editor.setError}
                removeLabel={name === 'gallery' || name === 'logos' || name === 'team' ? 'Quitar imagen' : undefined}
              />}
-            {name === 'plans' && <label className="editor-checkbox"><input type="checkbox" checked={Boolean(row.featured)} onChange={event => updateRow(index, 'featured', event.target.checked)} />Destacar este plan</label>}
+             {name === 'plans' && <label className="editor-checkbox" data-editor-field={`${name}.${index}.featured`}><input type="checkbox" checked={Boolean(row.featured)} onChange={event => updateRow(index, 'featured', event.target.checked)} />Destacar este plan</label>}
              <button type="button" className="remove-row" onClick={() => editor.changeSection(name, items.filter((_, i) => i !== index))}>
               Eliminar elemento
             </button>

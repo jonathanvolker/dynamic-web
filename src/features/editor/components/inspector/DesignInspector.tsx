@@ -24,7 +24,7 @@ export function DesignInspector({ editor }: { editor: EditorController }) {
   }
   return <>
     <div className="inspector-heading"><strong>Tipografía y composición</strong></div>
-    {fields.map(field => <label className="editor-field" key={field.key}>{field.label}
+    {fields.map(field => <label className="editor-field" data-editor-field={`design.${field.key}`} key={field.key}>{field.label}
       <select value={design[field.key] || ''} onChange={event => update(field.key, event.target.value)}>
         <option value="">Original de la plantilla</option>
         {field.options.map(([value, label]) => <option value={value} key={value}>{label}</option>)}

@@ -12,7 +12,7 @@ export function ServicesSection({ section, anchor }: SectionProps) {
               <span>0{index + 1}</span>
               <span className="service-symbol" aria-hidden="true">{['✳', '↗', '◉'][index % 3]}</span>
             </div>
-            <h3>{item.title}</h3><p>{item.description}</p><div className="service-tags">{item.tags}</div>
+            <h3 data-forma-field={`services.${index}.title`}>{item.title}</h3><p data-forma-field={`services.${index}.description`}>{item.description}</p><div className="service-tags" data-forma-field={`services.${index}.tags`}>{item.tags}</div>
           </article>
         ))}
       </div>

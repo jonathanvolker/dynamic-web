@@ -7,7 +7,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
   const dialog = useRef<HTMLDialogElement>(null)
   return <>
     <button className="project-card" onClick={() => dialog.current?.showModal()} aria-label={`Ver proyecto ${project.title}`}>
-      <div className={`project-art ${project.tone}`}>
+       <div className={`project-art ${project.tone}`} data-forma-field={`projects.${index}.image`}>
         {project.image?.url ? <img src={project.image.url} alt={project.image.alt || project.title} /> : <>
           <span className="art-caption">{project.category}</span>
           <span className="art-shape" aria-hidden="true" />
@@ -16,7 +16,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         </>}
         <span className="project-open" aria-hidden="true">↗</span>
       </div>
-      <div className="project-caption"><h3>{project.title}</h3><span>{project.category}</span></div>
+       <div className="project-caption"><h3 data-forma-field={`projects.${index}.title`}>{project.title}</h3><span data-forma-field={`projects.${index}.category`}>{project.category}</span></div>
     </button>
     <dialog ref={dialog} className="project-dialog" onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close() }}>
       <div className="dialog-content"><button className="dialog-close" onClick={() => dialog.current?.close()} aria-label="Cerrar proyecto">×</button><span className="eyebrow">{project.category}</span><h2>{project.title}</h2><p>{project.description}</p><button className="button dark" onClick={() => dialog.current?.close()}>Volver a proyectos <span>↙</span></button></div>

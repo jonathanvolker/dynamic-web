@@ -11,6 +11,11 @@ import { PricingSection } from './sections/PricingSection'
 import type { Section } from '../types'
 import { CtaSection, TextImageSection, VideoSection, LogosSection, TeamSection, StatsSection, ProcessSection, ComparisonSection, MenuSection, HoursSection } from './sections/UtilitySections'
 import { LeadFormSection, NewsletterSection } from './sections/LeadSections'
+import { Footer } from './Footer'
+
+function FooterSection(props: SectionProps) {
+  return <Footer section={props.section} settings={props.settings} familyId={props.familyId || 'editorial'} anchors={props.anchors || []} demo={props.demo || false} />
+}
 
 const renderers = {
   hero: HeroSection, services: ServicesSection, projects: ProjectsSection,
@@ -18,7 +23,7 @@ const renderers = {
   gallery: GallerySection, testimonials: TestimonialsSection, pricing: PricingSection,
   cta: CtaSection, textImage: TextImageSection, video: VideoSection, logos: LogosSection,
   team: TeamSection, stats: StatsSection, process: ProcessSection, comparison: ComparisonSection,
-  form: LeadFormSection, newsletter: NewsletterSection, menu: MenuSection, hours: HoursSection,
+   form: LeadFormSection, newsletter: NewsletterSection, menu: MenuSection, hours: HoursSection, footer: FooterSection,
 } satisfies Record<Section['blockType'], (props: SectionProps) => React.ReactNode>
 
 export function SectionRenderer(props: SectionProps) {

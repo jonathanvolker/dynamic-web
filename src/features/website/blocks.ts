@@ -92,6 +92,9 @@ export const blockDefinitions: Record<Section['blockType'], BlockDefinition> = {
   hours: { label: 'Horarios y ubicación', symbol: '⌖', rows: 'hours', defaults: {
     blockType: 'hours', eyebrow: 'VISITANOS', title: 'Estamos cerca.', description: 'Encontrá horarios, dirección y la forma más simple de llegar.', address: 'Av. Siempre Viva 123, Buenos Aires', phone: '+5491100000000', mapHref: 'https://maps.google.com', hours: [{ day: 'Lunes a viernes', hours: '9:00 a 18:00' }, { day: 'Sábado', hours: '10:00 a 14:00' }, { day: 'Domingo', hours: 'Cerrado' }],
   } },
+  footer: { label: 'Pie de página', symbol: '⌄', defaults: {
+    blockType: 'footer', eyebrow: '', title: '', description: '', footerTagline: 'Ideas con intención. Diseño con carácter.', footerEmail: 'hola@forma.example', footerNavigation: [], footerExploreLabel: 'Explorá', footerContactLabel: 'Conversemos',
+  } },
 }
 
 export const blockTypes = Object.keys(blockDefinitions) as Section['blockType'][]
@@ -122,7 +125,7 @@ export function blockTypesForFamily(familyId: FamilyId) {
   const recommended: Record<FamilyId, Section['blockType'][]> = {
     editorial: ['hero', 'textImage', 'services', 'projects', 'about', 'stats', 'team', 'process', 'faq', 'cta', 'form', 'contact', 'gallery', 'testimonials', 'logos', 'newsletter', 'menu', 'hours', 'video', 'comparison', 'pricing'],
     immersive: ['hero', 'gallery', 'textImage', 'video', 'services', 'about', 'testimonials', 'logos', 'process', 'contact', 'form', 'hours', 'projects', 'faq', 'cta', 'newsletter', 'team', 'stats', 'menu', 'comparison', 'pricing'],
-    modular: ['hero', 'textImage', 'video', 'services', 'stats', 'process', 'testimonials', 'logos', 'comparison', 'pricing', 'cta', 'form', 'newsletter', 'faq', 'contact', 'projects', 'about', 'gallery', 'team', 'menu', 'hours'],
+     modular: ['hero', 'textImage', 'video', 'services', 'stats', 'process', 'testimonials', 'logos', 'comparison', 'pricing', 'cta', 'form', 'newsletter', 'faq', 'contact', 'projects', 'about', 'gallery', 'team', 'menu', 'hours'],
   }
   return recommended[familyId]
 }

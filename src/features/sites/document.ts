@@ -35,6 +35,19 @@ export function migrateDocument(input: unknown): SiteDocument {
   }
 }
 
+export function ensureFooter(document: SiteDocument): SiteDocument {
+  if (document.sections.some(section => section.blockType === 'footer')) return document
+  return {
+    ...document,
+    sections: [...document.sections, {
+      blockType: 'footer', eyebrow: '', title: '', description: '', id: 'footer', anchor: 'footer',
+      footerTagline: document.settings.tagline, footerEmail: document.settings.email,
+      footerNavigation: structuredClone(document.settings.navigation), footerExploreLabel: 'Explorá', footerContactLabel: 'Conversemos',
+      footerCopyright: `© ${new Date().getFullYear()} ${document.settings.brand}`,
+    }],
+  }
+}
+
 export function availableAnchor(type: Section['blockType'], sections: Section[]): string {
   const used = new Set(sections.map(section => section.anchor))
   let anchor: string = type

@@ -5,12 +5,17 @@ import { SectionRenderer } from './SectionRenderer'
 import { foregroundFor, resolveColors } from '../theme/palettes'
 import { fontFamilies } from '../theme/design'
 import { resolveHref, sectionAnchors } from '../links'
-import { Footer } from './Footer'
 
 type Props = { settings: Settings; sections: Section[]; familyId?: FamilyId; demo?: boolean; siteSlug?: string; preview?: boolean }
 
 export default function SiteView({ settings, sections, familyId = 'editorial', demo = false, siteSlug, preview = false }: Props) {
-  const anchors = sectionAnchors(sections)
+  const contentSections = sections.filter(section => section.blockType !== 'footer')
+  const footer = sections.find(section => section.blockType === 'footer') || {
+    blockType: 'footer' as const, eyebrow: '', title: '', description: '', anchor: 'footer', id: 'footer',
+    footerTagline: settings.tagline, footerEmail: settings.email, footerNavigation: settings.navigation,
+    footerExploreLabel: 'Explorá', footerContactLabel: 'Conversemos', footerCopyright: `© ${new Date().getFullYear()} ${settings.brand}`,
+  }
+  const anchors = sectionAnchors(contentSections)
   const colors = resolveColors(settings)
   const theme = {
     ...(settings.design?.headingFont ? { '--heading-font': fontFamilies[settings.design.headingFont] } : {}),
@@ -33,21 +38,21 @@ export default function SiteView({ settings, sections, familyId = 'editorial', d
 
   return (
     <div className={`website-root family-${familyId} template-${settings.template || 'studio'}`} style={theme}
-      data-overlay-header={familyId === 'immersive' && sections[0]?.blockType === 'hero' && sections[0]?.heroLayout === 'cover' || undefined}
+       data-overlay-header={familyId === 'immersive' && contentSections[0]?.blockType === 'hero' && contentSections[0]?.heroLayout === 'cover' || undefined}
       data-heading-font={settings.design?.headingFont} data-body-font={settings.design?.bodyFont}
       data-width={settings.design?.width} data-spacing={settings.design?.spacing}>
       <a className="skip-link" href="#main">Ir al contenido</a>
       <Header settings={settings} anchors={anchors} preview={preview} />
       <main id="main">
-        {sections.map((section, index) => {
+         {contentSections.map((section, index) => {
           const defaultHref = section.blockType === 'contact' ? `mailto:${settings.email}` : '#contact'
           const rawButtonHref = section.buttonHref ?? defaultHref
           const buttonHref = resolveHref(rawButtonHref, anchors)
-          return <SectionRenderer key={section.id || index} section={section} settings={settings} anchor={anchors[index]}
-            anchors={anchors} siteSlug={siteSlug} preview={preview} buttonHref={buttonHref} buttonInvalid={Boolean(rawButtonHref && !buttonHref)} discoveryHref={resolveHref(familyId === 'immersive' ? '#gallery' : familyId === 'modular' ? '#services' : '#projects', anchors)} />
-        })}
-      </main>
-      <Footer settings={settings} familyId={familyId} anchors={anchors} demo={demo} />
+           return <SectionRenderer key={section.id || index} section={section} settings={settings} anchor={anchors[index]}
+             anchors={anchors} siteSlug={siteSlug} preview={preview} familyId={familyId} demo={demo} buttonHref={buttonHref} buttonInvalid={Boolean(rawButtonHref && !buttonHref)} discoveryHref={resolveHref(familyId === 'immersive' ? '#gallery' : familyId === 'modular' ? '#services' : '#projects', anchors)} />
+         })}
+       </main>
+       <SectionRenderer section={footer} settings={settings} anchor="footer" anchors={anchors} familyId={familyId} demo={demo} preview={preview} />
     </div>
   )
 }
