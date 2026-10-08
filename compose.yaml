@@ -25,6 +25,7 @@ services:
       DATABASE_URI: postgresql://forma:${POSTGRES_PASSWORD}@db:5432/forma
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Definí PAYLOAD_SECRET en .env}
       NEXT_PUBLIC_SERVER_URL: https://${DOMAIN:?Definí DOMAIN en .env}
+      TRUST_PROXY_HEADERS: ${TRUST_PROXY_HEADERS:-true}
     volumes:
       - media:/app/media
     depends_on:

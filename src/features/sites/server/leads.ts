@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { db } from '@/server/db/sqlite'
+import { consumeRateLimit } from '@/server/rate-limit'
 
 export type Lead = { id: string; siteId: string; siteName: string; siteSlug: string; kind: 'contact' | 'newsletter'; formId: string; values: Record<string, string>; createdAt: string; readAt: string | null }
 
@@ -15,17 +16,7 @@ function deserializeValues(value: unknown): Record<string, string> {
 }
 
 export function consumeLeadRateLimit(bucket: string, limit: number, windowMs: number) {
-  if (!bucket || !Number.isSafeInteger(limit) || limit < 1 || !Number.isSafeInteger(windowMs) || windowMs < 1) return false
-  const now = Date.now()
-  // The conditional upsert makes the check and increment one SQLite write.
-  const result = db().prepare(`
-    INSERT INTO lead_rate_limits (bucket, window_start, count) VALUES (?, ?, 1)
-    ON CONFLICT(bucket) DO UPDATE SET
-      window_start = CASE WHEN ? - window_start >= ? THEN excluded.window_start ELSE window_start END,
-      count = CASE WHEN ? - window_start >= ? THEN 1 ELSE count + 1 END
-    WHERE ? - window_start >= ? OR count < ?
-  `).run(bucket, now, now, windowMs, now, windowMs, now, windowMs, limit)
-  return result.changes > 0
+  return consumeRateLimit(`lead:${bucket}`, limit, windowMs)
 }
 
 export function saveLead(siteId: string, kind: 'contact' | 'newsletter', formId: string, values: Record<string, string>) {

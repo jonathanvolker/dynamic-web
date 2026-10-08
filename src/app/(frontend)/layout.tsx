@@ -8,5 +8,5 @@ import '@/features/editor/styles/editor.css'
 import '@/features/templates/styles/templates.css'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <html lang="es"><body>{children}</body></html>
+  return <html lang="es"><head><title>Forma</title></head><body>{children}</body></html>
 }

@@ -17,6 +17,7 @@ services:
       MERCADOPAGO_WEBHOOK_SECRET: ${MERCADOPAGO_WEBHOOK_SECRET:-}
       MERCADOPAGO_SANDBOX: ${MERCADOPAGO_SANDBOX:-false}
       FORMA_CNAME_TARGET: ${FORMA_CNAME_TARGET:-}
+      TRUST_PROXY_HEADERS: ${TRUST_PROXY_HEADERS:-true}
     volumes:
       - forma_data:/app/data
     healthcheck:

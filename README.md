@@ -148,6 +148,7 @@ Detalle de responsabilidades: [`docs/architecture.md`](docs/architecture.md).
 ## Comprobaciones
 
 ```bash
+npm run check:cms-catalog
 npm run typecheck
 npm run build
 npm test
@@ -155,11 +156,13 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
+`npm run check:cms-catalog` es una comprobación de solo lectura para ejecutar antes de una migración o despliegue. Compara los `blockTypes` del editor con los bloques de Payload y verifica sus campos de filas; no conecta a PostgreSQL, no aplica migraciones y no modifica datos. Las migraciones de Payload se ejecutan por separado con `npm run migrate` únicamente en un entorno controlado.
+
 Desarrollo usa `.next-dev` y producción usa `.next`, para que una compilación no sobrescriba los archivos del servidor local. Si quedan archivos generados inconsistentes, detené el servidor, eliminá `.next-dev` y volvé a ejecutar `npm run dev`.
 
 ## Despliegue
 
-El flujo de VPS y GitHub Actions está documentado en [`docs/next-chat.md`](docs/next-chat.md) y [`deploy/README.md`](deploy/README.md). El Pull Request ejecuta typecheck, pruebas unitarias y build; el push a `main` construye la imagen Docker, la publica en GHCR y actualiza el VPS mediante SSH. La ejecución real contra el VPS debe verificarse por separado.
+El flujo de VPS y GitHub Actions está documentado en [`deploy/README.md`](deploy/README.md). El job de verificación ejecuta typecheck y build; las pruebas unitarias y E2E se ejecutan manualmente o en un job separado para no formar parte del build productivo. El push a `main` construye la imagen Docker, la publica en GHCR y actualiza el VPS mediante SSH. La ejecución real contra el VPS debe verificarse por separado.
 
 Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.next`. Las pruebas de navegador requieren el build previo y levantan producción en el puerto 3100. Usan una base independiente en el directorio temporal del sistema (`/tmp/opencode/forma-e2e-<id>` en Linux), incluso si tenés `PLATFORM_DATA_DIR` configurado; el servidor de desarrollo puede seguir en el puerto 3000. Los tests cubren edición/publicación, compatibilidad de documentos anteriores, aislamiento entre cuentas y uso del editor a 390 px.
 
@@ -169,13 +172,14 @@ Ejecutá build y typecheck secuencialmente: el build regenera los tipos de `.nex
 - Historial deshacer/rehacer, duplicación y eliminación de secciones.
 - Guardado explícito con separación entre borrador y publicación.
 - Autoguardado del borrador y recuperación opcional de cambios locales tras una suspensión o cierre de pestaña.
-- 21 bloques registrados en un catálogo compartido: los nueve originales más CTA, texto + imagen, video, logos, equipo, estadísticas, proceso, comparativa, formulario, newsletter, carta gastronómica y horarios/ubicación. La composición libre con elementos anidados sigue pendiente.
+- 22 bloques registrados en un catálogo compartido, incluido el pie de página, con configuración consistente entre editor y Payload.
 - Documentos versionados (`schemaVersion: 1`), con familia, plantilla y anclas estables; lectura compatible de documentos anteriores sin sobrescribir su publicación.
 - Imágenes nuevas optimizadas en el servidor como WebP y guardadas en `data/media/`, con referencias en SQLite y verificación de propietario al guardar. Conservan transparencia y ya no aumentan el JSON del sitio. Las imágenes base64 anteriores siguen funcionando.
-- Cada sitio publicado tiene una dirección `/s/[slug]` en el dominio de la plataforma; conexión de dominios personalizados y HTTPS por sitio están pendientes.
-- Docker y la automatización de despliegue en VPS están configurados mediante GitHub Actions, GHCR, Docker Compose y Caddy. La persistencia productiva usa `/app/data`; la primera ejecución y la restauración de backups deben verificarse en el VPS. Dominios personalizados y HTTPS por sitio todavía están pendientes.
+- Cada sitio publicado tiene una dirección `/s/[slug]` en el dominio de la plataforma; los dominios personalizados validan hostname, entitlement, DNS y estado de verificación antes de habilitarse.
+- Docker y la automatización de despliegue en VPS están configurados mediante GitHub Actions, GHCR, Docker Compose y Caddy. La persistencia productiva usa `/app/data`; la primera ejecución y la restauración de backups deben verificarse en el VPS.
 - Contenido inicial ficticio. El bloque `contact` histórico abre email; los bloques `form` y `newsletter` nuevos persisten leads en SQLite.
+- Rate limiting distribuido/proxy documentado en [`docs/rate-limiting.md`](docs/rate-limiting.md), con store SQLite compartido y fallback local seguro sin servicios externos obligatorios.
 
-Los archivos subidos tienen URLs públicas con identificadores aleatorios, necesarias para mostrarlos en los sitios. Quitar una imagen del editor elimina la referencia, no el archivo: la biblioteca, cuotas y limpieza de recursos sin uso quedan para la siguiente etapa. El backup local debe incluir la base SQLite y `data/media/`.
+Los archivos subidos tienen URLs públicas con identificadores aleatorios, necesarias para mostrarlos en los sitios. Quitar una imagen del editor elimina la referencia, no el archivo: la limpieza automática de recursos sin uso queda para una siguiente etapa. El backup local debe incluir la base SQLite y `data/media/`.
 
-El handoff general está en [`docs/next-chat.md`](docs/next-chat.md), la auditoría del editor en [`docs/editor-audit.md`](docs/editor-audit.md), la auditoría de CTAs en [`docs/cta-audit.md`](docs/cta-audit.md) y el relevamiento integral en [`docs/project-audit.md`](docs/project-audit.md). El panel administrativo inicial está en `/admin/platform` y requiere `PLATFORM_ADMIN_EMAILS`.
+La funcionalidad detallada del editor está en [`docs/editor-component-functionality.md`](docs/editor-component-functionality.md) y el seguimiento de auditoría en [`docs/audit-followup.md`](docs/audit-followup.md). El panel administrativo inicial está en `/admin/platform` y requiere `PLATFORM_ADMIN_EMAILS`.

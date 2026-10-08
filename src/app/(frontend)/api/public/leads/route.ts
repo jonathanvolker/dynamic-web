@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { publicSite } from '@/features/sites/server/repository'
 import { consumeLeadRateLimit, saveLead } from '@/features/sites/server/leads'
+import { clientAddress } from '@/server/rate-limit'
 
 const MAX_PAYLOAD_BYTES = 128 * 1024
 const MAX_VALUE_LENGTH = 5000
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
     const section = site.published.sections.find(item => item.id === formId || item.anchor === formId)
     const expectedKind = section?.blockType === 'form' ? 'contact' : section?.blockType === 'newsletter' ? 'newsletter' : null
     if (!section || expectedKind !== kind) return NextResponse.json({ error: 'El formulario no está disponible.' }, { status: 400 })
-    const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
+    const forwarded = clientAddress(request.headers)
     const limit = kind === 'newsletter' ? 3 : 5
     if (!consumeLeadRateLimit(`${site.id}:${kind}:${forwarded}`, limit, 15 * 60 * 1000)) return NextResponse.json({ error: 'Demasiados intentos. Probá nuevamente más tarde.' }, { status: 429 })
     const normalized = values as Record<string, string>

@@ -50,9 +50,12 @@ export function db() {
       owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, read_at TEXT
     );
     CREATE INDEX IF NOT EXISTS lead_notifications_owner ON lead_notifications(owner_id, read_at);
-    CREATE TABLE IF NOT EXISTS lead_rate_limits (
-      bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
-    );
+     CREATE TABLE IF NOT EXISTS lead_rate_limits (
+       bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
+     );
+     CREATE TABLE IF NOT EXISTS distributed_rate_limits (
+       bucket_hash TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
+     );
   `)
   migrateBilling()
   migrateCoreSchema()
@@ -62,7 +65,7 @@ export function db() {
 function migrateCoreSchema() {
   if (!database) return
   const applied = database.prepare('SELECT version FROM schema_migrations').all() as { version: number }[]
-  if (applied.some(item => item.version === 3)) return
+   if (applied.some(item => item.version === 4)) return
 
   const hasColumn = (table: string, column: string) => (database!.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).some(item => item.name === column)
   const addColumn = (table: string, column: string, definition: string) => {
@@ -93,9 +96,12 @@ function migrateCoreSchema() {
       id TEXT PRIMARY KEY, lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
       owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, read_at TEXT
     );
-    CREATE TABLE IF NOT EXISTS lead_rate_limits (
-      bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
-    );
+     CREATE TABLE IF NOT EXISTS lead_rate_limits (
+       bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
+     );
+     CREATE TABLE IF NOT EXISTS distributed_rate_limits (
+       bucket_hash TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
+     );
     CREATE INDEX IF NOT EXISTS sites_owner ON sites(owner_id);
     CREATE INDEX IF NOT EXISTS media_owner ON media(owner_id);
     CREATE INDEX IF NOT EXISTS leads_site ON leads(site_id, created_at);
@@ -109,7 +115,8 @@ function migrateCoreSchema() {
   addColumn('sites', 'published_at', 'TEXT')
   addColumn('leads', 'values_json', "TEXT NOT NULL DEFAULT '{}'")
 
-  database.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (3, ?)').run(new Date().toISOString())
+   database.prepare('INSERT OR IGNORE INTO schema_migrations (version, applied_at) VALUES (3, ?)').run(new Date().toISOString())
+   database.prepare('INSERT OR IGNORE INTO schema_migrations (version, applied_at) VALUES (4, ?)').run(new Date().toISOString())
 }
 
 /** Closes the shared connection. Useful for graceful shutdowns and isolated database tests. */
