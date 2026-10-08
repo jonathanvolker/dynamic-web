@@ -7,6 +7,7 @@ type CheckoutInput = { userId: string; email: string; planId: PlanId; returnUrl:
 export async function createMercadoPagoCheckout(input: CheckoutInput) {
   const token = process.env.MERCADOPAGO_ACCESS_TOKEN
   if (!token) throw new Error('Mercado Pago todavía no está configurado.')
+  const appOrigin = new URL(input.returnUrl).origin
   const response = await fetch('https://api.mercadopago.com/preapproval', {
     method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -14,8 +15,8 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
       external_reference: `${input.userId}:${input.planId}`,
       payer_email: input.email,
       auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: getPlan(input.planId).price, currency_id: 'ARS' },
-      back_url: input.returnUrl,
-      notification_url: process.env.MERCADOPAGO_WEBHOOK_URL || `${input.returnUrl.replace(/\/planes$/, '')}/api/billing/mercadopago`,
+       back_url: `${appOrigin}/api/billing/mercadopago/return`,
+       notification_url: process.env.MERCADOPAGO_WEBHOOK_URL || `${appOrigin}/api/billing/mercadopago`,
       status: 'pending',
     }),
   })
