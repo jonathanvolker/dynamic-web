@@ -114,7 +114,6 @@ jobs:
           PLAN_PROFESSIONAL_PRICE_ARS: ${{ secrets.PLAN_PROFESSIONAL_PRICE_ARS }}
           MERCADOPAGO_ACCESS_TOKEN: ${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
           MERCADOPAGO_WEBHOOK_SECRET: ${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}
-          MERCADOPAGO_TEST_PAYER_EMAIL: ${{ secrets.MERCADOPAGO_TEST_PAYER_EMAIL }}
           FORMA_CNAME_TARGET: ${{ secrets.FORMA_CNAME_TARGET }}
         run: |
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "umask 077 && cat > '$DEPLOY_PATH/.env'" <<EOF
@@ -128,7 +127,6 @@ jobs:
           PLAN_PROFESSIONAL_PRICE_ARS=$PLAN_PROFESSIONAL_PRICE_ARS
           MERCADOPAGO_ACCESS_TOKEN=$MERCADOPAGO_ACCESS_TOKEN
           MERCADOPAGO_WEBHOOK_SECRET=$MERCADOPAGO_WEBHOOK_SECRET
-          MERCADOPAGO_TEST_PAYER_EMAIL=$MERCADOPAGO_TEST_PAYER_EMAIL
           FORMA_CNAME_TARGET=$FORMA_CNAME_TARGET
           EOF
           printf '%s' "$GHCR_TOKEN" | ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "docker login ghcr.io --username '$GHCR_USERNAME' --password-stdin"

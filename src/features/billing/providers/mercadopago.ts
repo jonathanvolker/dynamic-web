@@ -12,7 +12,7 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
     body: JSON.stringify({
       reason: `Suscripción Forma ${input.planId}`,
       external_reference: `${input.userId}:${input.planId}`,
-      payer_email: process.env.MERCADOPAGO_TEST_PAYER_EMAIL || input.email,
+      payer_email: input.email,
       auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: getPlan(input.planId).price, currency_id: 'ARS' },
       back_url: input.returnUrl,
       notification_url: process.env.MERCADOPAGO_WEBHOOK_URL || `${input.returnUrl.replace(/\/planes$/, '')}/api/billing/mercadopago`,
@@ -37,6 +37,7 @@ export async function createMercadoPagoCheckout(input: CheckoutInput) {
       accessTokenShape: token ? `${token.slice(0, 8)}...${token.slice(-4)} (${token.length} chars)` : 'missing',
       planId: input.planId,
       amount: getPlan(input.planId).price,
+      payerEmail: input.email,
     })
     throw new Error(reason ? `Mercado Pago rechazó el checkout: ${reason}` : `Mercado Pago rechazó el checkout (HTTP ${response.status}).`)
   }
