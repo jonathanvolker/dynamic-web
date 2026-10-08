@@ -1,10 +1,10 @@
-import 'server-only'
 import { DatabaseSync } from 'node:sqlite'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { planCatalog } from '@/features/billing/plans'
 
 let database: DatabaseSync | undefined
+export const CURRENT_SCHEMA_VERSION = 3
 
 export function dataDirectory() {
   return process.env.PLATFORM_DATA_DIR || path.join(process.cwd(), 'data')
@@ -33,7 +33,7 @@ export function db() {
     );
     CREATE INDEX IF NOT EXISTS sites_owner ON sites(owner_id);
     CREATE TABLE IF NOT EXISTS media (
-      id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id), created_at TEXT NOT NULL
+      id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id), size_bytes INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS media_owner ON media(owner_id);
     CREATE TABLE IF NOT EXISTS leads (
@@ -55,7 +55,67 @@ export function db() {
     );
   `)
   migrateBilling()
+  migrateCoreSchema()
   return database
+}
+
+function migrateCoreSchema() {
+  if (!database) return
+  const applied = database.prepare('SELECT version FROM schema_migrations').all() as { version: number }[]
+  if (applied.some(item => item.version === 3)) return
+
+  const hasColumn = (table: string, column: string) => (database!.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).some(item => item.name === column)
+  const addColumn = (table: string, column: string, definition: string) => {
+    if (!hasColumn(table, column)) database!.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+  }
+
+  // Keep this migration additive: older deployments may already contain any subset
+  // of these tables, and rebuilding them would risk losing user content.
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'user'
+    );
+    CREATE TABLE IF NOT EXISTS sessions (
+      token TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sites (
+      id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id), name TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL, draft TEXT NOT NULL, published TEXT, updated_at TEXT NOT NULL, published_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS media (
+      id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id), size_bytes INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS leads (
+      id TEXT PRIMARY KEY, site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL, form_id TEXT NOT NULL, values_json TEXT NOT NULL, created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS lead_notifications (
+      id TEXT PRIMARY KEY, lead_id TEXT NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+      owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, read_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS lead_rate_limits (
+      bucket TEXT PRIMARY KEY, window_start INTEGER NOT NULL, count INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS sites_owner ON sites(owner_id);
+    CREATE INDEX IF NOT EXISTS media_owner ON media(owner_id);
+    CREATE INDEX IF NOT EXISTS leads_site ON leads(site_id, created_at);
+    CREATE INDEX IF NOT EXISTS lead_notifications_owner ON lead_notifications(owner_id, read_at);
+  `)
+
+  // These columns were introduced by older unversioned prototypes.
+  addColumn('users', 'role', "TEXT NOT NULL DEFAULT 'user'")
+  addColumn('media', 'size_bytes', 'INTEGER NOT NULL DEFAULT 0')
+  addColumn('sites', 'published', 'TEXT')
+  addColumn('sites', 'published_at', 'TEXT')
+  addColumn('leads', 'values_json', "TEXT NOT NULL DEFAULT '{}'")
+
+  database.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (3, ?)').run(new Date().toISOString())
+}
+
+/** Closes the shared connection. Useful for graceful shutdowns and isolated database tests. */
+export function closeDatabase() {
+  database?.close()
+  database = undefined
 }
 
 function migrateBilling() {
@@ -71,7 +131,8 @@ function migrateBilling() {
     database.exec(`
       CREATE TABLE IF NOT EXISTS plans (
         id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL, features_json TEXT NOT NULL,
-        price INTEGER NOT NULL, currency TEXT NOT NULL, max_sites INTEGER NOT NULL,
+         price INTEGER NOT NULL, currency TEXT NOT NULL, max_sites INTEGER NOT NULL,
+         media_storage_bytes INTEGER NOT NULL DEFAULT 50000000, max_media_per_site INTEGER NOT NULL DEFAULT 25,
         allowed_blocks_json TEXT NOT NULL, custom_domain INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1
       );
       CREATE TABLE IF NOT EXISTS subscriptions (
@@ -102,6 +163,8 @@ function migrateBilling() {
   addColumn('plans', 'max_sites', 'INTEGER NOT NULL DEFAULT 1')
   addColumn('plans', 'allowed_blocks_json', "TEXT NOT NULL DEFAULT '[]'")
   addColumn('plans', 'active', 'INTEGER NOT NULL DEFAULT 1')
+  addColumn('plans', 'media_storage_bytes', 'INTEGER NOT NULL DEFAULT 50000000')
+  addColumn('plans', 'max_media_per_site', 'INTEGER NOT NULL DEFAULT 25')
   addColumn('subscriptions', 'starts_at', "TEXT NOT NULL DEFAULT ''")
   addColumn('subscriptions', 'current_period_ends_at', "TEXT NOT NULL DEFAULT ''")
   addColumn('subscriptions', 'grace_period_ends_at', 'TEXT')
@@ -110,6 +173,16 @@ function migrateBilling() {
   addColumn('subscriptions', 'external_customer_id', 'TEXT')
   addColumn('subscriptions', 'external_subscription_id', 'TEXT')
   addColumn('subscriptions', 'cancel_at_period_end', 'INTEGER NOT NULL DEFAULT 0')
+  addColumn('media', 'size_bytes', 'INTEGER NOT NULL DEFAULT 0')
+  const legacyMedia = database.prepare('SELECT id FROM media WHERE size_bytes = 0').all() as { id: string }[]
+  for (const media of legacyMedia) {
+    try {
+      const size = statSync(path.join(dataDirectory(), 'media', `${media.id}.webp`)).size
+      database.prepare('UPDATE media SET size_bytes = ? WHERE id = ?').run(size, media.id)
+    } catch {
+      // Missing files remain discoverable as before and do not block migration.
+    }
+  }
   if (hasColumn('plans', 'price_cents')) database.exec(`UPDATE plans SET price = price_cents WHERE price = 0 AND price_cents IS NOT NULL`)
   if (hasColumn('plans', 'site_limit')) database.exec(`UPDATE plans SET max_sites = site_limit WHERE max_sites = 1 AND site_limit IS NOT NULL`)
   database.exec(`UPDATE subscriptions SET starts_at = created_at WHERE starts_at = ''`)
@@ -138,21 +211,30 @@ function migrateBilling() {
   for (const plan of Object.values(planCatalog)) {
     if (hasColumn('plans', 'site_limit')) {
       database.prepare(`UPDATE plans SET name = ?, description = ?, features_json = ?, price = ?, currency = ?,
-        max_sites = ?, allowed_blocks_json = ?, custom_domain = ?, active = 1 WHERE id = ?`).run(
+        max_sites = ?, media_storage_bytes = ?, max_media_per_site = ?, allowed_blocks_json = ?, custom_domain = ?, active = 1 WHERE id = ?`).run(
         plan.name, plan.description, JSON.stringify(plan.features), plan.price, plan.currency,
-        plan.maxSites, JSON.stringify(plan.allowedBlocks), plan.customDomain ? 1 : 0, plan.id,
+        plan.maxSites, plan.mediaStorageBytes, plan.maxMediaPerSite, JSON.stringify(plan.allowedBlocks), plan.customDomain ? 1 : 0, plan.id,
       )
     } else {
       database.prepare(`INSERT INTO plans
-        (id, name, description, features_json, price, currency, max_sites, allowed_blocks_json, custom_domain, active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        (id, name, description, features_json, price, currency, max_sites, media_storage_bytes, max_media_per_site, allowed_blocks_json, custom_domain, active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         ON CONFLICT(id) DO UPDATE SET name = excluded.name, description = excluded.description,
           features_json = excluded.features_json, price = excluded.price, currency = excluded.currency,
-          max_sites = excluded.max_sites, allowed_blocks_json = excluded.allowed_blocks_json,
+          max_sites = excluded.max_sites, media_storage_bytes = excluded.media_storage_bytes, max_media_per_site = excluded.max_media_per_site,
+          allowed_blocks_json = excluded.allowed_blocks_json,
           custom_domain = excluded.custom_domain, active = 1`).run(
         plan.id, plan.name, plan.description, JSON.stringify(plan.features), plan.price, plan.currency,
-        plan.maxSites, JSON.stringify(plan.allowedBlocks), plan.customDomain ? 1 : 0,
+        plan.maxSites, plan.mediaStorageBytes, plan.maxMediaPerSite, JSON.stringify(plan.allowedBlocks), plan.customDomain ? 1 : 0,
       )
     }
+  }
+  if (!versions.has(2)) {
+    database.exec(`
+      CREATE TABLE IF NOT EXISTS auth_login_rate_limits (
+        email_hash TEXT PRIMARY KEY, window_start INTEGER NOT NULL, failures INTEGER NOT NULL, locked_until INTEGER NOT NULL
+      );
+    `)
+    database.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (2, ?)').run(new Date().toISOString())
   }
 }

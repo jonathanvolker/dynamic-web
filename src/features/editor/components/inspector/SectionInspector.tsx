@@ -32,10 +32,12 @@ export function SectionInspector({ editor }: { editor: EditorController }) {
          <Field label="Título de navegación" fieldKey="footerExploreLabel" value={section.footerExploreLabel || ''} onChange={value => editor.changeSection('footerExploreLabel', value)} />
          <Field label="Título de contacto" fieldKey="footerContactLabel" value={section.footerContactLabel || ''} onChange={value => editor.changeSection('footerContactLabel', value)} />
          <Field label="Texto legal" fieldKey="footerCopyright" value={section.footerCopyright || ''} onChange={value => editor.changeSection('footerCopyright', value)} />
-         {(section.footerNavigation || []).map((item, index) => <div className="nav-row" key={index}>
-           <Field label="Nombre del enlace" fieldKey={`footerNavigation.${index}.label`} value={item.label} onChange={value => editor.change(next => { next.sections[editor.active as number].footerNavigation![index].label = value })} />
-           <LinkField label="Destino del enlace" fieldKey={`footerNavigation.${index}.href`} value={item.href} sections={editor.document.sections} onChange={value => editor.change(next => { next.sections[editor.active as number].footerNavigation![index].href = value })} />
-         </div>)}
+          {(section.footerNavigation || []).map((item, index) => <div className="nav-row" key={index}>
+            <Field label="Nombre del enlace" fieldKey={`footerNavigation.${index}.label`} value={item.label} onChange={value => editor.change(next => { next.sections[editor.active as number].footerNavigation![index].label = value })} />
+            <LinkField label="Destino del enlace" fieldKey={`footerNavigation.${index}.href`} value={item.href} sections={editor.document.sections} onChange={value => editor.change(next => { next.sections[editor.active as number].footerNavigation![index].href = value })} />
+            <button type="button" className="remove-row" onClick={() => editor.change(next => { next.sections[editor.active as number].footerNavigation!.splice(index, 1) })}>Quitar enlace</button>
+          </div>)}
+          <button type="button" className="add-row" disabled={(section.footerNavigation || []).length >= 5} onClick={() => editor.change(next => { next.sections[editor.active as number].footerNavigation!.push({ label: 'Nuevo enlace', href: '#contact' }) })}>+ Agregar enlace</button>
        </> : <>
        <Field label="Etiqueta superior" fieldKey="eyebrow" value={section.eyebrow} onChange={value => editor.changeSection('eyebrow', value)} />
       <Field label="Título" fieldKey="title" value={section.title} multiline onChange={value => editor.changeSection('title', value)} />

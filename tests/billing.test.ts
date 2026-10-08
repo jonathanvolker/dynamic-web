@@ -19,3 +19,10 @@ test('free plan only enables hero and gallery', () => {
 test('unknown plan safely resolves to free', () => {
   assert.equal(getPlan('missing').id, 'free')
 })
+
+test('media quotas increase with the plan', () => {
+  assert.equal(planCatalog.free.mediaStorageBytes, 50_000_000)
+  assert.equal(planCatalog.free.maxMediaPerSite, 25)
+  assert.ok(planCatalog.initial.mediaStorageBytes > planCatalog.free.mediaStorageBytes)
+  assert.ok(planCatalog.professional.maxMediaPerSite > planCatalog.initial.maxMediaPerSite)
+})

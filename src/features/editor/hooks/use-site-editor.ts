@@ -97,7 +97,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function move(index: number, to: number) {
     if (to < 0 || to >= document.sections.length || index === to || document.sections[index]?.blockType === 'footer' || document.sections[to]?.blockType === 'footer') return
-    if (!isBlockAvailable(document.sections[index].blockType)) return
+    if (!isBlockAvailable(document.sections[index].blockType) || !isBlockAvailable(document.sections[to].blockType)) return
     change(next => {
       const [item] = next.sections.splice(index, 1)
       next.sections.splice(to, 0, item)
@@ -114,8 +114,10 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
     }
     const sections = getTemplate(document.templateId)?.sections || []
     const template = sections.find(item => item.blockType === type) || blockDefinitions[type].defaults
-    change(next => next.sections.push({ ...structuredClone(template), id: crypto.randomUUID(), anchor: availableAnchor(type, next.sections) }))
-    select(document.sections.length)
+    const footerIndex = document.sections.findIndex(item => item.blockType === 'footer')
+    const insertAt = footerIndex === -1 ? document.sections.length : footerIndex
+    change(next => next.sections.splice(insertAt, 0, { ...structuredClone(template), id: crypto.randomUUID(), anchor: availableAnchor(type, next.sections) }))
+    select(insertAt)
     setTab('sections')
   }
 
@@ -134,7 +136,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function remove(target: number | undefined = typeof active === 'number' ? active : undefined) {
     if (!access.canEdit) return
-    if (typeof target !== 'number' || document.sections[target]?.blockType === 'footer' || document.sections.length <= 1) return
+    if (typeof target !== 'number' || document.sections[target]?.blockType === 'footer' || document.sections.filter(item => item.blockType !== 'footer').length <= 1) return
     if (!isBlockAvailable(document.sections[target].blockType)) return
     const nextActive = Math.min(target, document.sections.length - 2)
     change(next => { next.sections.splice(target, 1) }, true)
@@ -171,8 +173,10 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
     try {
       const result = await saveSite(site.id, snapshot, publish)
       if (result.error) { setError(result.error); return }
-      setSaved(JSON.stringify(snapshot))
-      try { window.localStorage.removeItem(recoveryKey) } catch { /* Storage is optional. */ }
+       setSaved(JSON.stringify(snapshot))
+       if (JSON.stringify(document) === JSON.stringify(snapshot)) {
+         try { window.localStorage.removeItem(recoveryKey) } catch { /* Storage is optional. */ }
+       }
       setRecovered(false)
       setPublishedAt(result.publishedAt || null)
       setMessage(publish

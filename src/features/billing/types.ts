@@ -9,6 +9,8 @@ export type Plan = {
   price: number
   currency: 'ARS'
   maxSites: number
+  mediaStorageBytes: number
+  maxMediaPerSite: number
   allowedBlocks: string[] | 'all'
   customDomain: boolean
 }

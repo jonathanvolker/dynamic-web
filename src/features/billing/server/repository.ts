@@ -69,5 +69,10 @@ export function listAdminSubscriptions() {
 
 export function updateSubscription(subscriptionId: string, planId: PlanId, status: SubscriptionStatus) {
   const now = new Date().toISOString()
+  if (status === 'active') {
+    const ends = new Date(Date.now() + 30 * 86400000).toISOString()
+    db().prepare('UPDATE subscriptions SET plan_id = ?, status = ?, starts_at = ?, current_period_ends_at = ?, grace_period_ends_at = NULL, updated_at = ? WHERE id = ?').run(planId, status, now, ends, now, subscriptionId)
+    return
+  }
   db().prepare('UPDATE subscriptions SET plan_id = ?, status = ?, updated_at = ? WHERE id = ?').run(planId, status, now, subscriptionId)
 }

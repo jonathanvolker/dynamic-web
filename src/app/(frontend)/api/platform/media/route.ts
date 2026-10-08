@@ -21,7 +21,9 @@ export async function POST(request: Request) {
     const file = form.get('file')
     if (!(file instanceof File)) return Response.json({ error: 'Elegí una imagen.' }, { status: 400 })
     return Response.json(await storeImage(user.id, file), { status: 201 })
-  } catch {
-    return Response.json({ error: 'No pudimos cargar la imagen. Usá JPG, PNG o WebP de hasta 8 MB.' }, { status: 400 })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No pudimos cargar la imagen. Usá JPG, PNG o WebP de hasta 8 MB.'
+    const status = message.includes('cuota') ? 413 : message.includes('megapíxeles') ? 413 : 400
+    return Response.json({ error: message }, { status })
   }
 }

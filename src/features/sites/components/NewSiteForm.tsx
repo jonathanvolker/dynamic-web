@@ -83,7 +83,7 @@ export default function NewSiteForm({ selectedTemplate = 'studio', availableBloc
   }
   return (
     <form action={action} className="p-form">
-       <label>¿Cómo se llama tu sitio?<input name="name" required maxLength={80} placeholder="Por ejemplo: Estudio Aurora" /></label>
+       <label htmlFor="new-site-name">¿Cómo se llama tu sitio?<input id="new-site-name" name="name" autoComplete="organization" required maxLength={80} placeholder="Por ejemplo: Estudio Aurora" /></label>
        <div className="creation-family-switcher" role="tablist" aria-label="Elegí un estilo">
         {families.map(family => <button type="button" role="tab" aria-selected={family.id === familyId} className={family.id === familyId ? 'active' : ''} key={family.id} onClick={() => selectFamily(family.id)}>
            <span>{family.name}</span><small>{templates.filter(template => template.familyId === family.id).length} plantillas</small>

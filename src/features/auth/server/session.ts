@@ -15,7 +15,7 @@ export async function session(user: string) {
   jar.set('forma_session', token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.COOKIE_SECURE === 'true',
+    secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true',
     path: '/',
     maxAge: 604800,
   })

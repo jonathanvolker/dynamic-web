@@ -4,6 +4,8 @@ import path from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
 import sharp from 'sharp'
 import { defaultSections, defaultSettings } from '../../src/features/website/content/defaults'
+import { blockTypesForFamily, labelForBlock } from '../../src/features/website/blocks'
+import type { Section } from '../../src/features/website/types'
 
 async function register(page: Page) {
   const email = `test-${randomUUID()}@example.com`
@@ -51,7 +53,7 @@ test('edit, upload, preview, save, publish, isolate accounts and unpublish', asy
   const storedImage = await page.request.get(imageUrl!)
   expect(storedImage.status()).toBe(200)
   expect((await sharp(await storedImage.body()).metadata()).hasAlpha).toBe(true)
-  await page.getByRole('button', { name: '⚙ Identidad y ajustes', exact: true }).click()
+  await page.getByRole('button', { name: 'Estilos e identidad', exact: true }).click()
   await page.getByLabel('Logo de marca', { exact: true }).setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png })
   await expect(preview.locator('.header .brand-image')).toBeVisible()
   await page.getByLabel('Tipografía de títulos').selectOption('serif')
@@ -200,6 +202,37 @@ test('editor adds and removes sections and can publish a hero-only site', async 
   await expect(publicPage.locator('main > section')).toHaveCount(1)
 })
 
+test('catalog blocks can be added, edited, rendered and persisted', async ({ page }) => {
+  const email = await register(page)
+  await grantProfessional(email)
+  await createSite(page, 'blank')
+
+  const preview = page.frameLocator('iframe[title="Vista previa de tu web"]')
+  const rendererClass: Record<Section['blockType'], string> = {
+    hero: 'hero', services: 'services', projects: 'projects', about: 'about', faq: 'faq', contact: 'contact',
+    gallery: 'gallery', testimonials: 'testimonials', pricing: 'pricing', cta: 'utility-cta', textImage: 'text-image',
+    video: 'video-block', logos: 'logos-block', team: 'team-block', stats: 'stats-block', process: 'process-block',
+    comparison: 'comparison-block', form: 'lead-block', newsletter: 'newsletter-block', menu: 'menu-block', hours: 'hours-block',
+    footer: 'footer',
+  }
+
+  for (const [index, type] of blockTypesForFamily('editorial').entries()) {
+    const title = `Bloque de catálogo ${index + 1}`
+    await page.getByRole('button', { name: '+ Agregar', exact: true }).click()
+    await page.locator('.block-library button').filter({ hasText: labelForBlock(type, 'editorial') }).click()
+    await expect(page.locator(`[data-preview-block="${type}"]`)).toBeVisible()
+    await page.getByLabel('Título', { exact: true }).fill(title)
+    await expect(preview.locator(`.${rendererClass[type]} [data-forma-field="title"]`).last()).toHaveText(title)
+  }
+
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('Borrador guardado')
+  await page.reload()
+  for (const [index, type] of blockTypesForFamily('editorial').entries()) {
+    await expect(preview.locator(`.${rendererClass[type]} [data-forma-field="title"]`).last()).toHaveText(`Bloque de catálogo ${index + 1}`)
+  }
+})
+
 test('all public template actions have a valid destination or documented interaction', async ({ page }) => {
   for (const template of ['studio', 'restaurant', 'consultant', 'retreat', 'coast', 'atelier', 'product', 'launch', 'scale']) {
     await page.goto(`/templates/${template}`)
@@ -221,6 +254,26 @@ test('all public template actions have a valid destination or documented interac
       await expect(page.locator('.project-dialog[open]')).toHaveCount(0)
     }
   }
+})
+
+test('project dialogs and galleries are keyboard accessible', async ({ page }) => {
+  await page.goto('/templates/studio')
+  const project = page.locator('.project-card').first()
+  await project.focus()
+  await project.press('Enter')
+  const dialog = page.locator('.project-dialog[open]')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('heading')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+  await expect(project).toBeFocused()
+
+  await page.goto('/templates/retreat')
+  const gallery = page.locator('.gallery-grid')
+  await gallery.focus()
+  await gallery.press('ArrowRight')
+  await expect(page.locator('.gallery-controls')).toContainText('Imagen 2 de')
+  await expect(page.getByRole('button', { name: 'Imagen siguiente' })).toBeEnabled()
 })
 
 test('draft autosaves after inactivity and can recover a local change', async ({ page }) => {

@@ -1,5 +1,8 @@
 /* New blocks share semantic markup and adapt to each visual family. */
 .website-root .gallery-carousel { position: relative; }
+.website-root .gallery-controls { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 14px; color: var(--muted); font-size: 11px; }
+.website-root .gallery-controls button { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: inherit; }
+.website-root .gallery-controls button:disabled { opacity: .4; cursor: not-allowed; }
 .website-root .gallery-grid { display: grid; grid-auto-flow: column; grid-auto-columns: min(72%, 620px); gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; padding: 2px 2px 12px; }
 .website-root .gallery-grid::-webkit-scrollbar { display: none; }
 .website-root .gallery-item { min-width: 0; scroll-snap-align: start; }

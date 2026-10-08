@@ -7,6 +7,7 @@ import { createSite, findSite, listSites, saveDocument, removePublication, delet
 import { validateSite } from './validation'
 import { getTemplate } from '@/features/templates/registry'
 import { assertMediaOwnership } from './server/media'
+import { mediaIdsInDocument } from './server/media-ownership'
 import { assertCanCreateSite, assertCanEdit, assertCanPublish, canUseBlock } from '@/features/billing/server/access'
 export async function newSite(_state: { error: string }, form: FormData): Promise<{ error: string }> {
   const user = await requireUser()
@@ -35,6 +36,8 @@ export async function saveSite(id: string, input: unknown, publish: boolean) {
     validateSite(input)
     assertMediaOwnership(input, user.id)
     const document = input as { sections: { id?: string; blockType: string }[] }
+    const mediaCount = mediaIdsInDocument(input as never).size
+    if (mediaCount > entitlements.plan.maxMediaPerSite) throw new Error(`Tu plan permite hasta ${entitlements.plan.maxMediaPerSite} imágenes por sitio.`)
     const existing = new Set(site.draft.sections.map(section => `${section.id}:${section.blockType}`))
     const invalid = document.sections.find(section => section.blockType !== 'footer' && !canUseBlock(entitlements, section.blockType) && !existing.has(`${section.id}:${section.blockType}`))
     if (invalid) throw new Error(`El bloque ${invalid.blockType} requiere un plan superior.`)

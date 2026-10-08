@@ -17,14 +17,19 @@ type Props = {
 export function Modal({ open, title, description, confirmLabel, cancelLabel = 'Cancelar', tone = 'neutral', busy = false, onConfirm, onCancel }: Props) {
   const dialog = useRef<HTMLDialogElement>(null)
   const confirm = useRef<HTMLButtonElement>(null)
+  const returnFocus = useRef<HTMLElement | null>(null)
   const titleId = useId()
   const descriptionId = useId()
 
   useEffect(() => {
     const element = dialog.current
     if (!element) return
-    if (open && !element.open) element.showModal()
+    if (open && !element.open) {
+      returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      element.showModal()
+    }
     if (!open && element.open) element.close()
+    if (!open) returnFocus.current?.focus()
   }, [open])
 
   useEffect(() => {
@@ -37,6 +42,7 @@ export function Modal({ open, title, description, confirmLabel, cancelLabel = 'C
     aria-labelledby={titleId}
     aria-describedby={descriptionId}
     onCancel={event => { event.preventDefault(); if (!busy) onCancel() }}
+    onClose={() => { if (!open) returnFocus.current?.focus() }}
     onClick={event => { if (event.target === event.currentTarget && !busy) onCancel() }}
   >
     <div className="forma-modal-mark" aria-hidden="true">{tone === 'danger' ? '!' : '✳'}</div>

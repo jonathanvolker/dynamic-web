@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from './server/password'
 import { findUserByEmail, insertUser } from './server/repository'
 import { getTemplate } from '@/features/templates/registry'
 import { createTrial } from '@/features/billing/server/repository'
+import { clearLoginFailures, loginAllowed, recordLoginFailure } from './server/rate-limit'
 
 export async function authenticate(_state: { error: string }, form: FormData): Promise<{ error: string }> {
   const email = String(form.get('email') || '').trim().toLowerCase()
@@ -30,8 +31,13 @@ export async function authenticate(_state: { error: string }, form: FormData): P
     }
     await session(id)
   } else {
+    if (!loginAllowed(email)) return { error: 'Email o contraseña incorrectos.' }
     const user = findUserByEmail(email)
-    if (!user || !verifyPassword(password, user.password)) return { error: 'Email o contraseña incorrectos.' }
+    if (!user || !verifyPassword(password, user.password)) {
+      recordLoginFailure(email)
+      return { error: 'Email o contraseña incorrectos.' }
+    }
+    clearLoginFailures(email)
     await session(user.id)
   }
   const template = getTemplate(String(form.get('template') || ''))

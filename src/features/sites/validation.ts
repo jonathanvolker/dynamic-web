@@ -33,6 +33,11 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
   if (!Array.isArray(settings.navigation) || settings.navigation.length > 5 || settings.navigation.some(item => !item || !text(item.label, 80) || !isSafeHref(item.href))) throw new Error('Revisá los destinos del menú: sección, ruta, https://, mailto: o tel:.')
   if (!Array.isArray(sections) || !sections.length || sections.filter(section => section.blockType !== 'footer').length > 30) throw new Error('El sitio necesita entre 1 y 30 secciones.')
   const keys = rowFields
+  const requiredRows: Partial<Record<SiteDocument['sections'][number]['blockType'], keyof typeof rowFields>> = {
+    services: 'services', projects: 'projects', about: 'stats', faq: 'questions', gallery: 'gallery',
+    testimonials: 'testimonials', pricing: 'plans', cta: 'actions', logos: 'logos', team: 'team',
+    stats: 'stats', process: 'process', comparison: 'comparison', form: 'formFields', menu: 'menu', hours: 'hours',
+  }
   const ids = new Set<string>()
   const anchors = new Set<string>()
   for (const [index, section] of sections.entries()) {
@@ -43,6 +48,8 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
       || !text(section.anchor, 100) || !section.anchor || !/^[a-zA-Z][\w-]*$/.test(section.anchor)
       || ['main', 'navigation'].includes(section.anchor) || anchors.has(section.anchor)) throw new Error('Las secciones necesitan identificadores únicos.')
     ids.add(section.id); anchors.add(section.anchor)
+    const requiredRow = requiredRows[section.blockType]
+    if (requiredRow && !Array.isArray((section as unknown as Record<string, unknown>)[requiredRow])) throw new Error('El bloque necesita una lista de contenido válida.')
     if (section.buttonHref !== undefined && !isSafeHref(section.buttonHref)) throw new Error('Revisá el destino del botón.')
     if (section.heroLayout !== undefined && !['split', 'centered', 'cover'].includes(section.heroLayout)) throw new Error('Composición de portada no válida.')
     if (section.imagePosition !== undefined && !['center', 'top', 'bottom'].includes(section.imagePosition)) throw new Error('Posición de imagen no válida.')
@@ -90,7 +97,7 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
     if (section.address !== undefined && (!text(section.address, 300) || !section.address.trim())) throw new Error('Dirección no válida.')
     if (section.phone !== undefined && (!text(section.phone, 40) || !/^\+?[\d\s().-]+$/.test(section.phone))) throw new Error('Teléfono no válido.')
     if (section.mapHref !== undefined && (!isSafeHref(section.mapHref) || !section.mapHref.startsWith('https://'))) throw new Error('El mapa debe usar un enlace HTTPS válido.')
-    if (isFooter && (!text(section.footerTagline, 500) || !text(section.footerEmail, 254) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(section.footerEmail || '') || !Array.isArray(section.footerNavigation) || section.footerNavigation.length > 5 || section.footerNavigation.some(item => !text(item.label, 80) || !isSafeHref(item.href)))) throw new Error('Revisá el contenido del pie de página.')
+    if (isFooter && (!text(section.footerTagline, 500) || !text(section.footerEmail, 254) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(section.footerEmail || '') || (section.footerExploreLabel !== undefined && !text(section.footerExploreLabel, 100)) || (section.footerContactLabel !== undefined && !text(section.footerContactLabel, 100)) || (section.footerCopyright !== undefined && !text(section.footerCopyright, 300)) || !Array.isArray(section.footerNavigation) || section.footerNavigation.length > 5 || section.footerNavigation.some(item => !record(item) || !text(item.label, 80) || !isSafeHref(item.href)))) throw new Error('Revisá el contenido del pie de página.')
   }
   if (JSON.stringify(input).length > 5000000) throw new Error('El sitio supera el límite de 5 MB. Reducí la cantidad de imágenes.')
 }

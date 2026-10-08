@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { activatePlan, recordBillingEvent, updateSubscriptionStatus } from '@/features/billing/server/repository'
+import { activatePlan, findSubscription, recordBillingEvent, updateSubscriptionStatus } from '@/features/billing/server/repository'
 import { fetchMercadoPagoSubscription } from '@/features/billing/providers/mercadopago'
 
 function validSignature(request: Request, dataId: string) {
@@ -10,6 +10,8 @@ function validSignature(request: Request, dataId: string) {
   const ts = signature.match(/ts=([^,]+)/)?.[1]
   const v1 = signature.match(/v1=([^,]+)/)?.[1]
   if (!ts || !v1) return false
+  const timestamp = Number(ts)
+  if (!Number.isFinite(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > 300) return false
   const digest = createHmac('sha256', secret).update(`id:${dataId};request-id:${request.headers.get('x-request-id') || ''};ts:${ts};`).digest('hex')
   return digest.length === v1.length && timingSafeEqual(Buffer.from(digest), Buffer.from(v1))
 }
@@ -43,12 +45,16 @@ export async function POST(request: Request) {
       console.warn('[mercadopago] webhook ignored: invalid external reference', { externalId, userId: userId || 'missing', planId: planId || 'missing' })
       return NextResponse.json({ received: true })
     }
+    const local = findSubscription(userId)
+    if (!local || (local.external_subscription_id && local.external_subscription_id !== subscription.id)) {
+      console.warn('[mercadopago] webhook ignored: subscription is not linked locally', { externalId, userId })
+      return NextResponse.json({ received: true })
+    }
     const eventId = `${payload.type || 'event'}:${payload.action || 'update'}:${externalId}:${subscription.status}`
     if (!recordBillingEvent('mercadopago', eventId, body)) return NextResponse.json({ received: true })
     if (subscription.status === 'authorized') activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
     else if (subscription.status === 'paused' || subscription.status === 'cancelled') {
-      const local = activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
-      if (local) updateSubscriptionStatus(local.id, 'canceled', local.current_period_ends_at)
+      updateSubscriptionStatus(local.id, 'canceled', local.current_period_ends_at)
     }
   } catch (error) {
     console.error('[mercadopago] webhook processing failed', { externalId, error: error instanceof Error ? error.message : 'unknown error' })
