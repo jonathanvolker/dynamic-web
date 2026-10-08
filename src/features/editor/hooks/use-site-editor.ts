@@ -6,14 +6,14 @@ import type { Site, SiteDocument } from '@/features/sites/types'
 import type { Section, Settings } from '@/features/website/types'
 import { blockDefinitions } from '@/features/website/blocks'
 import { getTemplate } from '@/features/templates/registry'
-import { availableAnchor } from '@/features/sites/document'
+import { availableAnchor, ensureFooter } from '@/features/sites/document'
 
 type Panel = 'sections' | 'preview' | 'properties'
 type ActiveTarget = number | 'settings' | 'footer'
 export type EditorAccess = { canEdit: boolean; canPublish: boolean; availableBlocks: string[] | null; planName: string; status: string; graceDaysRemaining: number }
 
 export function useSiteEditor(site: Site, access: EditorAccess) {
-  const [document, setDocument] = useState<SiteDocument>(site.draft)
+  const [document, setDocument] = useState<SiteDocument>(() => ensureFooter(site.draft))
   const [active, setActive] = useState<ActiveTarget>(0)
   const [history, setHistory] = useState<SiteDocument[]>([])
   const [future, setFuture] = useState<SiteDocument[]>([])
@@ -31,7 +31,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   const initialDocument = useRef(true)
   const dirty = saved !== JSON.stringify(document)
   const section = typeof active === 'number' ? document.sections[active] : null
-  const isBlockAvailable = (type: Section['blockType']) => !access.availableBlocks || access.availableBlocks.includes(type)
+  const isBlockAvailable = (type: Section['blockType']) => type === 'footer' || !access.availableBlocks || access.availableBlocks.includes(type)
   const sectionLocked = Boolean(section && !isBlockAvailable(section.blockType))
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   }
 
   function move(index: number, to: number) {
-    if (to < 0 || to >= document.sections.length || index === to) return
+    if (to < 0 || to >= document.sections.length || index === to || document.sections[index]?.blockType === 'footer' || document.sections[to]?.blockType === 'footer') return
     if (!isBlockAvailable(document.sections[index].blockType)) return
     change(next => {
       const [item] = next.sections.splice(index, 1)
@@ -108,7 +108,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   function add(type: Section['blockType']) {
     if (!access.canEdit) { setError('Tu suscripción está vencida. Activá un plan para continuar.'); return }
     if (access.availableBlocks && !access.availableBlocks.includes(type)) { setError(`Este bloque requiere un plan superior a ${access.planName}.`); return }
-    if (document.sections.length >= 30) {
+    if (document.sections.filter(item => item.blockType !== 'footer').length >= 30) {
       setError('Podés agregar hasta 30 secciones.')
       return
     }
@@ -121,7 +121,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function duplicate() {
     if (!access.canEdit) return
-    if (!section || typeof active !== 'number' || document.sections.length >= 30) return
+    if (!section || section.blockType === 'footer' || typeof active !== 'number' || document.sections.filter(item => item.blockType !== 'footer').length >= 30) return
     if (access.availableBlocks && !access.availableBlocks.includes(section.blockType)) {
       setError(`Este bloque requiere un plan superior a ${access.planName}.`)
       return
@@ -134,7 +134,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function remove(target: number | undefined = typeof active === 'number' ? active : undefined) {
     if (!access.canEdit) return
-    if (typeof target !== 'number' || document.sections.length <= 1) return
+    if (typeof target !== 'number' || document.sections[target]?.blockType === 'footer' || document.sections.length <= 1) return
     if (!isBlockAvailable(document.sections[target].blockType)) return
     const nextActive = Math.min(target, document.sections.length - 2)
     change(next => { next.sections.splice(target, 1) }, true)

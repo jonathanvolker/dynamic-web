@@ -31,12 +31,14 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
     }
   }
   if (!Array.isArray(settings.navigation) || settings.navigation.length > 5 || settings.navigation.some(item => !item || !text(item.label, 80) || !isSafeHref(item.href))) throw new Error('Revisá los destinos del menú: sección, ruta, https://, mailto: o tel:.')
-  if (!Array.isArray(sections) || !sections.length || sections.length > 30) throw new Error('El sitio necesita entre 1 y 30 secciones.')
+  if (!Array.isArray(sections) || !sections.length || sections.filter(section => section.blockType !== 'footer').length > 30) throw new Error('El sitio necesita entre 1 y 30 secciones.')
   const keys = rowFields
   const ids = new Set<string>()
   const anchors = new Set<string>()
-  for (const section of sections) {
-    if (!record(section) || !blockTypes.includes(section.blockType as typeof blockTypes[number]) || !text(section.title, 500) || !section.title.trim() || !text(section.eyebrow, 200) || !section.eyebrow.trim() || (section.description !== undefined && !text(section.description)) || (section.buttonLabel !== undefined && !text(section.buttonLabel, 100))) throw new Error('Hay una sección con contenido no válido.')
+  for (const [index, section] of sections.entries()) {
+    const isFooter = section.blockType === 'footer'
+    if (!record(section) || !blockTypes.includes(section.blockType as typeof blockTypes[number]) || (!isFooter && (!text(section.title, 500) || !section.title.trim() || !text(section.eyebrow, 200) || !section.eyebrow.trim())) || (section.description !== undefined && !text(section.description)) || (section.buttonLabel !== undefined && !text(section.buttonLabel, 100))) throw new Error('Hay una sección con contenido no válido.')
+    if (isFooter && index !== sections.length - 1) throw new Error('El pie de página debe ser la última sección.')
     if (!text(section.id, 100) || !section.id || ids.has(section.id)
       || !text(section.anchor, 100) || !section.anchor || !/^[a-zA-Z][\w-]*$/.test(section.anchor)
       || ['main', 'navigation'].includes(section.anchor) || anchors.has(section.anchor)) throw new Error('Las secciones necesitan identificadores únicos.')
@@ -88,6 +90,7 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
     if (section.address !== undefined && (!text(section.address, 300) || !section.address.trim())) throw new Error('Dirección no válida.')
     if (section.phone !== undefined && (!text(section.phone, 40) || !/^\+?[\d\s().-]+$/.test(section.phone))) throw new Error('Teléfono no válido.')
     if (section.mapHref !== undefined && (!isSafeHref(section.mapHref) || !section.mapHref.startsWith('https://'))) throw new Error('El mapa debe usar un enlace HTTPS válido.')
+    if (isFooter && (!text(section.footerTagline, 500) || !text(section.footerEmail, 254) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(section.footerEmail || '') || !Array.isArray(section.footerNavigation) || section.footerNavigation.length > 5 || section.footerNavigation.some(item => !text(item.label, 80) || !isSafeHref(item.href)))) throw new Error('Revisá el contenido del pie de página.')
   }
   if (JSON.stringify(input).length > 5000000) throw new Error('El sitio supera el límite de 5 MB. Reducí la cantidad de imágenes.')
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { SectionProps } from './types'
 import { SectionHeading } from './SectionHeading'
 
-export function GallerySection({ section, anchor }: SectionProps) {
+export function GallerySection({ section, anchor, preview }: SectionProps) {
   const items = section.gallery ?? []
   const trackRef = useRef<HTMLDivElement>(null)
   const activeIndexRef = useRef(0)
@@ -16,7 +16,7 @@ export function GallerySection({ section, anchor }: SectionProps) {
   const scrollToItem = (index: number) => {
     const nextIndex = items.length ? (index + items.length) % items.length : 0
     const item = trackRef.current?.children[nextIndex] as HTMLElement | undefined
-    item?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'start' })
+    if (!preview) item?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'start' })
     activeIndexRef.current = nextIndex
     setActiveIndex(nextIndex)
   }
@@ -48,7 +48,7 @@ export function GallerySection({ section, anchor }: SectionProps) {
   }, [items.length])
 
   useEffect(() => {
-    if (items.length < 2 || reducedMotion) return
+    if (preview || items.length < 2 || reducedMotion) return
     autoplayRef.current = setInterval(() => {
       scrollToItem(activeIndexRef.current + 1)
     }, 5000)
@@ -56,10 +56,10 @@ export function GallerySection({ section, anchor }: SectionProps) {
       if (autoplayRef.current) clearInterval(autoplayRef.current)
       if (pauseRef.current) clearTimeout(pauseRef.current)
     }
-  }, [items.length, reducedMotion])
+  }, [items.length, reducedMotion, preview])
 
   const pauseAfterInteraction = () => {
-    if (reducedMotion || items.length < 2) return
+    if (preview || reducedMotion || items.length < 2) return
     if (autoplayRef.current) clearInterval(autoplayRef.current)
     if (pauseRef.current) clearTimeout(pauseRef.current)
     pauseRef.current = setTimeout(() => {
@@ -93,11 +93,11 @@ export function GallerySection({ section, anchor }: SectionProps) {
     <SectionHeading section={section} />
     <div className="gallery-carousel" role="region" aria-label={section.title || 'Galería'} onMouseEnter={pauseAfterInteraction} onFocus={pauseAfterInteraction} onPointerDown={pauseAfterInteraction} onTouchStart={pauseAfterInteraction} onWheel={pauseAfterInteraction}>
       <div className="gallery-grid" ref={trackRef} tabIndex={0} onKeyDown={onKeyDown} aria-label="Galería deslizable">
-      {items.map((item, index) => <figure className="gallery-item" key={index}>
-        {item.image?.url
-          ? <img src={item.image.url} alt={item.image.alt || item.title} loading="lazy" />
-          : <div className="gallery-placeholder" role="img" aria-label="Imagen pendiente"><span>▨</span><span>Tu imagen, tu historia</span></div>}
-        <figcaption><h3>{item.title}</h3><p>{item.description}</p></figcaption>
+        {items.map((item, index) => <figure className="gallery-item" key={index} data-forma-field={`gallery.${index}`}>
+         {item.image?.url
+           ? <img src={item.image.url} alt={item.image.alt || item.title} loading="lazy" data-forma-field={`gallery.${index}.image`} />
+           : <div className="gallery-placeholder" role="img" aria-label="Imagen pendiente"><span>▨</span><span>Tu imagen, tu historia</span></div>}
+          <figcaption><h3 data-forma-field={`gallery.${index}.title`}>{item.title}</h3><p data-forma-field={`gallery.${index}.description`}>{item.description}</p></figcaption>
       </figure>)}
       </div>
       {items.length > 1 && <div className="gallery-dots" aria-label="Seleccionar imagen">

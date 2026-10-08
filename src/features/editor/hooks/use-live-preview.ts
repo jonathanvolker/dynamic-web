@@ -17,6 +17,7 @@ export function useLivePreview(document: SiteDocument, onSelect: (index: number 
   useEffect(() => { sendPreview() }, [document, sendPreview])
   useEffect(() => {
     iframe.current?.contentWindow?.postMessage({ type: 'forma:highlight', index: active, field: activeField }, window.location.origin)
+    iframe.current?.contentWindow?.postMessage({ type: 'forma:scroll-to', index: active, field: activeField }, window.location.origin)
   }, [active, activeField])
   useEffect(() => {
     const listener = (event: MessageEvent) => {

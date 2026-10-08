@@ -10,9 +10,10 @@ type Props = {
   onError: (message: string) => void
   label?: string
   removeLabel?: string
+  fieldKey?: string
 }
 
-export function ProjectImageField({ title, image, onChange, onError, label = 'Imagen del proyecto', removeLabel = 'Usar composición original' }: Props) {
+export function ProjectImageField({ title, image, onChange, onError, label = 'Imagen del proyecto', removeLabel = 'Usar composición original', fieldKey = 'image' }: Props) {
   const [uploading, setUploading] = useState(false)
   const controller = useRef<AbortController | null>(null)
   const latest = useRef({ onChange, onError, title })
@@ -48,7 +49,7 @@ export function ProjectImageField({ title, image, onChange, onError, label = 'Im
       {image && (
         <>
           <img className="upload-preview" src={image.url} alt={image.alt || label} />
-          <Field label="Texto alternativo" value={image.alt || ''} onChange={alt => onChange({ ...image, alt })} />
+           <Field label="Texto alternativo" fieldKey={`${fieldKey}.alt`} value={image.alt || ''} onChange={alt => onChange({ ...image, alt })} />
            <button type="button" className="remove-row" disabled={uploading} onClick={() => onChange(undefined)}>{removeLabel}</button>
         </>
       )}

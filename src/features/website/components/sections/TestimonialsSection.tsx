@@ -7,8 +7,8 @@ export function TestimonialsSection({ section, anchor }: SectionProps) {
     <div className="testimonial-grid">
       {section.testimonials?.map((item, index) => <figure className="testimonial-card" key={index}>
         <span className="quote-mark" aria-hidden="true">“</span>
-        <blockquote>{item.quote}</blockquote>
-        <figcaption><span className="person-initial" aria-hidden="true">{item.name.slice(0, 1)}</span><span><strong>{item.name}</strong><small>{item.role}</small></span></figcaption>
+         <blockquote data-forma-field={`testimonials.${index}.quote`}>{item.quote}</blockquote>
+         <figcaption><span className="person-initial" aria-hidden="true">{item.name.slice(0, 1)}</span><span><strong data-forma-field={`testimonials.${index}.name`}>{item.name}</strong><small data-forma-field={`testimonials.${index}.role`}>{item.role}</small></span></figcaption>
       </figure>)}
     </div>
   </section>

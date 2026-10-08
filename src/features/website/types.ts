@@ -27,7 +27,7 @@ export type Section = {
   id?: string
   anchor?: string
   blockType: 'hero' | 'services' | 'projects' | 'about' | 'faq' | 'contact' | 'gallery' | 'testimonials' | 'pricing'
-    | 'cta' | 'textImage' | 'video' | 'logos' | 'team' | 'stats' | 'process' | 'comparison' | 'form' | 'newsletter' | 'menu' | 'hours'
+    | 'cta' | 'textImage' | 'video' | 'logos' | 'team' | 'stats' | 'process' | 'comparison' | 'form' | 'newsletter' | 'menu' | 'hours' | 'footer'
   eyebrow: string
   title: string
   description?: string
@@ -62,6 +62,12 @@ export type Section = {
   address?: string
   phone?: string
   mapHref?: string
+  footerTagline?: string
+  footerEmail?: string
+  footerNavigation?: { label: string; href: string }[]
+  footerExploreLabel?: string
+  footerContactLabel?: string
+  footerCopyright?: string
 }
 export type SiteColors = {
   background: string
