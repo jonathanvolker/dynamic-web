@@ -69,9 +69,9 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
     return () => window.clearTimeout(timer)
   }, [document, dirty, busy, recoveryKey])
 
-  function change(update: (next: SiteDocument) => void) {
+  function change(update: (next: SiteDocument) => void, allowLocked = false) {
     if (!access.canEdit) { setError('Tu suscripción está vencida. Activá un plan para continuar.'); return }
-    if (sectionLocked) { setError(`Esta sección requiere un plan superior a ${access.planName}. Conservamos su contenido, pero no se puede editar.`); return }
+    if (sectionLocked && !allowLocked) { setError(`Esta sección requiere un plan superior a ${access.planName}. Conservamos su contenido, pero no se puede editar.`); return }
     const next = structuredClone(document)
     update(next)
     setHistory(previous => [...previous.slice(-19), document])
@@ -132,12 +132,12 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
     setActive(active + 1)
   }
 
-  function remove() {
+  function remove(target: number | undefined = typeof active === 'number' ? active : undefined) {
     if (!access.canEdit) return
-    if (typeof active !== 'number' || document.sections.length <= 1) return
-    if (sectionLocked) return
-    const nextActive = Math.min(active, document.sections.length - 2)
-    change(next => { next.sections.splice(active, 1) })
+    if (typeof target !== 'number' || document.sections.length <= 1) return
+    if (!isBlockAvailable(document.sections[target].blockType)) return
+    const nextActive = Math.min(target, document.sections.length - 2)
+    change(next => { next.sections.splice(target, 1) }, true)
     setActive(nextActive)
     setActiveField(null)
   }
