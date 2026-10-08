@@ -130,7 +130,7 @@ jobs:
           TRUST_PROXY_HEADERS: ${{ secrets.TRUST_PROXY_HEADERS }}
         run: |
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "umask 077 && cat > '$DEPLOY_PATH/.env'" <<EOF
-          IMAGE_NAME=${IMAGE_NAME}:main
+           IMAGE_NAME=${IMAGE_NAME}
           POSTGRES_PASSWORD=$POSTGRES_PASSWORD
           DOMAIN=$DOMAIN
           PUBLIC_URL=$PUBLIC_URL
