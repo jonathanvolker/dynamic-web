@@ -62,7 +62,7 @@ services:
         condition: service_healthy
 
   migrate:
-    image: ${IMAGE_NAME:?Definí IMAGE_NAME en el .env}
+    image: ${IMAGE_NAME:?Definí IMAGE_NAME en el .env}:migration-main
     profiles: ["tools"]
     environment:
       NODE_ENV: production

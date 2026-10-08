@@ -69,6 +69,16 @@ jobs:
             ${{ env.IMAGE_NAME }}:main
             ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
 
+      - name: Build and push migration image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: migration
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:migration-main
+            ${{ env.IMAGE_NAME }}:migration-sha-${{ github.sha }}
+
   deploy:
     name: Deploy to VPS
     needs: image
@@ -136,5 +146,5 @@ jobs:
           TRUST_PROXY_HEADERS=$TRUST_PROXY_HEADERS
           EOF
           printf '%s' "$GHCR_TOKEN" | ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "docker login ghcr.io --username '$GHCR_USERNAME' --password-stdin"
-           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_PATH' && docker compose -f compose.production.yaml pull && docker compose -f compose.production.yaml --profile tools run --rm migrate && docker compose -f compose.production.yaml up -d --remove-orphans && docker image prune -f"
+           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_PATH' && docker compose -f compose.production.yaml pull && docker compose -f compose.production.yaml --profile tools pull && docker compose -f compose.production.yaml --profile tools run --rm migrate && docker compose -f compose.production.yaml up -d --remove-orphans && docker image prune -f"
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "docker logout ghcr.io"
