@@ -9,6 +9,7 @@ import { getTemplate } from '@/features/templates/registry'
 import { assertMediaOwnership } from './server/media'
 import { mediaIdsInDocument } from './server/media-ownership'
 import { assertCanCreateSite, assertCanEdit, assertCanPublish, canUseBlock } from '@/features/billing/server/access'
+
 export async function newSite(_state: { error: string }, form: FormData): Promise<{ error: string }> {
   const user = await requireUser()
   const name = String(form.get('name') || '').trim()
@@ -17,24 +18,25 @@ export async function newSite(_state: { error: string }, form: FormData): Promis
   if (template !== 'blank' && !getTemplate(template)) return { error: 'Elegí una plantilla disponible.' }
   let id: string
   try {
-    const entitlements = assertCanCreateSite(user.id)
-    const sites = listSites(user.id)
+    const entitlements = await assertCanCreateSite(user.id)
+    const sites = await listSites(user.id)
     if (sites.length >= entitlements.plan.maxSites) return { error: `Tu plan ${entitlements.plan.name} permite hasta ${entitlements.plan.maxSites} sitio${entitlements.plan.maxSites === 1 ? '' : 's'}.` }
-    id = createSite(user.id, name, template, entitlements.plan.allowedBlocks)
+    id = await createSite(user.id, name, template, entitlements.plan.allowedBlocks)
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'No pudimos crear el sitio.' }
   }
   redirect(`/editor/${id}`)
 }
+
 export async function saveSite(id: string, input: unknown, publish: boolean) {
   const user = await currentUser()
   if (!user) return { error: 'Tu sesión venció. Iniciá sesión para continuar.' }
-  const site = findSite(id, user.id)
+  const site = await findSite(id, user.id)
   if (!site) return { error: 'No tenés acceso a este sitio.' }
   try {
-    const entitlements = assertCanEdit(user.id)
+    const entitlements = await assertCanEdit(user.id)
     validateSite(input)
-    assertMediaOwnership(input, user.id)
+    await assertMediaOwnership(input, user.id)
     const document = input as { sections: { id?: string; blockType: string }[] }
     const mediaCount = mediaIdsInDocument(input as never).size
     if (mediaCount > entitlements.plan.maxMediaPerSite) throw new Error(`Tu plan permite hasta ${entitlements.plan.maxMediaPerSite} imágenes por sitio.`)
@@ -47,23 +49,24 @@ export async function saveSite(id: string, input: unknown, publish: boolean) {
       return original && JSON.stringify(original) !== JSON.stringify(section)
     })
     if (changedLocked) throw new Error('Las secciones conservadas de un plan anterior no se pueden editar.')
-    if (publish) assertCanPublish(user.id)
+    if (publish) await assertCanPublish(user.id)
   } catch (error) { return { error: error instanceof Error ? error.message : 'Datos no válidos.' } }
-  const now = saveDocument(id, user.id, input, publish)
+  const now = await saveDocument(id, user.id, input, publish)
   revalidatePath(`/s/${site.slug}`)
   revalidatePath('/dashboard')
   return { success: true, publishedAt: publish ? now : site.published_at }
 }
+
 export async function unpublishSite(id: string) {
   const user = await requireUser()
-  const site = findSite(id, user.id)
+  const site = await findSite(id, user.id)
   if (!site) return
-  removePublication(id, user.id)
+  await removePublication(id, user.id)
   revalidatePath(`/s/${site.slug}`); revalidatePath('/dashboard')
 }
 
 export async function removeSite(id: string) {
   const user = await requireUser()
-  deleteSite(id, user.id)
+  await deleteSite(id, user.id)
   revalidatePath('/dashboard')
 }

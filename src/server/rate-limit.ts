@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto'
 import { isIP } from 'node:net'
-import { db } from './db/sqlite'
+import 'server-only'
+import { postgresQuery } from './db/postgres'
 
 export type RateLimitStore = {
-  consume(bucket: string, limit: number, windowMs: number, now?: number): boolean
+  consume(bucket: string, limit: number, windowMs: number, now?: number): boolean | Promise<boolean>
 }
 
 const localBuckets = new Map<string, { windowStart: number; count: number }>()
@@ -34,23 +35,33 @@ const localStore: RateLimitStore = {
 }
 
 const sharedStore: RateLimitStore = {
-  consume(bucket, limit, windowMs, now = Date.now()) {
+  async consume(bucket, limit, windowMs, now = Date.now()) {
     if (!bucket || !Number.isSafeInteger(limit) || limit < 1 || !Number.isSafeInteger(windowMs) || windowMs < 1) return false
-    const result = db().prepare(`
-      INSERT INTO distributed_rate_limits (bucket_hash, window_start, count) VALUES (?, ?, 1)
+    const result = await postgresQuery(`
+      INSERT INTO platform_distributed_rate_limits (bucket_hash, window_start, count)
+      VALUES ($1, to_timestamp($2 / 1000.0), 1)
       ON CONFLICT(bucket_hash) DO UPDATE SET
-        window_start = CASE WHEN ? - window_start >= ? THEN excluded.window_start ELSE window_start END,
-        count = CASE WHEN ? - window_start >= ? THEN 1 ELSE count + 1 END
-      WHERE ? - window_start >= ? OR count < ?
-    `).run(bucketHash(bucket), now, now, windowMs, now, windowMs, now, windowMs, limit)
-    return result.changes > 0
+        window_start = CASE
+          WHEN EXTRACT(EPOCH FROM (to_timestamp($2 / 1000.0) - platform_distributed_rate_limits.window_start)) * 1000 >= $3
+            THEN EXCLUDED.window_start
+          ELSE platform_distributed_rate_limits.window_start
+        END,
+        count = CASE
+          WHEN EXTRACT(EPOCH FROM (to_timestamp($2 / 1000.0) - platform_distributed_rate_limits.window_start)) * 1000 >= $3
+            THEN 1
+          ELSE platform_distributed_rate_limits.count + 1
+        END
+      WHERE EXTRACT(EPOCH FROM (to_timestamp($2 / 1000.0) - platform_distributed_rate_limits.window_start)) * 1000 >= $3
+        OR platform_distributed_rate_limits.count < $4
+    `, [bucketHash(bucket), now, windowMs, limit])
+    return (result.rowCount ?? 0) > 0
   },
 }
 
 export const rateLimitStore: RateLimitStore = {
-  consume(bucket, limit, windowMs, now) {
+  async consume(bucket, limit, windowMs, now) {
     try {
-      return sharedStore.consume(bucket, limit, windowMs, now)
+      return await sharedStore.consume(bucket, limit, windowMs, now)
     } catch {
       // A failed shared store must still leave a conservative local guard in place.
       return localStore.consume(bucket, limit, windowMs, now)
@@ -58,8 +69,8 @@ export const rateLimitStore: RateLimitStore = {
   },
 }
 
-export function consumeRateLimit(bucket: string, limit: number, windowMs: number, now?: number) {
-  return rateLimitStore.consume(bucket, limit, windowMs, now)
+export async function consumeRateLimit(bucket: string, limit: number, windowMs: number, now?: number) {
+  return await rateLimitStore.consume(bucket, limit, windowMs, now)
 }
 
 export function clientAddress(headers: Headers) {

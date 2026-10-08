@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function PlatformHome() {
   const host = (await headers()).get('host')?.split(':')[0]?.toLowerCase()
-  const customSite = host ? publicSiteByHostname(host) : null
+  const customSite = host ? await publicSiteByHostname(host) : null
   if (customSite?.published) return <SiteView settings={customSite.published.settings} sections={customSite.published.sections} familyId={customSite.published.familyId} siteSlug={customSite.slug} />
   const user = await currentUser()
   return (

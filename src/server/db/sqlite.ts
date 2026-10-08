@@ -2,13 +2,10 @@ import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { planCatalog } from '@/features/billing/plans'
+import { dataDirectory } from '@/server/storage'
 
 let database: DatabaseSync | undefined
 export const CURRENT_SCHEMA_VERSION = 3
-
-export function dataDirectory() {
-  return process.env.PLATFORM_DATA_DIR || path.join(process.cwd(), 'data')
-}
 
 /** Shared local connection. Repositories own queries; routes never access SQL. */
 export function db() {

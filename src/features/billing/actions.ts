@@ -13,7 +13,7 @@ export async function startCheckout(planId: PlanId, _formData?: FormData): Promi
   const user = await currentUser()
   if (!user) redirect('/login')
   if (planId === 'free') redirect('/dashboard')
-  const entitlements = getEntitlements(user.id)
+  const entitlements = await getEntitlements(user.id)
   const currentPlan = entitlements.plan.id
   const activePaid = ['active', 'trialing', 'past_due'].includes(entitlements.subscription.status) && currentPlan !== 'free'
   if (activePaid && planId === currentPlan) redirect(`/planes?error=${encodeURIComponent('Ya tenés este plan activo.')}`)
@@ -33,6 +33,6 @@ export async function changeSubscription(form: FormData): Promise<void> {
   const planId = String(form.get('planId') || '') as PlanId
   const status = String(form.get('status') || '') as SubscriptionStatus
   if (!['free', 'initial', 'professional'].includes(planId) || !['trialing', 'active', 'past_due', 'canceled', 'expired'].includes(status)) redirect('/admin/platform?error=Datos+de+suscripción+inválidos.')
-  updateSubscription(subscriptionId, planId, status)
+  await updateSubscription(subscriptionId, planId, status)
   redirect('/admin/platform?success=Suscripción+actualizada.')
 }

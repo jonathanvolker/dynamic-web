@@ -3,7 +3,8 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import sharp from 'sharp'
-import { dataDirectory, db } from '@/server/db/sqlite'
+import { dataDirectory } from '@/server/storage'
+import { postgresQuery, withPostgresTransaction } from '@/server/db/postgres'
 import { MEDIA_PATH, mediaId, mediaIdPattern } from '@/features/website/media'
 import type { SiteDocument } from '../types'
 import { mediaIdsInDocument } from './media-ownership'
@@ -60,11 +61,21 @@ export async function storeImage(owner: string, file: File) {
   await writeFile(filePath(id), image, { flag: 'wx' })
   try {
     await withOwnerLock(owner, async () => {
-      const quota = getEntitlements(owner).plan.mediaStorageBytes
-      const inserted = db().prepare(`INSERT INTO media (id, owner_id, size_bytes, created_at)
-        SELECT ?, ?, ?, ? WHERE COALESCE((SELECT SUM(size_bytes) FROM media WHERE owner_id = ?), 0) + ? <= ?`)
-        .run(id, owner, image.byteLength, new Date().toISOString(), owner, image.byteLength, quota)
-      if (inserted.changes === 0) throw new MediaLimitError('Alcanzaste la cuota de imágenes de tu plan.')
+      const quota = (await getEntitlements(owner)).plan.mediaStorageBytes
+      await withPostgresTransaction(async client => {
+        // Serialize quota checks across application instances, not just this process.
+        await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [owner])
+        const usage = await client.query<{ total: string | null }>(
+          'SELECT SUM(size_bytes)::text AS total FROM platform_media WHERE owner_id = $1', [owner],
+        )
+        if (Number(usage.rows[0]?.total || 0) + image.byteLength > quota) {
+          throw new MediaLimitError('Alcanzaste la cuota de imágenes de tu plan.')
+        }
+        await client.query(
+          'INSERT INTO platform_media (id, owner_id, size_bytes, created_at) VALUES ($1, $2, $3, $4)',
+          [id, owner, image.byteLength, new Date().toISOString()],
+        )
+      })
     })
   } catch (error) {
     await unlink(filePath(id))
@@ -74,14 +85,18 @@ export async function storeImage(owner: string, file: File) {
 }
 
 export async function readImage(id: string) {
-  if (!mediaIdPattern.test(id) || !db().prepare('SELECT id FROM media WHERE id = ?').get(id)) return null
+  if (!mediaIdPattern.test(id)) return null
+  const result = await postgresQuery('SELECT id FROM platform_media WHERE id = $1', [id])
+  if (!result.rowCount) return null
   try { return await readFile(filePath(id)) } catch { return null }
 }
 
-export function assertMediaOwnership(document: SiteDocument, owner: string) {
+export async function assertMediaOwnership(document: SiteDocument, owner: string) {
   const ids = mediaIdsInDocument(document)
-  const query = db().prepare('SELECT id FROM media WHERE id = ? AND owner_id = ?')
-  for (const id of ids) {
-    if (!query.get(id, owner)) throw new Error('Una imagen no pertenece a tu cuenta. Volvé a cargarla.')
-  }
+  if (!ids.size) return
+  const result = await postgresQuery<{ id: string }>(
+    'SELECT id FROM platform_media WHERE owner_id = $1 AND id = ANY($2::text[])',
+    [owner, [...ids]],
+  )
+  if (result.rowCount !== ids.size) throw new Error('Una imagen no pertenece a tu cuenta. Volvé a cargarla.')
 }

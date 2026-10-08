@@ -9,12 +9,12 @@ import { normalizeDnsName, normalizeHostname } from '@/features/domains/validati
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser()
   if (!user) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 })
-  const domain = findDomain((await params).id)
+  const domain = await findDomain((await params).id)
   if (!domain) return NextResponse.json({ error: 'Dominio inexistente.' }, { status: 404 })
-  const site = findSite(domain.site_id, user.id)
+  const site = await findSite(domain.site_id, user.id)
   if (!site) return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
   try {
-    assertCanUseCustomDomain(user.id)
+    await assertCanUseCustomDomain(user.id)
   } catch {
     return NextResponse.json({ error: 'El dominio personalizado requiere una suscripción Profesional vigente.' }, { status: 403 })
   }
@@ -25,7 +25,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     const cname = await dns.resolveCname(domain.hostname)
     const target = normalizeDnsName(process.env.FORMA_CNAME_TARGET || '')
     if (!target || !cname.some(value => normalizeDnsName(value) === target)) return NextResponse.json({ error: 'El CNAME todavía no apunta a Forma.' }, { status: 422 })
-    if (!markDomainVerified(domain.id)) return NextResponse.json({ error: 'El dominio cambió de estado y debe verificarse nuevamente.' }, { status: 409 })
+    if (!await markDomainVerified(domain.id)) return NextResponse.json({ error: 'El dominio cambió de estado y debe verificarse nuevamente.' }, { status: 409 })
     return NextResponse.json({ verified: true })
   } catch {
     return NextResponse.json({ error: 'No pudimos resolver el CNAME todavía.' }, { status: 422 })
