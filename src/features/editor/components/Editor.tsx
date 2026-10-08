@@ -21,8 +21,8 @@ export default function Editor({ site, access }: { site: Site; access: EditorAcc
           <button type="button" aria-selected={editor.panel === 'sections'} className={editor.panel === 'sections' ? 'active' : ''} onClick={() => editor.setPanel('sections')}>Secciones</button>
           <button type="button" aria-selected={editor.panel === 'properties'} className={editor.panel === 'properties' ? 'active' : ''} onClick={() => editor.setPanel('properties')}>Propiedades</button>
           <button type="button" aria-selected={editor.panel === 'preview'} className={editor.panel === 'preview' ? 'active' : ''} onClick={() => editor.setPanel('preview')}>Vista previa</button>
-       </div>
-      <div className="editor-body">
+        </div>
+       <div className="editor-body">
         <EditorSidebar editor={editor} />
         <EditorCanvas editor={editor} />
         <EditorInspector editor={editor} />

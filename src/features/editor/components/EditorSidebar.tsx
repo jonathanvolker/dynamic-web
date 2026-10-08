@@ -1,7 +1,10 @@
 import { blockLabels, blockSymbols, blockTypesForFamily, descriptionForBlock, labelForBlock } from '../config/blocks'
 import type { EditorController } from '../hooks/use-site-editor'
+import { useState } from 'react'
+import { Modal } from '@/features/platform/components/Modal'
 
 export function EditorSidebar({ editor }: { editor: EditorController }) {
+  const [removeIndex, setRemoveIndex] = useState<number | null>(null)
   const allTypes = blockTypesForFamily(editor.document.familyId)
   const availableTypes = allTypes.filter(type => !editor.access.availableBlocks || editor.access.availableBlocks.includes(type))
   const hiddenBlockCount = allTypes.length - availableTypes.length
@@ -33,10 +36,11 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
                    <span>{blockSymbols[item.blockType]}</span>
                    <span>{blockLabels[item.blockType]}{editor.access.availableBlocks?.includes(item.blockType) === false && <em className="section-lock-label"> · Conservada</em>}<small>{item.title.split('\n')[0].slice(0, 27)}</small></span>
                 </button>
-                <div className="section-order">
+                 <div className="section-order">
                    <button aria-label={`Subir ${blockLabels[item.blockType]}`} onClick={() => editor.move(index, index - 1)} disabled={index === 0 || editor.access.availableBlocks?.includes(item.blockType) === false}>↑</button>
                    <button aria-label={`Bajar ${blockLabels[item.blockType]}`} onClick={() => editor.move(index, index + 1)} disabled={index === editor.document.sections.length - 1 || editor.access.availableBlocks?.includes(item.blockType) === false}>↓</button>
-                </div>
+                   <button className="section-delete" aria-label={`Eliminar ${blockLabels[item.blockType]}`} onClick={() => setRemoveIndex(index)} disabled={editor.document.sections.length <= 1 || editor.access.availableBlocks?.includes(item.blockType) === false}>🗑</button>
+                 </div>
               </div>
             ))}
           </div>
@@ -58,6 +62,7 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
         <span>◎ DIRECCIÓN DE TU SITIO</span><p>/s/{editor.site.slug}</p>
         <small>{editor.publishedAt ? 'Tu sitio está publicado.' : 'Publicá para activar esta dirección.'}</small>
       </div>
+      <Modal open={removeIndex !== null} title="¿Eliminar esta sección?" description="La sección desaparecerá de tu borrador. Podés recuperarla inmediatamente con Deshacer." confirmLabel="Eliminar sección" tone="danger" onConfirm={() => { if (removeIndex !== null) editor.remove(removeIndex); setRemoveIndex(null) }} onCancel={() => setRemoveIndex(null)} />
     </aside>
   )
 }

@@ -7,6 +7,7 @@ import type { Section } from '@/features/website/types'
 import { blockDefinitions } from '../../config/blocks'
 import { useState } from 'react'
 import { Modal } from '@/features/platform/components/Modal'
+import SiteView from '@/features/website/components/SiteView'
 
 export function SectionInspector({ editor }: { editor: EditorController }) {
   const { section } = editor
@@ -16,6 +17,10 @@ export function SectionInspector({ editor }: { editor: EditorController }) {
   const rows = blockDefinitions[section.blockType].rows
   return (
     <>
+      <div className="section-live-preview" aria-label="Vista previa en vivo de la sección">
+        <span>VISTA PREVIA DE ESTA SECCIÓN</span>
+        <div><SiteView settings={editor.document.settings} sections={[section]} familyId={editor.document.familyId} preview /></div>
+      </div>
       <Field label="Etiqueta superior" fieldKey="eyebrow" value={section.eyebrow} onChange={value => editor.changeSection('eyebrow', value)} />
       <Field label="Título" fieldKey="title" value={section.title} multiline onChange={value => editor.changeSection('title', value)} />
       <Field label="Descripción" fieldKey="description" value={section.description || ''} multiline onChange={value => editor.changeSection('description', value)} />
@@ -58,7 +63,7 @@ export function SectionInspector({ editor }: { editor: EditorController }) {
       <div className="section-controls">
         <p className="inspector-note">Dirección estable: #{section.anchor}</p>
         <button type="button" className="add-row" disabled={editor.document.sections.length >= 30} onClick={editor.duplicate}>Duplicar sección</button>
-        <button type="button" className="remove-row" disabled={editor.document.sections.length <= 1} onClick={() => setConfirmRemove(true)}>Eliminar sección</button>
+        <button type="button" className="remove-row section-delete-button" disabled={editor.document.sections.length <= 1} onClick={() => setConfirmRemove(true)} aria-label="Eliminar sección">🗑 Eliminar sección</button>
       </div>
       <Modal open={confirmRemove} title="¿Eliminar esta sección?" description="La sección desaparecerá de tu borrador. Podés recuperarla inmediatamente con Deshacer." confirmLabel="Eliminar sección" tone="danger" onConfirm={() => { editor.remove(); setConfirmRemove(false) }} onCancel={() => setConfirmRemove(false)} />
     </>

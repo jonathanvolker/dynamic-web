@@ -22,8 +22,7 @@
 .website-root .hero-layout-cover::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #000c, #0005); }
 .website-root .hero-layout-cover > :is(.hero-media, .hero-art, .restaurant-illustration, .consultant-illustration) { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; border-radius: 0; transform: none; z-index: -2; }
 .website-root .hero-layout-cover .hero-media-cover { background-size: cover; background-repeat: no-repeat; }
-.website-root .hero-layout-cover .hero-media-cover::after { content: ''; position: absolute; inset: -24px; background: inherit; background-size: cover; background-position: inherit; filter: blur(18px); opacity: .55; transform: scale(1.04); }
-.website-root .hero-layout-cover .hero-media-cover img { position: relative; z-index: 1; width: 100%; height: 100%; max-height: none; object-fit: contain; }
+.website-root .hero-layout-cover .hero-media-cover img { position: relative; z-index: 1; width: 100%; height: 100%; max-height: none; object-fit: cover; }
 .website-root .hero-layout-cover .hero-copy { max-width: 800px; padding: 0; }
 .website-root .hero-layout-cover .hero-description { color: #ffffffe0; max-width: 540px; }
 .website-root .hero-layout-cover .status-dot { background: white; }
