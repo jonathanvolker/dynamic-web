@@ -15,6 +15,7 @@
 .editor-publish { display: flex; align-items: center; gap: 10px; }
 .editor-publish .p-button { font-size: 11px; padding: 11px 17px; }
 .editor-publish .text-link { font-size: 10px; margin-right: 8px; }
+.published-badge { color: #536c26; background: #eaff75; border: 1px solid #b8d83c; border-radius: 999px; padding: 5px 8px; font-size: 9px; font-weight: 700; letter-spacing: .06em; }
 .editor-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 235px minmax(0, 1fr) 285px; }
 .editor-mobile-tabs { display: none; }
 

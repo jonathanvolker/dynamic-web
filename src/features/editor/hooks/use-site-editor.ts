@@ -9,11 +9,12 @@ import { getTemplate } from '@/features/templates/registry'
 import { availableAnchor } from '@/features/sites/document'
 
 type Panel = 'sections' | 'preview' | 'properties'
+type ActiveTarget = number | 'settings' | 'footer'
 export type EditorAccess = { canEdit: boolean; canPublish: boolean; availableBlocks: string[] | null; planName: string; status: string; graceDaysRemaining: number }
 
 export function useSiteEditor(site: Site, access: EditorAccess) {
   const [document, setDocument] = useState<SiteDocument>(site.draft)
-  const [active, setActive] = useState<number | 'settings'>(0)
+  const [active, setActive] = useState<ActiveTarget>(0)
   const [history, setHistory] = useState<SiteDocument[]>([])
   const [future, setFuture] = useState<SiteDocument[]>([])
   const [saved, setSaved] = useState(JSON.stringify(site.draft))
@@ -85,7 +86,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
     change(next => { next.settings[key] = value })
   }
 
-  function select(index: number | 'settings') {
+  function select(index: ActiveTarget) {
     setActive(index)
     setActiveField(null)
     setPanel('properties')
@@ -170,7 +171,7 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
       setRecovered(false)
       setPublishedAt(result.publishedAt || null)
       setMessage(publish
-        ? '¡Tu web está publicada! Abrila con Ver sitio.'
+        ? '¡Tu web está publicada! Ya podés abrirla con Ir al sitio.'
         : automatic ? 'Borrador guardado automáticamente. Tu web pública no cambió.' : 'Borrador guardado. Tu web pública no cambió.')
     } catch {
       setError('No pudimos guardar. Conservamos tus cambios en el editor: intentá nuevamente.')

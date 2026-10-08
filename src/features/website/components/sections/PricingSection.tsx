@@ -13,7 +13,7 @@ export function PricingSection({ section, anchor, anchors = [], preview }: Secti
           <p className="plan-description">{plan.description}</p>
           <p className="plan-price">{plan.price}</p><p className="plan-period">{plan.period}</p>
           <ul>{plan.features.split('\n').map(item => item.trim()).filter(Boolean).map((item, itemIndex) => <li key={itemIndex}><span aria-hidden="true">✓</span>{item}</li>)}</ul>
-          {plan.buttonLabel && (href ? <a className="button" href={href}>{plan.buttonLabel}<span>↗</span></a> : preview ? <span className="button editor-invalid-link" title="El destino de este botón no existe">{plan.buttonLabel}<span>⚠ Destino inválido</span></span> : null)}
+          {plan.buttonLabel && (href ? <a className="button" href={href}>{plan.buttonLabel}<span>↗</span></a> : preview ? <span className="button editor-invalid-link" title="El destino de este botón no existe">{plan.buttonLabel}<span>⚠ Destino no válido</span></span> : null)}
         </article>
       })}
     </div>

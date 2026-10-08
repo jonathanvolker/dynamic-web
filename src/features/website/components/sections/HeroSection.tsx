@@ -15,11 +15,11 @@ export function HeroSection({ section, settings, anchor, buttonHref, buttonInval
         {section.buttonLabel && (buttonHref
           ? <a className="button dark" href={buttonHref}>{section.buttonLabel}<span>↗</span></a>
           : preview && buttonInvalid
-            ? <span className="button dark editor-invalid-link" title="El destino de este botón no existe">{section.buttonLabel}<span>⚠ Destino inválido</span></span>
+            ? <span className="button dark editor-invalid-link" title="El destino de este botón no existe">{section.buttonLabel}<span>⚠ Destino no válido</span></span>
             : null)}
       </div>
       {section.image?.url
-        ? <div className="hero-media"><img src={section.image.url} alt={section.image.alt || ''} style={{ objectPosition: section.imagePosition || 'center' }} fetchPriority="high" /></div>
+         ? <div className="hero-media"><img src={section.image.url} alt={section.image.alt || section.title || settings.brand} style={{ objectPosition: section.imagePosition || 'center' }} fetchPriority="high" /></div>
         : template === 'product' ? <ProductArtwork settings={settings} /> : template === 'restaurant' ? <RestaurantArtwork /> : template === 'consultant' ? <ConsultantArtwork /> : <StudioArtwork />}
       <div className="hero-bottom">
         <span>{settings.tagline}</span>

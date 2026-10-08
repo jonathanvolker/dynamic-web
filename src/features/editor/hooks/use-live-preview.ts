@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { SiteDocument } from '@/features/sites/types'
 
-export function useLivePreview(document: SiteDocument, onSelect: (index: number) => void, active: number | 'settings', activeField: string | null) {
+export function useLivePreview(document: SiteDocument, onSelect: (index: number | 'footer') => void, active: number | 'settings' | 'footer', activeField: string | null) {
   const iframe = useRef<HTMLIFrameElement>(null)
   const latest = useRef({ document, onSelect })
   latest.current = { document, onSelect }
@@ -23,7 +23,9 @@ export function useLivePreview(document: SiteDocument, onSelect: (index: number)
       if (event.origin !== window.location.origin || event.source !== iframe.current?.contentWindow) return
       if (event.data?.type === 'forma:ready') sendPreview()
       const index = event.data?.index
-      if (event.data?.type === 'forma:select' && Number.isInteger(index)
+      if (event.data?.type === 'forma:select' && index === 'footer') {
+        latest.current.onSelect(index)
+      } else if (event.data?.type === 'forma:select' && Number.isInteger(index)
         && index >= 0 && index < latest.current.document.sections.length) {
         latest.current.onSelect(index)
       }

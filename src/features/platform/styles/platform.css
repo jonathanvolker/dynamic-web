@@ -107,6 +107,9 @@
 .new-site-page > .p-kicker { display: block; margin-top: 55px; }
 .new-site-page h1 { font-size: 45px; margin: 17px 0 12px; }
 .new-site-page > p { font-size: 14px; color: var(--p-muted); }
+.plan-limit-warning { display: flex; align-items: center; gap: 12px; margin: 25px 0; padding: 15px 17px; border: 1px solid #e0b65d; border-radius: 8px; background: #fff8df; color: #6f5318; font-size: 12px; }
+.plan-limit-warning span { color: #887044; }
+.plan-limit-warning a { margin-left: auto; color: inherit; font-weight: 700; white-space: nowrap; }
 .template-options { border: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .template-options legend { font-size: 12px; margin-bottom: 12px; }
 .template-options > label { position: relative; padding: 12px; border: 1px solid #dce1d4; border-radius: 10px; background: white; cursor: pointer; }
