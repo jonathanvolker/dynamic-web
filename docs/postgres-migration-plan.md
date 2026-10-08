@@ -1,58 +1,55 @@
-# Migración a PostgreSQL único
+# PostgreSQL único
 
-## Estado
+## Estado actual
 
-La primera etapa está implementada, pero la plataforma todavía no usa PostgreSQL en sus repositorios productivos. Como la instalación actual no tiene usuarios ni datos que conservar, no se hará una migración de registros: se creará una base PostgreSQL limpia y se cambiarán los repositorios directamente.
+La migración de la plataforma a PostgreSQL está implementada para una instalación limpia. No se copian registros desde SQLite porque no hay datos productivos que conservar.
 
-## Primera etapa implementada
+La plataforma y Payload usan la misma instancia PostgreSQL, con modelos separados:
 
-- Pool PostgreSQL compartido en `src/server/db/postgres.ts`.
-- Esquema inicial de plataforma en `src/server/db/postgres-schema.sql`.
-- Tablas de plataforma con prefijo `platform_` para evitar colisiones con Payload.
-- Migración idempotente: `npm run migrate:platform`.
-- PostgreSQL agregado al compose de producción.
-- Servicio `migrate` separado en el compose de producción con perfil `tools`.
-
-## Modelo elegido
-
-La misma base PostgreSQL contiene dos familias de tablas:
-
-- Tablas internas de Payload, administradas por Payload.
-- Tablas `platform_*`, administradas por los repositorios de Forma.
-
-Esto unifica la infraestructura física sin forzar una incompatibilidad entre el modelo flexible de Payload y el modelo multi-tenant del editor. La unificación de identidad y contenido será una etapa posterior explícita.
-
-## Orden de migración restante
-
-1. Crear una instancia PostgreSQL de desarrollo o CI.
-2. Ejecutar `npm run migrate:platform`.
-3. Implementar repositorios PostgreSQL asíncronos detrás de interfaces comunes.
-4. Migrar primero autenticación y sesiones.
-5. Migrar sitios, publicaciones, media metadata, leads, dominios y billing.
-6. Cambiar E2E e integración para usar PostgreSQL aislado.
-7. Crear una cuenta y un sitio nuevos sobre PostgreSQL.
-8. Retirar SQLite de los imports productivos.
+- Payload administra sus propias tablas y migraciones.
+- Forma administra las tablas `platform_*` mediante repositorios PostgreSQL.
+- Las identidades de Payload y de la plataforma no están unificadas.
 
 ## Comandos
 
-Aplicar solo el esquema base de plataforma:
+Aplicar el esquema de Forma:
 
 ```bash
 DATABASE_URI=postgresql://forma:password@localhost:5432/forma npm run migrate:platform
 ```
 
-Aplicar el esquema de plataforma y luego las migraciones Payload:
+Aplicar también las migraciones de Payload:
 
 ```bash
-docker compose -f deploy/compose.production.yaml --profile tools run --rm migrate
+npm run migrate
 ```
 
-Estos comandos crean el esquema, pero no migran datos SQLite porque la instalación actual se iniciará limpia. No deben ejecutarse contra una base productiva sin la configuración correspondiente.
+En producción, el servicio Compose `migrate` ejecuta ambos comandos en ese orden:
 
-## Decisiones pendientes
+```bash
+docker compose -f compose.production.yaml --profile tools run --rm migrate
+```
 
-- Unificar usuarios de Payload y usuarios de plataforma o mantenerlos como roles separados dentro de la misma base.
-- Definir si Payload administrará sitios directamente o si seguirá siendo un CMS complementario.
-- Migrar binarios de `data/media` a storage dedicado o conservar filesystem persistente.
-- Convertir repositorios síncronos SQLite a repositorios asíncronos PostgreSQL.
-- Elegir estrategia de tests PostgreSQL aislados por ejecución.
+El workflow de GitHub Actions lo ejecuta automáticamente antes de levantar `app`.
+
+## Despliegue limpio
+
+1. Crear `POSTGRES_PASSWORD` como secret de GitHub.
+2. Configurar `PAYLOAD_SECRET`, `DOMAIN`, `PUBLIC_URL` y el resto de secrets del deploy.
+3. Hacer push a `main`.
+4. GitHub Actions publica la imagen de aplicación y la imagen `migration-main`.
+5. El VPS crea PostgreSQL, espera el healthcheck y ejecuta ambas migraciones.
+6. Compose levanta la aplicación y Caddy.
+
+No se deben ejecutar estas migraciones contra otra base sin confirmar primero `DATABASE_URI` y las credenciales del entorno.
+
+## Migraciones futuras
+
+`migrate-platform-postgres.ts` aplica el esquema base con `CREATE TABLE IF NOT EXISTS` y registra la versión inicial. Los cambios futuros de `platform_*` deben agregar versiones explícitas e idempotentes a ese mecanismo antes de desplegar cambios de repositorio.
+
+## Pendientes
+
+- Decidir si Payload y la plataforma compartirán identidad.
+- Definir si Payload administrará sitios o seguirá siendo CMS complementario.
+- Persistir y respaldar explícitamente los media de Payload.
+- Probar backup y restauración de PostgreSQL y filesystem.

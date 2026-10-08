@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ar.com.formapp",
+      "sha256_cert_fingerprints": [
+        "75:F7:19:84:F4:63:AC:C8:BD:60:13:D5:5A:C6:A7:D3:9D:00:BA:1F:2E:9A:C3:00:94:83:89:4D:52:B2:64:26"
+      ]
+    }
+  }
+]

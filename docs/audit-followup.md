@@ -46,7 +46,7 @@ No se declara corrección matemática del 100%. El proyecto fue revisado por ár
 - Validación y normalización estricta de hostnames.
 - Entitlement Profesional requerido para crear/verificar dominios.
 - Transición de dominio `pending` a `verified` controlada e idempotente.
-- Migraciones SQLite versionadas e idempotentes.
+- Migraciones PostgreSQL versionadas e idempotentes para las tablas `platform_*`.
 - Tolerancia a JSON corrupto de sitios y leads.
 
 ### CMS y cobertura
@@ -79,7 +79,7 @@ No se declara corrección matemática del 100%. El proyecto fue revisado por ár
 - Tests de dominios con DNS correcto/incorrecto, duplicados, ownership y hostname personalizado completo.
 - Tests de administración de suscripciones y actualización del período.
 - Tests de aislamiento entre cuentas para sitios, leads, media y dominios usando IDs manipulados.
-- Tests de rollback y compatibilidad sobre una base SQLite existente de cada versión.
+- Tests de rollback y compatibilidad sobre una base PostgreSQL existente de cada versión.
 
 ### Accesibilidad pendiente
 
