@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic'
 
 export default async function AdminPlatformPage() {
   const admin = await requireAdmin()
-  const stats = adminStats()
-  const subscriptions = listAdminSubscriptions()
+  const stats = await adminStats()
+  const subscriptions = await listAdminSubscriptions()
   return <main className="platform admin-page">
     <header className="p-header"><Link href="/dashboard" className="p-logo">forma<span>✳</span></Link><div className="admin-nav"><span>{admin.email}</span><Link href="/dashboard" className="text-link">Volver a la plataforma ↗</Link></div></header>
     <main className="admin-main">

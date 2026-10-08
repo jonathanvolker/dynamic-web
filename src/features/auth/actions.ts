@@ -23,25 +23,25 @@ export async function authenticate(_state: { error: string }, form: FormData): P
   if (invalid) return { error: 'Ingresá datos válidos y una contraseña de 8 a 128 caracteres.' }
 
   if (registering) {
-    if (findUserByEmail(email)) return { error: 'Ese email ya tiene una cuenta. Iniciá sesión.' }
+    if (await findUserByEmail(email)) return { error: 'Ese email ya tiene una cuenta. Iniciá sesión.' }
     const id = randomUUID()
     try {
-      insertUser({ id, name, email }, hashPassword(password))
-      createTrial(id)
+      await insertUser({ id, name, email }, hashPassword(password))
+       await createTrial(id)
     } catch {
       return { error: 'No pudimos crear la cuenta. Intentá nuevamente.' }
     }
     await session(id)
   } else {
     const address = clientAddress(await headers())
-    if (!consumeRateLimit(`login:${address}`, 20, 15 * 60 * 1000)) return { error: 'Demasiados intentos. Probá nuevamente más tarde.' }
-    if (!loginAllowed(email)) return { error: 'Email o contraseña incorrectos.' }
-    const user = findUserByEmail(email)
+    if (!await consumeRateLimit(`login:${address}`, 20, 15 * 60 * 1000)) return { error: 'Demasiados intentos. Probá nuevamente más tarde.' }
+    if (!await loginAllowed(email)) return { error: 'Email o contraseña incorrectos.' }
+    const user = await findUserByEmail(email)
     if (!user || !verifyPassword(password, user.password)) {
-      recordLoginFailure(email)
+      await recordLoginFailure(email)
       return { error: 'Email o contraseña incorrectos.' }
     }
-    clearLoginFailures(email)
+    await clearLoginFailures(email)
     await session(user.id)
   }
   const template = getTemplate(String(form.get('template') || ''))

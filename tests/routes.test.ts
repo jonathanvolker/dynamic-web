@@ -1,12 +1,8 @@
 import assert from 'node:assert/strict'
 import { createHmac, randomUUID } from 'node:crypto'
-import { mkdtempSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import path from 'node:path'
 import { mock, test } from 'node:test'
 
-const dataDirectory = mkdtempSync(path.join(tmpdir(), 'web-dinamica-routes-'))
-process.env.PLATFORM_DATA_DIR = dataDirectory
+if (!process.env.DATABASE_URI || process.env.TEST_DATABASE !== '1') throw new Error('La integración requiere DATABASE_URI y TEST_DATABASE=1 sobre una base PostgreSQL exclusiva para tests.')
 
 type TestUser = { id: string; name: string; email: string; role: string }
 let loggedInUser: TestUser | null = null
@@ -16,7 +12,7 @@ mock.module(pathToUrl('src/features/auth/server/session.ts'), {
   namedExports: { currentUser: async () => loggedInUser },
 })
 
-const { db, closeDatabase } = await import('../src/server/db/sqlite')
+const { postgresQuery, closePostgresPool } = await import('../src/server/db/postgres')
 const { migrateDocument } = await import('../src/features/sites/document')
 const { blockDefinitions } = await import('../src/features/website/blocks')
 const { templates } = await import('../src/features/templates/registry')
@@ -39,21 +35,19 @@ function pathToUrl(relative: string) {
   return new URL(relative, `file://${process.cwd()}/`).href
 }
 
-function seedUser(user: TestUser) {
-  db().prepare('INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)')
-    .run(user.id, user.name, user.email, 'test', user.role)
-  createTrial(user.id)
-  activatePlan(user.id, 'professional', 'manual')
+async function seedUser(user: TestUser) {
+  await postgresQuery('INSERT INTO platform_users (id, name, email, password, role) VALUES ($1, $2, $3, $4, $5)', [user.id, user.name, user.email, 'test', user.role])
+  await createTrial(user.id)
+  await activatePlan(user.id, 'professional', 'manual')
 }
 
-function seedPublishedForm(owner: TestUser) {
-  const id = createSite(owner.id, `${owner.name} site`, 'studio')
+async function seedPublishedForm(owner: TestUser) {
+  const id = await createSite(owner.id, `${owner.name} site`, 'studio')
   const document = migrateDocument({
     settings: structuredClone(templates[0].settings),
     sections: [structuredClone(blockDefinitions.form.defaults)],
   })
-  db().prepare('UPDATE sites SET published = ?, published_at = ? WHERE id = ?')
-    .run(JSON.stringify(document), new Date().toISOString(), id)
+  await postgresQuery('UPDATE platform_sites SET published = $1::jsonb, published_at = $2 WHERE id = $3', [JSON.stringify(document), new Date(), id])
   return { id, formId: document.sections[0].id }
 }
 
@@ -61,15 +55,12 @@ function jsonRequest(url: string, body: unknown, headers: Record<string, string>
   return new Request(url, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) })
 }
 
-test.before(() => {
-  seedUser(ownerA)
-  seedUser(ownerB)
+test.before(async () => {
+  await seedUser(ownerA)
+  await seedUser(ownerB)
 })
 
-test.after(() => {
-  closeDatabase()
-  rmSync(dataDirectory, { recursive: true, force: true })
-})
+test.after(() => closePostgresPool())
 
 test('media routes enforce origin/auth, store an image, and serve it', async () => {
   const unauthenticated = await uploadMedia(new Request('http://localhost:3000/api/platform/media', { method: 'POST', headers: hostHeaders }))
@@ -87,22 +78,22 @@ test('media routes enforce origin/auth, store an image, and serve it', async () 
   assert.equal(image.headers.get('content-type'), 'image/webp')
   assert.equal((await image.arrayBuffer()).byteLength > 0, true)
 
-  const foreign = db().prepare('SELECT owner_id FROM media WHERE id = ?').get(media.url.split('/').pop()!) as { owner_id: string }
-  assert.equal(foreign.owner_id, ownerA.id)
+  const foreign = await postgresQuery<{ owner_id: string }>('SELECT owner_id FROM platform_media WHERE id = $1', [media.url.split('/').pop()!])
+  assert.equal(foreign.rows[0]?.owner_id, ownerA.id)
   loggedInUser = null
 })
 
 test('lead route validates the published form and persists only allowed fields', async () => {
-  const site = seedPublishedForm(ownerA)
-  const seededSite = db().prepare('SELECT slug FROM sites WHERE id = ?').get(site.id) as { slug: string }
+  const site = await seedPublishedForm(ownerA)
+  const seededSite = (await postgresQuery<{ slug: string }>('SELECT slug FROM platform_sites WHERE id = $1', [site.id])).rows[0]
   const response = await postLead(jsonRequest('http://localhost:3000/api/public/leads', {
-    siteSlug: seededSite.slug,
+    siteSlug: seededSite!.slug,
     kind: 'contact', formId: site.formId, values: { name: 'Ada', email: 'ada@example.com', message: 'Hola', ignored: 'drop' },
   }, { 'x-real-ip': 'lead-test' }))
   assert.equal(response.status, 200)
   assert.deepEqual(await response.json(), { success: true })
-  const lead = db().prepare('SELECT values_json FROM leads WHERE site_id = ?').get(site.id) as { values_json: string }
-  assert.deepEqual(JSON.parse(lead.values_json), { name: 'Ada', email: 'ada@example.com', message: 'Hola' })
+  const lead = await postgresQuery<{ values: Record<string, string> }>('SELECT values FROM platform_leads WHERE site_id = $1', [site.id])
+  assert.deepEqual(lead.rows[0]?.values, { name: 'Ada', email: 'ada@example.com', message: 'Hola' })
 
   const wrongKind = await postLead(jsonRequest('http://localhost:3000/api/public/leads', { siteSlug: 'missing', kind: 'newsletter', formId: site.formId, values: {} }))
   assert.equal(wrongKind.status, 400)
@@ -112,7 +103,7 @@ test('Mercado Pago webhook verifies signature, activates once, and is idempotent
   process.env.MERCADOPAGO_WEBHOOK_SECRET = 'webhook-secret'
   process.env.MERCADOPAGO_ACCESS_TOKEN = 'test-token'
   const externalId = `mp-${randomUUID()}`
-  const subscription = findSubscription(ownerA.id)!
+  const subscription = await findSubscription(ownerA.id)
   const payload = JSON.stringify({ type: 'subscription_preapproval', action: 'updated', data: { id: externalId } })
   const timestamp = Math.floor(Date.now() / 1000).toString()
   const requestId = 'request-1'
@@ -122,9 +113,10 @@ test('Mercado Pago webhook verifies signature, activates once, and is idempotent
   try {
     const request = () => new Request(`http://localhost:3000/api/billing/mercadopago`, { method: 'POST', headers: { 'x-signature': `ts=${timestamp},v1=${signature}`, 'x-request-id': requestId }, body: payload })
     assert.equal((await mercadopagoWebhook(request())).status, 200)
-    assert.equal((findSubscription(ownerA.id) as { plan_id: string }).plan_id, 'initial')
+    assert.equal((await findSubscription(ownerA.id))?.plan_id, 'initial')
     assert.equal((await mercadopagoWebhook(request())).status, 200)
-    assert.equal((db().prepare('SELECT COUNT(*) AS count FROM billing_events').get() as { count: number }).count, 1)
+    const events = await postgresQuery<{ count: string }>('SELECT COUNT(*)::text AS count FROM platform_billing_events')
+    assert.equal(Number(events.rows[0]?.count), 1)
     const invalid = await mercadopagoWebhook(new Request('http://localhost:3000/api/billing/mercadopago?id=x', { method: 'POST', headers: { 'x-signature': 'ts=1,v1=no' }, body: '{}' }))
     assert.equal(invalid.status, 401)
   } finally {
@@ -148,10 +140,10 @@ test('Mercado Pago return refuses a subscription belonging to another account', 
 })
 
 test('domain routes expose only verified hosts and reject another account', async () => {
-  activatePlan(ownerA.id, 'professional', 'manual')
-  const siteA = seedPublishedForm(ownerA)
-  const domain = createDomain(siteA.id, 'www.owner-a.example.com') as { id: string; hostname: string }
-  db().prepare("UPDATE domains SET status = 'verified' WHERE id = ?").run(domain.id)
+  await activatePlan(ownerA.id, 'professional', 'manual')
+  const siteA = await seedPublishedForm(ownerA)
+  const domain = await createDomain(siteA.id, 'www.owner-a.example.com') as { id: string; hostname: string }
+  await postgresQuery("UPDATE platform_domains SET status = 'verified' WHERE id = $1", [domain.id])
   const allowed = await allowDomain(new Request(`http://localhost:3000/api/domains/allow?domain=${domain.hostname}:443`))
   assert.equal(allowed.status, 200)
   const forbidden = await allowDomain(new Request('http://localhost:3000/api/domains/allow?domain=www.unknown.example.com'))

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(destination)
     }
     if (subscription.status === 'authorized') {
-      activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
+      await activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
     } else {
       destination.searchParams.set('error', `La suscripción todavía está ${subscription.status}.`)
     }

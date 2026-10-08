@@ -37,6 +37,7 @@ services:
       context: .
       target: migration
     profiles: ["tools"]
+    command: ["sh", "-c", "npm run migrate:platform && npm run migrate"]
     environment:
       DATABASE_URI: postgresql://forma:${POSTGRES_PASSWORD}@db:5432/forma
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}

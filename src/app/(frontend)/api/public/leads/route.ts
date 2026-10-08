@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
+import { isIP } from 'node:net'
 import { publicSite } from '@/features/sites/server/repository'
 import { consumeLeadRateLimit, saveLead } from '@/features/sites/server/leads'
-import { clientAddress } from '@/server/rate-limit'
 
 const MAX_PAYLOAD_BYTES = 128 * 1024
 const MAX_VALUE_LENGTH = 5000
 const MAX_VALUE_KEYS = 20
+
+function clientAddress(headers: Headers) {
+  if (process.env.TRUST_PROXY_HEADERS !== 'true') return 'unknown'
+  const candidates = [headers.get('x-forma-client-ip'), headers.get('x-real-ip'), headers.get('x-forwarded-for')?.split(',')[0]?.trim()]
+  return candidates.find(value => value && isIP(value) > 0) || 'unknown'
+}
 
 async function readPayload(request: Request) {
   if (!request.body) return ''
@@ -21,10 +27,7 @@ async function readPayload(request: Request) {
   }
   const body = new Uint8Array(size)
   let offset = 0
-  for (const chunk of chunks) {
-    body.set(chunk, offset)
-    offset += chunk.byteLength
-  }
+  for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength }
   return new TextDecoder().decode(body)
 }
 
@@ -39,14 +42,14 @@ export async function POST(request: Request) {
     const kind = input.kind === 'newsletter' ? 'newsletter' : input.kind === 'contact' ? 'contact' : null
     const formId = typeof input.formId === 'string' ? input.formId : ''
     const values = input.values && typeof input.values === 'object' && !Array.isArray(input.values) ? input.values as Record<string, unknown> : null
-    const site = siteSlug ? publicSite(siteSlug) : null
+    const site = siteSlug ? await publicSite(siteSlug) : null
     if (!site?.published || !kind || !formId || formId.length > 100 || !values || Object.keys(values).length > MAX_VALUE_KEYS || Object.entries(values).some(([key, value]) => key.length > 100 || typeof value !== 'string' || value.length > MAX_VALUE_LENGTH)) return NextResponse.json({ error: 'Datos inválidos.' }, { status: 400 })
     const section = site.published.sections.find(item => item.id === formId || item.anchor === formId)
     const expectedKind = section?.blockType === 'form' ? 'contact' : section?.blockType === 'newsletter' ? 'newsletter' : null
     if (!section || expectedKind !== kind) return NextResponse.json({ error: 'El formulario no está disponible.' }, { status: 400 })
     const forwarded = clientAddress(request.headers)
     const limit = kind === 'newsletter' ? 3 : 5
-    if (!consumeLeadRateLimit(`${site.id}:${kind}:${forwarded}`, limit, 15 * 60 * 1000)) return NextResponse.json({ error: 'Demasiados intentos. Probá nuevamente más tarde.' }, { status: 429 })
+    if (!await consumeLeadRateLimit(`${site.id}:${kind}:${forwarded}`, limit, 15 * 60 * 1000)) return NextResponse.json({ error: 'Demasiados intentos. Probá nuevamente más tarde.' }, { status: 429 })
     const normalized = values as Record<string, string>
     if (normalized.website) return NextResponse.json({ success: true })
     const allowedFields = kind === 'contact' ? (section.formFields || []) : [{ name: 'email', required: true, type: 'email' as const }, { name: 'consent', required: true, type: 'text' as const }]
@@ -59,9 +62,7 @@ export async function POST(request: Request) {
       if (value && field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) return NextResponse.json({ error: 'Email inválido.' }, { status: 400 })
     }
     if (kind === 'newsletter' && filtered.consent !== 'on') return NextResponse.json({ error: 'Necesitás aceptar el consentimiento.' }, { status: 400 })
-    saveLead(site.id, kind, formId, filtered)
+    await saveLead(site.id, kind, formId, filtered)
     return NextResponse.json({ success: true })
-  } catch {
-    return NextResponse.json({ error: 'No pudimos procesar el formulario.' }, { status: 400 })
-  }
+  } catch { return NextResponse.json({ error: 'No pudimos procesar el formulario.' }, { status: 400 }) }
 }

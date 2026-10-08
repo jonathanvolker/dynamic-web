@@ -45,16 +45,16 @@ export async function POST(request: Request) {
       console.warn('[mercadopago] webhook ignored: invalid external reference', { externalId, userId: userId || 'missing', planId: planId || 'missing' })
       return NextResponse.json({ received: true })
     }
-    const local = findSubscription(userId)
+    const local = await findSubscription(userId)
     if (!local || (local.external_subscription_id && local.external_subscription_id !== subscription.id)) {
       console.warn('[mercadopago] webhook ignored: subscription is not linked locally', { externalId, userId })
       return NextResponse.json({ received: true })
     }
     const eventId = `${payload.type || 'event'}:${payload.action || 'update'}:${externalId}:${subscription.status}`
-    if (!recordBillingEvent('mercadopago', eventId, body)) return NextResponse.json({ received: true })
-    if (subscription.status === 'authorized') activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
+    if (!await recordBillingEvent('mercadopago', eventId, body)) return NextResponse.json({ received: true })
+    if (subscription.status === 'authorized') await activatePlan(userId, planId as 'initial' | 'professional', 'mercadopago', subscription.id)
     else if (subscription.status === 'paused' || subscription.status === 'cancelled') {
-      updateSubscriptionStatus(local.id, 'canceled', local.current_period_ends_at)
+      await updateSubscriptionStatus(local.id, 'canceled', local.current_period_ends_at)
     }
   } catch (error) {
     console.error('[mercadopago] webhook processing failed', { externalId, error: error instanceof Error ? error.message : 'unknown error' })

@@ -10,9 +10,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function DomainsPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
   const user = await requireUser()
-  const entitlements = getEntitlements(user.id)
-  const domains = listDomainsForOwner(user.id)
-  const sites = listSites(user.id)
+  const entitlements = await getEntitlements(user.id)
+  const domains = await listDomainsForOwner(user.id)
+  const sites = await listSites(user.id)
   const messages = await searchParams
   return <main className="platform domains-page"><header className="p-header"><Link href="/dashboard" className="p-logo">forma<span>✳</span></Link><Link href="/dashboard" className="text-link">Volver a mis sitios ↗</Link></header><main className="domains-main">
     <div className="domains-heading"><div><span className="p-kicker">PROFESIONAL · DIRECCIONES</span><h1>Tu marca, en su propia casa.</h1><p>Conectá un dominio que ya sea tuyo y hacé que tu sitio sea fácil de encontrar.</p></div><span className="domain-mark">◎</span></div>

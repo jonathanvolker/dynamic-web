@@ -1,11 +1,20 @@
 import 'server-only'
-import { db } from '@/server/db/sqlite'
+import { postgresQuery } from '@/server/db/postgres'
 import type { User } from '../types'
 
-export function findUserByEmail(email: string) {
-  return db().prepare('SELECT id, name, email, role, password FROM users WHERE email = ?').get(email) as (User & { password: string }) | undefined
+type UserRow = User & { password: string }
+
+export async function findUserByEmail(email: string) {
+  const result = await postgresQuery<UserRow>(
+    'SELECT id, name, email, role, password FROM platform_users WHERE email = $1',
+    [email],
+  )
+  return result.rows[0]
 }
 
-export function insertUser(user: User, password: string) {
-  db().prepare('INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)').run(user.id, user.name, user.email, password, user.role || 'user')
+export async function insertUser(user: User, password: string) {
+  await postgresQuery(
+    'INSERT INTO platform_users (id, name, email, password, role) VALUES ($1, $2, $3, $4, $5)',
+    [user.id, user.name, user.email, password, user.role || 'user'],
+  )
 }

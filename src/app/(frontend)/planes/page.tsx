@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function PlansPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const user = await requireUser()
-  const entitlements = getEntitlements(user.id)
+  const entitlements = await getEntitlements(user.id)
   const { error } = await searchParams
   const statusText = entitlements.subscription.status === 'trialing'
     ? `Estás usando la prueba gratuita hasta el ${new Date(entitlements.subscription.current_period_ends_at).toLocaleDateString('es-AR')}.`

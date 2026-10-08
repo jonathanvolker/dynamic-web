@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto'
-import { DatabaseSync } from 'node:sqlite'
-import path from 'node:path'
 import { expect, test, type Page } from '@playwright/test'
+import { Pool } from 'pg'
 import sharp from 'sharp'
 import { defaultSections, defaultSettings } from '../../src/features/website/content/defaults'
 import { blockTypesForFamily, labelForBlock } from '../../src/features/website/blocks'
 import type { Section } from '../../src/features/website/types'
+
+const database = new Pool({ connectionString: process.env.DATABASE_URI })
 
 async function register(page: Page) {
   const email = `test-${randomUUID()}@example.com`
@@ -27,11 +28,8 @@ async function createSite(page: Page, template = 'studio') {
 }
 
 async function grantProfessional(email: string) {
-  const db = new DatabaseSync(path.join(process.env.PLATFORM_DATA_DIR!, 'platform.sqlite'))
-  const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email) as { id: string }
-  db.prepare("UPDATE subscriptions SET plan_id = 'professional', status = 'active', current_period_ends_at = ? WHERE user_id = ?")
-    .run(new Date(Date.now() + 30 * 86400000).toISOString(), user.id)
-  db.close()
+  const user = await database.query<{ id: string }>('SELECT id FROM platform_users WHERE email = $1', [email])
+  await database.query("UPDATE platform_subscriptions SET plan_id = 'professional', status = 'active', current_period_ends_at = $1 WHERE user_id = $2", [new Date(Date.now() + 30 * 86400000), user.rows[0].id])
 }
 
 test('edit, upload, preview, save, publish, isolate accounts and unpublish', async ({ page, browser }) => {
@@ -118,25 +116,23 @@ test('edit, upload, preview, save, publish, isolate accounts and unpublish', asy
 
 test('legacy draft/publication remain distinct and reading never rewrites stored documents', async ({ page }) => {
   const email = await register(page)
-  const db = new DatabaseSync(path.join(process.env.PLATFORM_DATA_DIR!, 'platform.sqlite'))
-  const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email) as { id: string }
+  const user = (await database.query<{ id: string }>('SELECT id FROM platform_users WHERE email = $1', [email])).rows[0]
   const draft = JSON.stringify({ settings: defaultSettings, sections: [{ ...defaultSections[0], title: 'Borrador anterior' }, defaultSections[5]] })
   const published = JSON.stringify({ settings: defaultSettings, sections: [{ ...defaultSections[0], title: 'Publicación anterior' }, defaultSections[5]] })
   const id = randomUUID()
-  db.prepare('INSERT INTO sites (id, owner_id, name, slug, draft, published, updated_at, published_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(id, user.id, 'Legacy', id, draft, published, new Date().toISOString(), new Date().toISOString())
+  await database.query('INSERT INTO platform_sites (id, owner_id, name, slug, draft, published, updated_at, published_at) VALUES ($1, $2, $3, $4, $5::jsonb, $6::jsonb, $7, $8)', [id, user!.id, 'Legacy', id, draft, published, new Date(), new Date()])
   await page.goto(`/s/${id}`)
   await expect(page.locator('h1')).toHaveText('Publicación anterior')
   await page.goto(`/editor/${id}`)
   await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Borrador anterior')
-  const stored = db.prepare('SELECT draft, published FROM sites WHERE id = ?').get(id)
-  expect(stored?.draft).toBe(draft)
-  expect(stored?.published).toBe(published)
+  const stored = (await database.query<{ draft: unknown; published: unknown }>('SELECT draft, published FROM platform_sites WHERE id = $1', [id])).rows[0]
+  expect(stored?.draft).toEqual(JSON.parse(draft))
+  expect(stored?.published).toEqual(JSON.parse(published))
   await page.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.locator('.editor-status')).toContainText('Borrador guardado')
-  const saved = db.prepare('SELECT draft, published FROM sites WHERE id = ?').get(id)
-  expect(JSON.parse(saved?.draft as string).schemaVersion).toBe(1)
-  expect(saved?.published).toBe(published)
-  db.close()
+  const saved = (await database.query<{ draft: { schemaVersion?: number }; published: unknown }>('SELECT draft, published FROM platform_sites WHERE id = $1', [id])).rows[0]
+  expect(saved?.draft.schemaVersion).toBe(1)
+  expect(saved?.published).toEqual(JSON.parse(published))
 })
 
 test('catalog groups templates and mobile editor saves a restaurant site', async ({ page }) => {
@@ -321,12 +317,12 @@ test('published contact form and newsletter persist leads', async ({ page }) => 
 
   const siteId = page.url().match(/\/editor\/([^/?]+)/)?.[1]
   expect(siteId).toBeTruthy()
-  const db = new DatabaseSync(path.join(process.env.PLATFORM_DATA_DIR!, 'platform.sqlite'))
-  const leads = db.prepare('SELECT kind, values_json FROM leads WHERE site_id = ? ORDER BY created_at').all(siteId!) as { kind: string; values_json: string }[]
+  const leadsResult = await database.query<{ kind: string; values: Record<string, string> }>('SELECT kind, values FROM platform_leads WHERE site_id = $1 ORDER BY created_at', [siteId!])
+  const leads = leadsResult.rows
   expect(leads).toHaveLength(2)
   expect(leads.map(lead => lead.kind)).toEqual(['contact', 'newsletter'])
-  expect(JSON.parse(leads[0].values_json)).toMatchObject({ name: 'Ana Prueba', email: 'ana@example.com', message: 'Quiero conocer la propuesta.' })
-  expect(JSON.parse(leads[1].values_json)).toMatchObject({ email: 'suscripta@example.com', consent: 'on' })
+  expect(leads[0].values).toMatchObject({ name: 'Ana Prueba', email: 'ana@example.com', message: 'Quiero conocer la propuesta.' })
+  expect(leads[1].values).toMatchObject({ email: 'suscripta@example.com', consent: 'on' })
 
   const invalidNewsletter = await publicPage.request.post('/api/public/leads', {
     data: { siteSlug: new URL(publicUrl!, publicPage.url()).pathname.split('/').pop(), kind: 'newsletter', formId: 'newsletter', values: { email: 'invalido' } },
@@ -338,8 +334,8 @@ test('published contact form and newsletter persist leads', async ({ page }) => 
   })
   expect(honeypot.status()).toBe(200)
   expect((await honeypot.json()).success).toBe(true)
-  expect((db.prepare('SELECT COUNT(*) AS count FROM leads WHERE site_id = ?').get(siteId!) as { count: number }).count).toBe(2)
-  db.close()
+  const leadCount = await database.query<{ count: string }>('SELECT COUNT(*)::text AS count FROM platform_leads WHERE site_id = $1', [siteId!])
+  expect(Number(leadCount.rows[0]?.count)).toBe(2)
   await publicPage.close()
 })
 

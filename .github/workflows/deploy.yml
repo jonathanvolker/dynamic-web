@@ -105,6 +105,7 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           DOMAIN: ${{ secrets.DOMAIN }}
           PUBLIC_URL: ${{ secrets.PUBLIC_URL }}
           COOKIE_SECURE: ${{ secrets.COOKIE_SECURE }}
@@ -116,9 +117,11 @@ jobs:
           MERCADOPAGO_WEBHOOK_SECRET: ${{ secrets.MERCADOPAGO_WEBHOOK_SECRET }}
           MERCADOPAGO_SANDBOX: ${{ secrets.MERCADOPAGO_SANDBOX }}
           FORMA_CNAME_TARGET: ${{ secrets.FORMA_CNAME_TARGET }}
+          TRUST_PROXY_HEADERS: ${{ secrets.TRUST_PROXY_HEADERS }}
         run: |
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "umask 077 && cat > '$DEPLOY_PATH/.env'" <<EOF
           IMAGE_NAME=${IMAGE_NAME}:main
+          POSTGRES_PASSWORD=$POSTGRES_PASSWORD
           DOMAIN=$DOMAIN
           PUBLIC_URL=$PUBLIC_URL
           COOKIE_SECURE=$COOKIE_SECURE
@@ -130,7 +133,8 @@ jobs:
           MERCADOPAGO_WEBHOOK_SECRET=$MERCADOPAGO_WEBHOOK_SECRET
           MERCADOPAGO_SANDBOX=$MERCADOPAGO_SANDBOX
           FORMA_CNAME_TARGET=$FORMA_CNAME_TARGET
+          TRUST_PROXY_HEADERS=$TRUST_PROXY_HEADERS
           EOF
           printf '%s' "$GHCR_TOKEN" | ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "docker login ghcr.io --username '$GHCR_USERNAME' --password-stdin"
-          ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_PATH' && docker compose -f compose.production.yaml pull && docker compose -f compose.production.yaml up -d --remove-orphans && docker image prune -f"
+           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "cd '$DEPLOY_PATH' && docker compose -f compose.production.yaml pull && docker compose -f compose.production.yaml --profile tools run --rm migrate && docker compose -f compose.production.yaml up -d --remove-orphans && docker image prune -f"
           ssh -o IdentitiesOnly=yes -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "docker logout ghcr.io"

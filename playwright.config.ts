@@ -6,6 +6,7 @@ import path from 'node:path'
 // The app and tests share a fresh database, never the developer's data/ folder.
 process.env.FORMA_E2E_RUN_ID ||= randomUUID()
 process.env.PLATFORM_DATA_DIR = path.join(tmpdir(), 'opencode', `forma-e2e-${process.env.FORMA_E2E_RUN_ID}`)
+if (!process.env.DATABASE_URI) throw new Error('Los tests E2E requieren DATABASE_URI apuntando a una base PostgreSQL exclusiva para tests.')
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -17,6 +18,6 @@ export default defineConfig({
     command: 'npm run start -- --port 3100',
     url: 'http://localhost:3100',
     reuseExistingServer: false,
-    env: { PLATFORM_DATA_DIR: process.env.PLATFORM_DATA_DIR, COOKIE_SECURE: 'false' },
+    env: { PLATFORM_DATA_DIR: process.env.PLATFORM_DATA_DIR, DATABASE_URI: process.env.DATABASE_URI, COOKIE_SECURE: 'false' },
   },
 })

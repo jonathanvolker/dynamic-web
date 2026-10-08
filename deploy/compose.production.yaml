@@ -1,8 +1,23 @@
 services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: forma
+      POSTGRES_DB: forma
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definí POSTGRES_PASSWORD en el .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forma -d forma"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
   app:
     image: ${IMAGE_NAME:?Definí IMAGE_NAME en el .env}
     restart: unless-stopped
     environment:
+      DATABASE_URI: postgresql://forma:${POSTGRES_PASSWORD}@db:5432/forma
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
@@ -26,6 +41,9 @@ services:
       timeout: 5s
       retries: 12
       start_period: 20s
+    depends_on:
+      db:
+        condition: service_healthy
 
   proxy:
     image: caddy:2-alpine
@@ -43,7 +61,21 @@ services:
       app:
         condition: service_healthy
 
+  migrate:
+    image: ${IMAGE_NAME:?Definí IMAGE_NAME en el .env}
+    profiles: ["tools"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URI: postgresql://forma:${POSTGRES_PASSWORD}@db:5432/forma
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Definí PAYLOAD_SECRET en el .env}
+      NEXT_PUBLIC_SERVER_URL: ${PUBLIC_URL:?Definí PUBLIC_URL en el .env}
+    command: ["sh", "-c", "npm run migrate:platform && npm run migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
+  postgres_data:
   forma_data:
   caddy_data:
   caddy_config:

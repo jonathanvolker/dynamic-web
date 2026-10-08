@@ -2,15 +2,18 @@ import 'server-only'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createHash, randomBytes } from 'node:crypto'
-import { db } from '@/server/db/sqlite'
+import { postgresQuery } from '@/server/db/postgres'
 import type { User } from '../types'
 
 const digest = (token: string) => createHash('sha256').update(token).digest('hex')
 
 export async function session(user: string) {
   const token = randomBytes(32).toString('hex')
-  db().prepare('DELETE FROM sessions WHERE expires < ?').run(Date.now())
-  db().prepare('INSERT INTO sessions VALUES (?, ?, ?)').run(digest(token), user, Date.now() + 604800000)
+  await postgresQuery('DELETE FROM platform_sessions WHERE expires_at < NOW()')
+  await postgresQuery(
+    'INSERT INTO platform_sessions (token, user_id, expires_at) VALUES ($1, $2, $3)',
+    [digest(token), user, new Date(Date.now() + 604800000)],
+  )
   const jar = await cookies()
   jar.set('forma_session', token, {
     httpOnly: true,
@@ -24,12 +27,13 @@ export async function session(user: string) {
 export async function currentUser(): Promise<User | null> {
   const token = (await cookies()).get('forma_session')?.value
   if (!token) return null
-  const user = db().prepare(`
-    SELECT users.id, users.name, users.email, users.role FROM users
-    JOIN sessions ON sessions.user_id = users.id
-    WHERE sessions.token = ? AND sessions.expires > ?
-  `).get(digest(token), Date.now())
-  return user ? user as unknown as User : null
+  const result = await postgresQuery<User>(`
+    SELECT platform_users.id, platform_users.name, platform_users.email, platform_users.role
+    FROM platform_users
+    JOIN platform_sessions ON platform_sessions.user_id = platform_users.id
+    WHERE platform_sessions.token = $1 AND platform_sessions.expires_at > NOW()
+  `, [digest(token)])
+  return result.rows[0] || null
 }
 export async function requireUser() {
   const user = await currentUser()
@@ -47,6 +51,6 @@ export async function requireAdmin() {
 export async function endSession() {
   const jar = await cookies()
   const token = jar.get('forma_session')?.value
-  if (token) db().prepare('DELETE FROM sessions WHERE token = ?').run(digest(token))
+  if (token) await postgresQuery('DELETE FROM platform_sessions WHERE token = $1', [digest(token)])
   jar.delete('forma_session')
 }
