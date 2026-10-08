@@ -29,11 +29,9 @@
 .family-immersive .about-copy > p:not(.eyebrow) { font-size: 15px; max-width: 430px; line-height: 1.9; }
 .family-immersive .stats { flex-wrap: wrap; border-top: 0; gap: 32px; margin-top: 15px; }
 .family-immersive .stats strong { font-family: Georgia, serif; font-size: 38px; }
-.family-immersive .gallery-grid { gap: 46px; }
-.family-immersive .gallery-item { flex-basis: min(72%, 760px); }
-.family-immersive .gallery-item:first-child { grid-column: 1 / -1; }
-.family-immersive .gallery-item > img, .family-immersive .gallery-item > .gallery-placeholder { height: 460px; border-radius: 0; }
-.family-immersive .gallery-item:first-child > img, .family-immersive .gallery-item:first-child > .gallery-placeholder { height: 570px; }
+.family-immersive .gallery-grid { gap: 46px; grid-auto-columns: min(72%, 760px); }
+.family-immersive .gallery-item > img, .family-immersive .gallery-item > .gallery-placeholder { aspect-ratio: 3 / 2; border-radius: 0; }
+.family-immersive .gallery-item:first-child > img, .family-immersive .gallery-item:first-child > .gallery-placeholder { aspect-ratio: 16 / 9; }
 .family-immersive .gallery-item figcaption { display: flex; justify-content: space-between; gap: 25px; }
 .family-immersive .gallery-item h3 { font-size: 28px; }
 .family-immersive .gallery-item p { max-width: 230px; }
@@ -68,8 +66,8 @@
 .template-atelier .about { background: #e6e0d5; }
 .template-atelier .service, .template-atelier .service:first-child, .template-atelier .service:last-child { border-radius: 0; }
 .template-atelier .gallery-grid { align-items: end; }
-.template-atelier .gallery-item { flex-basis: min(48%, 620px); }
-.template-atelier .gallery-item:first-child { flex-basis: min(62%, 780px); }
+.template-atelier .gallery-grid { grid-auto-columns: min(48%, 620px); }
+.template-atelier .gallery-grid .gallery-item:first-child { grid-column: auto; }
 .template-atelier .gallery-item:nth-child(2) { margin-bottom: 70px; }
 .template-atelier .gallery-item > img, .template-atelier .gallery-item > .gallery-placeholder { border-radius: 0; filter: saturate(.7); }
 .immersive-footer { background: var(--text-footer, #243b32); color: #f5f2eb; padding: 55px 0 30px; }
@@ -197,7 +195,7 @@
   .family-immersive .header { height: 90px; }
   .family-immersive .logo { font-size: 39px; }
   .family-immersive[data-overlay-header=true] .navigation.open { background: var(--paper); color: var(--ink); }
-  .family-immersive .hero-layout-cover { min-height: 760px; min-height: max(640px, 95svh); padding: 150px 24px 30px; }
+  .family-immersive .hero-layout-cover { min-height: clamp(600px, 95svh, 820px); padding: 150px 24px 30px; }
   .family-immersive .hero h1 { font-size: clamp(48px, 12vw, 72px); }
   .family-immersive .hero-description { font-size: 15px; }
   .family-immersive .hero-bottom { margin-top: 30px; }
@@ -208,8 +206,7 @@
   .family-immersive h2 { font-size: 42px; }
   .family-immersive .section-heading { align-items: flex-start; margin-bottom: 35px; }
   .family-immersive .gallery-grid { gap: 35px; }
-  .family-immersive .gallery-item, .family-immersive .gallery-item:first-child { flex-basis: 88%; }
-  .family-immersive .gallery-item > img, .family-immersive .gallery-item > .gallery-placeholder, .family-immersive .gallery-item:first-child > img, .family-immersive .gallery-item:first-child > .gallery-placeholder { height: 360px; }
+  .family-immersive .gallery-grid { grid-auto-columns: 88%; }
   .family-immersive .gallery-item figcaption { display: block; }
   .family-immersive .gallery-item p { max-width: none; }
   .family-immersive .service, .family-immersive .service:first-child, .family-immersive .service:last-child { grid-template-columns: 32px 1fr; gap: 12px; }
@@ -220,8 +217,7 @@
   .family-immersive .contact { padding: 60px 25px; }
   .family-immersive .contact h2 { font-size: 49px; }
   .template-atelier .hero-layout-centered .hero-copy { padding: 25px 0; border-left: 0; border-top: 1px solid var(--line); }
-  .template-atelier .gallery-item, .template-atelier .gallery-item:first-child { flex-basis: 88%; margin: 0; }
-  .template-atelier .gallery-item > img, .template-atelier .gallery-item > .gallery-placeholder { height: 360px; }
+  .template-atelier .gallery-grid { grid-auto-columns: 88%; }
   .immersive-footer { padding-top: 40px; }
   .immersive-footer-top, .immersive-footer-brand { flex-direction: column; align-items: flex-start; }
   .immersive-footer nav { flex-wrap: wrap; gap: 20px; }

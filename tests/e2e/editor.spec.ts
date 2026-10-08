@@ -335,9 +335,9 @@ for (const variant of [
       await expect(preview.locator('.plan-price').first()).toHaveText('US$ 49')
       await expect(preview.locator('.pricing-card')).toHaveCount(variant.count)
     }
-    // A paid-only block remains visible in the library but unavailable on the free plan.
+    // A paid-only block is hidden from the add library on the free plan.
     await page.getByRole('button', { name: '+ Agregar', exact: true }).click()
-    await expect(page.locator('.block-library button').filter({ hasText: 'Testimonios' })).toBeDisabled()
+    await expect(page.locator('.block-library button').filter({ hasText: 'Testimonios' })).toHaveCount(0)
     await page.getByRole('button', { name: 'Publicar' }).click()
     await expect(page.getByRole('status')).toContainText('Tu web está publicada')
     const publicUrl = await page.getByRole('link', { name: 'Ver sitio' }).getAttribute('href')

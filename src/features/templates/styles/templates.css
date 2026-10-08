@@ -125,7 +125,7 @@
   .catalog-grid.single-template .catalog-card-info { padding: 22px; }
   .catalog-grid.single-template .catalog-card-info h2 { font-size: 31px; }
   .catalog-grid.single-template .template-thumbnail { height: 260px; }
-  .catalog-family::after { content: 'Deslizá para ver las opciones →'; display: block; margin: 1px 22px 0; color: #99a18f; font-size: 9px; letter-spacing: .03em; }
+   .catalog-family::after { content: 'Deslizá para ver las opciones'; display: block; margin: 1px 22px 0; color: #99a18f; font-size: 9px; letter-spacing: .03em; }
   .creation-family-switcher { position: sticky; top: 0; z-index: 3; margin: 18px -2px 16px; padding: 8px 2px 12px; background: #fbfcf8; overflow-x: auto; grid-template-columns: repeat(3, minmax(145px, 1fr)); }
   .creation-family-switcher button { min-height: 60px; }
 }

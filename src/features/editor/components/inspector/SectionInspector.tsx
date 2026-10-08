@@ -12,6 +12,7 @@ export function SectionInspector({ editor }: { editor: EditorController }) {
   const { section } = editor
   const [confirmRemove, setConfirmRemove] = useState(false)
   if (!section) return null
+  if (editor.sectionLocked) return <p className="inspector-locked">Esta sección pertenece a tu contenido existente. Tu plan actual no permite editarla ni duplicarla. <a href="/planes">Mejorar plan ↗</a></p>
   const rows = blockDefinitions[section.blockType].rows
   return (
     <>
