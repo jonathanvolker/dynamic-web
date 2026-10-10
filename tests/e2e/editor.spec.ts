@@ -8,7 +8,7 @@ import type { Section } from '../../src/features/website/types'
 
 const database = new Pool({ connectionString: process.env.DATABASE_URI })
 
-async function register(page: Page) {
+async function register(page: Page, admin = true) {
   const email = `test-${randomUUID()}@example.com`
   await page.goto('/register')
   await page.getByLabel('Tu nombre').fill('Cliente de prueba')
@@ -16,6 +16,7 @@ async function register(page: Page) {
   await page.getByLabel('Contraseña').fill('Prueba-segura-123')
   await page.getByRole('button', { name: 'Crear mi cuenta' }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
+  if (admin) await database.query("UPDATE platform_users SET role = 'admin' WHERE email = $1", [email])
   return email
 }
 
@@ -31,6 +32,16 @@ async function grantProfessional(email: string) {
   const user = await database.query<{ id: string }>('SELECT id FROM platform_users WHERE email = $1', [email])
   await database.query("UPDATE platform_subscriptions SET plan_id = 'professional', status = 'active', current_period_ends_at = $1 WHERE user_id = $2", [new Date(Date.now() + 30 * 86400000), user.rows[0].id])
 }
+
+test('non-admin users see the friendly construction screen instead of site creation', async ({ page }) => {
+  await register(page, false)
+  await expect(page.getByRole('link', { name: /Crear un sitio/ })).toHaveCount(0)
+  await page.goto('/dashboard/new')
+  await expect(page.getByRole('heading', { name: 'Tu espacio para crear está en camino.' })).toBeVisible()
+  await expect(page.getByText(/creación de sitios volverá a estar disponible muy pronto/i)).toBeVisible()
+  await expect(page.getByLabel('¿Cómo se llama tu sitio?')).toHaveCount(0)
+  await expect(page.getByRole('link', { name: /Volver a mis sitios/ })).toHaveAttribute('href', '/dashboard')
+})
 
 test('edit, upload, preview, save, publish, isolate accounts and unpublish', async ({ page, browser }) => {
   const errors: string[] = []
