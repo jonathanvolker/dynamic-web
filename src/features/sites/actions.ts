@@ -9,9 +9,11 @@ import { getTemplate } from '@/features/templates/registry'
 import { assertMediaOwnership } from './server/media'
 import { mediaIdsInDocument } from './server/media-ownership'
 import { assertCanCreateSite, assertCanEdit, assertCanPublish, canUseBlock } from '@/features/billing/server/access'
+import { isPlatformAdmin } from '@/features/admin/server/repository'
 
 export async function newSite(_state: { error: string }, form: FormData): Promise<{ error: string }> {
   const user = await requireUser()
+  if (!isPlatformAdmin(user.email, user.role)) return { error: 'La creación de sitios está temporalmente en preparación. Volvé pronto.' }
   const name = String(form.get('name') || '').trim()
   if (!name || name.length > 80) return { error: 'Elegí un nombre de hasta 80 caracteres.' }
   const template = String(form.get('template') || 'studio')

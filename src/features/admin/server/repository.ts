@@ -5,8 +5,8 @@ export function platformAdminEmails() {
   return new Set(`${process.env.PLATFORM_ADMIN_EMAILS || ''},${process.env.PLATFORM_ADMIN_EMAIL || ''}`.split(',').map(email => email.trim().toLowerCase()).filter(Boolean))
 }
 
-export function isPlatformAdmin(email: string) {
-  return platformAdminEmails().has(email.toLowerCase())
+export function isPlatformAdmin(email: string, role?: string) {
+  return role === 'admin' || platformAdminEmails().has(email.toLowerCase())
 }
 
 export async function adminStats() {

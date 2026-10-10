@@ -21,14 +21,14 @@ export function DashboardView({ user, sites, entitlements }: { user: User; sites
             <p>Ideas que ya tienen un lugar. Y las que están por venir.</p>
              <p className="plan-status"><strong>{entitlements.subscription.status === 'trialing' ? 'Prueba gratuita' : `Plan ${entitlements.plan.name}`}</strong> · {entitlements.subscription.status === 'trialing' ? `te quedan ${entitlements.graceDaysRemaining || Math.max(0, Math.ceil((new Date(entitlements.subscription.current_period_ends_at).getTime() - Date.now()) / 86400000))} días` : entitlements.subscription.status === 'active' ? 'activo' : entitlements.subscription.status === 'past_due' ? `pago pendiente: ${entitlements.graceDaysRemaining} días` : entitlements.subscription.status === 'expired' ? 'vencido: tus sitios están pausados' : 'cancelado'}</p>
           </div>
-           <div className="dashboard-actions"><Link className="p-button secondary dashboard-secondary-button" href="/planes">{entitlements.subscription.status === 'past_due' ? 'Resolver pago ↗' : ['active', 'trialing'].includes(entitlements.subscription.status) ? 'Cambiar de plan ↗' : 'Activar un plan ↗'}</Link><Link className="p-button secondary dashboard-secondary-button" href="/dashboard/domains">Dominios ↗</Link>{isPlatformAdmin(user.email) && <Link className="p-button secondary dashboard-secondary-button" href="/admin/platform">Admin ↗</Link>}{entitlements.canCreateSite && <Link className="p-button primary" href="/dashboard/new">+ Crear un sitio</Link>}</div>
+            <div className="dashboard-actions"><Link className="p-button secondary dashboard-secondary-button" href="/planes">{entitlements.subscription.status === 'past_due' ? 'Resolver pago ↗' : ['active', 'trialing'].includes(entitlements.subscription.status) ? 'Cambiar de plan ↗' : 'Activar un plan ↗'}</Link><Link className="p-button secondary dashboard-secondary-button" href="/dashboard/domains">Dominios ↗</Link>{isPlatformAdmin(user.email, user.role) && <Link className="p-button secondary dashboard-secondary-button" href="/admin/platform">Admin ↗</Link>}{isPlatformAdmin(user.email, user.role) && entitlements.canCreateSite && <Link className="p-button primary" href="/dashboard/new">+ Crear un sitio</Link>}</div>
         </div>
         {sites.length ? (
           <div className="site-grid">{sites.map(site => <SiteCard key={site.id} site={site} />)}</div>
         ) : (
           <div className="empty-state">
             <span>✳</span><h2>Todo empieza con una idea.</h2><p>Tu primera web está a unos clics de distancia.</p>
-            <Link className="p-button primary" href="/dashboard/new">Crear mi primera web ↗</Link>
+            {isPlatformAdmin(user.email, user.role) && entitlements.canCreateSite && <Link className="p-button primary" href="/dashboard/new">Crear mi primera web ↗</Link>}
           </div>
         )}
         <div className="domain-note">

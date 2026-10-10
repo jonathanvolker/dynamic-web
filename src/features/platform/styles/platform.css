@@ -107,6 +107,13 @@
 .new-site-page > .p-kicker { display: block; margin-top: 55px; }
 .new-site-page h1 { font-size: 45px; margin: 17px 0 12px; }
 .new-site-page > p { font-size: 14px; color: var(--p-muted); }
+.construction-card { display: flex; flex-direction: column; align-items: flex-start; margin-top: 58px; padding: clamp(28px, 6vw, 58px); border: 1px solid #dfe5d6; border-radius: 20px; background: radial-gradient(ellipse at 90% 5%, #e9f2d6 0, transparent 45%), #fff; box-shadow: 0 24px 70px #27321b0b; }
+.construction-mark { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: 32px; border-radius: 50%; background: #eaf1dc; color: #708746; font-size: 30px; }
+.construction-card .p-kicker { color: #778b54; }
+.construction-card h1 { max-width: 560px; font: 600 clamp(38px, 7vw, 58px)/1.04 'Manrope', sans-serif; letter-spacing: -.065em; margin: 18px 0; }
+.construction-card > p { max-width: 510px; color: #72796c; font-size: 15px; line-height: 1.75; }
+.construction-note { display: flex; gap: 12px; align-items: flex-start; max-width: 490px; margin: 25px 0 30px; padding: 16px; border-radius: 10px; background: #f3f5ee; color: #68715e; font-size: 12px; line-height: 1.6; }
+.construction-note > span:first-child { font-size: 18px; }
 .plan-limit-warning { display: flex; align-items: center; gap: 12px; margin: 25px 0; padding: 15px 17px; border: 1px solid #e0b65d; border-radius: 8px; background: #fff8df; color: #6f5318; font-size: 12px; }
 .plan-limit-warning span { color: #887044; }
 .plan-limit-warning a { margin-left: auto; color: inherit; font-weight: 700; white-space: nowrap; }
