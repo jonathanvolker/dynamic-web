@@ -9,5 +9,5 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
   const entitlements = await getEntitlements(user.id)
   const site = await findSite((await params).id, user.id)
   if (!site) notFound()
-  return <Editor site={site} access={{ canEdit: entitlements.canEdit, canPublish: entitlements.canPublish, availableBlocks: entitlements.plan.allowedBlocks === 'all' ? null : entitlements.plan.allowedBlocks, planName: entitlements.plan.name, status: entitlements.subscription.status, graceDaysRemaining: entitlements.graceDaysRemaining }} />
+  return <Editor site={site} access={{ canEdit: entitlements.canEdit, canPublish: entitlements.canPublish, availableBlocks: entitlements.plan.allowedBlocks === 'all' ? null : entitlements.plan.allowedBlocks, maxSections: entitlements.plan.maxSections, planName: entitlements.plan.name, status: entitlements.subscription.status, graceDaysRemaining: entitlements.graceDaysRemaining }} />
 }

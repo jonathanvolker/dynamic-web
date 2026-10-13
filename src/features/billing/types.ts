@@ -9,6 +9,8 @@ export type Plan = {
   price: number
   currency: 'ARS'
   maxSites: number
+  /** Maximum total sections, including the required footer. */
+  maxSections: number
   mediaStorageBytes: number
   maxMediaPerSite: number
   allowedBlocks: string[] | 'all'

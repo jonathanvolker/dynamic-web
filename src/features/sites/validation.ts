@@ -5,7 +5,7 @@ import { isSafeHref } from '@/features/website/links'
 import { isValidMedia } from '@/features/website/media'
 import { blockTypes, rowFields } from '@/features/website/blocks'
 
-export function validateSite(input: unknown): asserts input is SiteDocument {
+export function validateSite(input: unknown, requireFooter = false): asserts input is SiteDocument {
   if (!input || typeof input !== 'object') throw new Error('El sitio no es válido.')
   const { settings, sections, schemaVersion, familyId, templateId } = input as SiteDocument
   if (schemaVersion !== 1 || !getTemplate(templateId) || getTemplate(templateId)?.familyId !== familyId || settings?.template !== templateId) throw new Error('La versión o familia del sitio no es válida. Recargá el editor.')
@@ -31,7 +31,8 @@ export function validateSite(input: unknown): asserts input is SiteDocument {
     }
   }
   if (!Array.isArray(settings.navigation) || settings.navigation.length > 5 || settings.navigation.some(item => !item || !text(item.label, 80) || !isSafeHref(item.href))) throw new Error('Revisá los destinos del menú: sección, ruta, https://, mailto: o tel:.')
-  if (!Array.isArray(sections) || !sections.length || sections.filter(section => section.blockType !== 'footer').length > 30) throw new Error('El sitio necesita entre 1 y 30 secciones.')
+  if (!Array.isArray(sections) || !sections.length || sections.length > 31) throw new Error('El sitio necesita entre 1 y 31 secciones, incluido el pie de página.')
+  if (requireFooter && (sections.filter(section => section.blockType === 'footer').length !== 1 || sections[sections.length - 1]?.blockType !== 'footer')) throw new Error('El sitio debe tener un único pie de página al final.')
   const keys = rowFields
   const requiredRows: Partial<Record<SiteDocument['sections'][number]['blockType'], keyof typeof rowFields>> = {
     services: 'services', projects: 'projects', about: 'stats', faq: 'questions', gallery: 'gallery',

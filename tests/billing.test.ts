@@ -26,3 +26,9 @@ test('media quotas increase with the plan', () => {
   assert.ok(planCatalog.initial.mediaStorageBytes > planCatalog.free.mediaStorageBytes)
   assert.ok(planCatalog.professional.maxMediaPerSite > planCatalog.initial.maxMediaPerSite)
 })
+
+test('section limits include the footer and scale by plan', () => {
+  assert.equal(planCatalog.free.maxSections, 3)
+  assert.equal(planCatalog.initial.maxSections, 15)
+  assert.equal(planCatalog.professional.maxSections, 31)
+})

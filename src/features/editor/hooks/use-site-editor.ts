@@ -10,7 +10,7 @@ import { availableAnchor, ensureFooter } from '@/features/sites/document'
 
 type Panel = 'sections' | 'preview' | 'properties'
 type ActiveTarget = number | 'settings' | 'footer'
-export type EditorAccess = { canEdit: boolean; canPublish: boolean; availableBlocks: string[] | null; planName: string; status: string; graceDaysRemaining: number }
+export type EditorAccess = { canEdit: boolean; canPublish: boolean; availableBlocks: string[] | null; maxSections: number; planName: string; status: string; graceDaysRemaining: number }
 
 export function useSiteEditor(site: Site, access: EditorAccess) {
   const [document, setDocument] = useState<SiteDocument>(() => ensureFooter(site.draft))
@@ -108,8 +108,8 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
   function add(type: Section['blockType']) {
     if (!access.canEdit) { setError('Tu suscripción está vencida. Activá un plan para continuar.'); return }
     if (access.availableBlocks && !access.availableBlocks.includes(type)) { setError(`Este bloque requiere un plan superior a ${access.planName}.`); return }
-    if (document.sections.filter(item => item.blockType !== 'footer').length >= 30) {
-      setError('Podés agregar hasta 30 secciones.')
+    if (document.sections.length >= access.maxSections) {
+      setError(`Tu plan ${access.planName} permite hasta ${access.maxSections} secciones, incluido el pie de página.`)
       return
     }
     const sections = getTemplate(document.templateId)?.sections || []
@@ -123,7 +123,10 @@ export function useSiteEditor(site: Site, access: EditorAccess) {
 
   function duplicate() {
     if (!access.canEdit) return
-    if (!section || section.blockType === 'footer' || typeof active !== 'number' || document.sections.filter(item => item.blockType !== 'footer').length >= 30) return
+    if (!section || section.blockType === 'footer' || typeof active !== 'number' || document.sections.length >= access.maxSections) {
+      if (document.sections.length >= access.maxSections) setError(`Tu plan ${access.planName} permite hasta ${access.maxSections} secciones, incluido el pie de página.`)
+      return
+    }
     if (access.availableBlocks && !access.availableBlocks.includes(section.blockType)) {
       setError(`Este bloque requiere un plan superior a ${access.planName}.`)
       return

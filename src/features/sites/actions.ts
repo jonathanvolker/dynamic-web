@@ -37,9 +37,10 @@ export async function saveSite(id: string, input: unknown, publish: boolean) {
   if (!site) return { error: 'No tenés acceso a este sitio.' }
   try {
     const entitlements = await assertCanEdit(user.id)
-    validateSite(input)
-    await assertMediaOwnership(input, user.id)
+    validateSite(input, true)
     const document = input as { sections: { id?: string; blockType: string }[] }
+    if (document.sections.length > entitlements.plan.maxSections) throw new Error(`Tu plan ${entitlements.plan.name} permite hasta ${entitlements.plan.maxSections} secciones, incluido el pie de página.`)
+    await assertMediaOwnership(input, user.id)
     const mediaCount = mediaIdsInDocument(input as never).size
     if (mediaCount > entitlements.plan.maxMediaPerSite) throw new Error(`Tu plan permite hasta ${entitlements.plan.maxMediaPerSite} imágenes por sitio.`)
     const existing = new Set(site.draft.sections.map(section => `${section.id}:${section.blockType}`))

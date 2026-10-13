@@ -8,6 +8,7 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
   const allTypes = blockTypesForFamily(editor.document.familyId)
   const availableTypes = allTypes.filter(type => !editor.access.availableBlocks || editor.access.availableBlocks.includes(type))
   const hiddenBlockCount = allTypes.length - availableTypes.length
+  const atSectionLimit = editor.document.sections.length >= editor.access.maxSections
   return (
     <aside className={`editor-sidebar ${editor.panel === 'sections' ? 'mobile-visible' : ''}`}>
       <div className="sidebar-tabs">
@@ -49,9 +50,9 @@ export function EditorSidebar({ editor }: { editor: EditorController }) {
         </>
       ) : (
         <div className="block-library">
-          <p className="sidebar-hint">Bloques diseñados para combinar bien.</p>
+           <p className="sidebar-hint">Bloques diseñados para combinar bien. {editor.document.sections.length}/{editor.access.maxSections} secciones, incluido el pie.</p>
           {availableTypes.map(type => (
-            <button key={type} onClick={() => editor.add(type)}>
+             <button key={type} onClick={() => editor.add(type)} disabled={atSectionLimit}>
               <span>{blockSymbols[type]}</span><strong>{labelForBlock(type, editor.document.familyId)}</strong><small>{descriptionForBlock(type, editor.document.familyId)}</small>
             </button>
           ))}

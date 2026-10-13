@@ -208,7 +208,7 @@ La acción se puede recuperar con undo.
 - Se calcula un anchor único.
 - La nueva sección pasa a ser activa.
 
-Hay un límite de 30 secciones de contenido, sin contar el footer.
+El límite cuenta todas las secciones, incluido el footer: Gratis admite 3, Inicial 15 y Profesional 31. El footer ocupa una de esas posiciones.
 
 ## 5. Inspector general
 
@@ -896,7 +896,7 @@ Reglas generales:
 - Título y eyebrow obligatorios cuando corresponda.
 - Descripciones con límite de longitud.
 - Media con estructura válida.
-- Máximo de 30 secciones de contenido.
+- Máximo total por plan, incluido exactamente un footer al final: Gratis 3, Inicial 15 y Profesional 31.
 - Máximo de 20 elementos por colección.
 - Footer obligatorio y último.
 - Links seguros.

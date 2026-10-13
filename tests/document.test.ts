@@ -182,6 +182,23 @@ test('sections require non-empty headings and row collections must be arrays', (
   assert.throws(() => validateSite(invalid), /contenido/)
 })
 
+test('site document structural cap is 31 total sections including the footer', () => {
+  const document = migrateDocument(templates[0])
+  const hero = structuredClone(blockDefinitions.hero.defaults)
+  document.sections = Array.from({ length: 30 }, (_, index) => ({ ...structuredClone(hero), id: `hero-${index}`, anchor: `hero-${index}` }))
+  document.sections.push(structuredClone(blockDefinitions.footer.defaults))
+  document.sections[30].id = 'footer'
+  document.sections[30].anchor = 'footer'
+  validateSite(document)
+
+  document.sections.push({ ...structuredClone(hero), id: 'hero-30', anchor: 'hero-30' })
+  assert.throws(() => validateSite(document), /31 secciones/)
+
+  const missingFooter = migrateDocument(templates[0])
+  missingFooter.sections = missingFooter.sections.filter(section => section.blockType !== 'footer')
+  assert.throws(() => validateSite(missingFooter, true), /único pie de página/)
+})
+
 test('resolveHref rejects malformed and accepts supported edge-case links', () => {
   for (const href of ['/ruta?x=1#final', 'https://example.com:443/path?q=1#x', 'mailto:persona@example.com', 'tel:+54(11)4000-0000']) {
     assert.equal(resolveHref(href, []), href)
